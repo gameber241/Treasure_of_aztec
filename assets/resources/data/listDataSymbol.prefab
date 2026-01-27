@@ -181,9 +181,9 @@
   },
   {
     "__type__": "dataSymbol",
-    "type": "GOLDEN_IDOL",
+    "type": "GREEN_IDOL",
     "icon": {
-      "__uuid__": "f17c9f4c-e149-4c99-a8b5-41571de0b430@f9941",
+      "__uuid__": "ec3b2ce7-a411-4cc4-93b2-c89dda4c2c8f@f9941",
       "__expectedType__": "cc.SpriteFrame"
     }
   },
@@ -228,6 +228,7 @@
       "__id__": 0
     },
     "fileId": "ebw6WqRvNPPqOq72f2T/Y/",
+    "instance": null,
     "targetOverrides": null
   }
 ]

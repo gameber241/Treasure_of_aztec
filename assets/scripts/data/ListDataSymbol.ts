@@ -10,8 +10,10 @@ export class ListDataSymbol extends Component {
 
 
     public getIconByType(type: SymbolFace) {
-        let x = this.listData.filter(e => e.type == type)[0]
-        return x.icon
+        console.log(type)
+        const x = this.listData.find(e => e.type === type)!;
+        return x.icon;
     }
+
 }
 

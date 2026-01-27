@@ -1,5 +1,8 @@
-import { _decorator, Component, Tween, tween, UITransform, sp, Enum } from 'cc';
+import { _decorator, Component, Tween, tween, UITransform, Sprite, Enum, Node } from 'cc';
 import { ReelBase } from './ReelBase';
+import { PrefabManager } from './Manager/PrefabManager';
+import { ListDataSymbol } from './data/ListDataSymbol';
+
 const { ccclass, property, executeInEditMode } = _decorator;
 
 export enum SymbolTileType {
@@ -32,41 +35,9 @@ export enum SymbolFace {
     SCRATCH = "SCRATCH"
 }
 
-export enum State {
-    IDLE = 'IDLE',
-    MOVING = 'MOVING',
-    STOPPED = 'STOPPED'
-}
-
 @ccclass('Symbol')
 @executeInEditMode(true)
 export class Symbol extends Component {
-
-    static Anim = {
-        'NORMAL': { 'IDLE': 'mahjong_normal_idle', 'MOVE': 'mahjong_normal_move', 'WIN': 'mahjong_normal_action' },
-        'GOLD': { 'IDLE': 'mahjong_gold_idle', 'MOVE': 'mahjong_gold_move', 'WIN': 'mahjong_gold_action' },
-        'WILD': { 'IDLE': 'icon_wild_idle', 'WIN': 'icon_wild_action' },
-        'SCATTER': { 'IDLE': 'icon_scatter_idle', 'MOVE': 'icon_scatter_move', 'WIN': 'icon_scatter_action' }
-    } as const;
-
-    // static Face2Skin = {
-    //     'BLANK': 'default',
-    //     'CHARACTER_8': 'icon_1',
-    //     'DRAGON_RED': 'icon_2',
-    //     'BAMBOO_5': 'icon_3',
-    //     'DRAGON_GREEN': 'icon_4',
-    //     'DOT_2': 'icon_5',
-    //     'BAMBOO_2': 'icon_6',
-    //     'DOT_5': 'icon_7',
-    //     'DRAGON_WHITE': 'icon_8',
-    //     'DOT_3': 'icon_9'
-    // } as const;
-
-    static MoveType = {
-        START: 'start',
-        STOP: 'stop',
-        MOVING: 'moving'
-    } as const;
 
     @property({ type: Enum(SymbolTileType) })
     type: SymbolTileType = SymbolTileType.NORMAL;
@@ -77,53 +48,53 @@ export class Symbol extends Component {
     @property({ type: Enum(SymbolFrameState) })
     frameState: SymbolFrameState = SymbolFrameState.NORMAL;
 
-    @property({ type: sp.Skeleton })
-    skeleton: sp.Skeleton = null;
+    @property({ type: Sprite })
+    icon: Sprite = null;     // thay skeleton bằng sprite
 
     reel: ReelBase = null;
     reelIndex: number = 0;
 
     // Mega stack
     stackId: number = -1;
-    stackSize: number = 1;
-    stackIndex: number = 0; // 0 = root
+    stackSize: number = 1;     // 1..4
+    stackIndex: number = 0;    // 0 = root, >0 = cell phụ
 
     uiTransform: UITransform = null;
 
-    get isVisualRoot(): boolean {
+    get isRoot(): boolean {
         return this.stackIndex === 0;
     }
 
     protected onLoad(): void {
-        this.uiTransform = this.node.getComponent(UITransform);
-        this.refreshVisual();
+        this.icon = this.node.getComponent(Sprite)
+
+        // this.refreshVisual();
     }
 
-    rollToIndex(time: number = 0.2, type: string = Symbol.MoveType.MOVING) {
+
+    rollToIndex(time: number = 0.2) {
+        // Chỉ root mới tween
+        if (!this.isRoot || !this.reel) return;
+
         const newPosition = this.reel.getPositionByIndex(this.reelIndex);
         Tween.stopAllByTarget(this.node);
 
-        // chỉ root mới có animation
-        // if (this.isVisualRoot && this.skeleton) {
-        //     if (type === Symbol.MoveType.MOVING)
-        //         this.skeleton.setAnimation(0, Symbol.Anim[this.getAnimKey()].MOVE ?? Symbol.Anim[this.getAnimKey()].IDLE, true);
-        //     else
-        //         this.skeleton.setAnimation(0, Symbol.Anim[this.getAnimKey()].IDLE, true);
-        // }
-
-        // spawn random ở ô trên cùng
-        if (this.isVisualRoot && this.reelIndex === 1)
-            this.setRandomFace();
-
-        const ease = {
-            start: 'cubicOut',
-            stop: 'bounceOut',
-            moving: 'linear'
-        };
-
         return tween(this.node)
-            .to(time, { position: newPosition }, { easing: ease[type] })
+            .to(time, { position: newPosition })
             .start();
+    }
+
+    refreshVisual() {
+        if (!this.isRoot || !this.reel) return;
+
+        // TODO: ở đây map face -> spriteFrame (bạn gán trong editor hoặc atlas)
+        this.icon.spriteFrame = PrefabManager.instance.GetDataSymbol().getIconByType(this.face)
+
+        // Kéo cao Mega Symbol
+        if (this.stackSize > 1) {
+            const cellSize = this.reel.getCellSizeValue();
+            this.uiTransform.height = cellSize * this.stackSize;
+        }
     }
 
     setRandomFace() {
@@ -140,33 +111,13 @@ export class Symbol extends Component {
             SymbolFace.QUEEN,
             SymbolFace.KING
         ];
-        const randomFace = faces[Math.floor(Math.random() * faces.length)];
-        this.face = randomFace;
+        this.face = faces[Math.floor(Math.random() * faces.length)];
         this.type = SymbolTileType.NORMAL;
         this.frameState = SymbolFrameState.NORMAL;
         this.refreshVisual();
     }
 
-    private getAnimKey(): SymbolTileType {
-        // if (this.frameState === SymbolFrameState.GOLD) return SymbolTileType.GOLD;
-        // if (this.frameState === SymbolFrameState.WILD) return SymbolTileType.WILD;
-        return this.type;
-    }
-
-    refreshVisual() {
-        if (!this.isVisualRoot || !this.skeleton) return;
-
-        // this.skeleton.setSkin(Symbol.Face2Skin[this.face]);
-        const animKey = this.getAnimKey();
-        this.skeleton.setAnimation(0, Symbol.Anim[animKey][State.IDLE], true);
-
-        // Mega symbol kéo cao
-        if (this.stackSize > 1 && this.reel) {
-            this.uiTransform.height = this.reel.getCellSizeValue() * this.stackSize;
-        }
-    }
-
-    /** Wilds-on-the-Way state machine */
+    /** Wilds-on-the-Way */
     advanceFrameState() {
         if (this.type === SymbolTileType.SCATTER) return;
 
@@ -176,7 +127,7 @@ export class Symbol extends Component {
                 break;
             case SymbolFrameState.SCRATCH:
                 this.frameState = SymbolFrameState.SILVER;
-                this.setRandomFace(); // random normal, không Wild, không Scatter
+                this.setRandomFace();
                 break;
             case SymbolFrameState.SILVER:
                 this.frameState = SymbolFrameState.GOLD;
@@ -188,5 +139,14 @@ export class Symbol extends Component {
         }
 
         this.refreshVisual();
+    }
+
+
+    ResetSymbol() {
+        this.stackId = -1;
+        this.stackSize = 1;
+        this.stackIndex = 0;
+        this.setRandomFace()
+
     }
 }

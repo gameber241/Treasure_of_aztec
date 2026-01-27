@@ -22,7 +22,7 @@ export abstract class ReelBase extends Component {
 
         this.startRoll()
 
-        this.scheduleOnce(()=>{
+        this.scheduleOnce(() => {
             this.stopRoll()
         }, 3)
     }
@@ -68,14 +68,15 @@ export abstract class ReelBase extends Component {
                     if (s.reelIndex >= this.symbols.length) {
                         s.reelIndex = 0;
                         s.node.position = this.getSymbolPosition(-1);
+                        s.ResetSymbol()
                     }
 
                     if (this._isStartingRoll) {
                         this._delay = 0.8;
-                        s.rollToIndex(0.8, Symbol.MoveType.START);
+                        s.rollToIndex(0.8);
                     } else {
                         this._delay = 0.05;
-                        s.rollToIndex(0.05, Symbol.MoveType.MOVING);
+                        s.rollToIndex(0.05);
                     }
                 }
             })
@@ -99,7 +100,7 @@ export abstract class ReelBase extends Component {
                 s.reelIndex = 0;
                 s.node.position = this.getSymbolPosition(-1);
             }
-            s.rollToIndex(0.4, Symbol.MoveType.STOP);
+            s.rollToIndex(0.4);
         }
     }
 
