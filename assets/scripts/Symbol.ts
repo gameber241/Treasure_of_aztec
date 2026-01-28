@@ -1,7 +1,8 @@
-import { _decorator, Component, Tween, tween, UITransform, Sprite, Enum, Node, Vec2, SpriteFrame } from 'cc';
+import { _decorator, Component, Tween, tween, UITransform, Sprite, Enum, Node, Vec2, SpriteFrame, Vec3 } from 'cc';
 import { ReelBase } from './ReelBase';
 import { PrefabManager } from './Manager/PrefabManager';
 import { ListDataSymbol } from './data/ListDataSymbol';
+import { dataSymbol } from './data/dataSymbol';
 
 const { ccclass, property, executeInEditMode } = _decorator;
 
@@ -48,8 +49,8 @@ export class Symbol extends Component {
     @property({ type: Enum(SymbolFrameState) })
     frameState: SymbolFrameState = SymbolFrameState.NORMAL;
 
-    @property({ type: Sprite })
-    icon: Sprite = null;     // thay skeleton bằng sprite
+    @property(Sprite)
+    iconSymbol: Sprite = null;
 
     @property({ type: Sprite })
     bg: Sprite = null
@@ -62,7 +63,7 @@ export class Symbol extends Component {
     stackId: number = -1;
     stackSize: number = 1;     // 1..4
     stackIndex: number = 0;    // 0 = root, >0 = cell phụ
-
+    dataSymbols: dataSymbol = null
     uiTransform: UITransform = null;
 
     get isRoot(): boolean {
@@ -70,11 +71,11 @@ export class Symbol extends Component {
     }
 
     protected onLoad(): void {
-        this.icon = this.node.getComponent(Sprite)
-
-        // this.refreshVisual();
+        // this.ResetSymbol()
     }
-
+    protected start(): void {
+        this.ResetSymbol()
+    }
 
     rollToIndex(time: number = 0.2) {
         // Chỉ root mới tween
@@ -92,8 +93,10 @@ export class Symbol extends Component {
         if (!this.isRoot || !this.reel) return;
 
         // TODO: ở đây map face -> spriteFrame (bạn gán trong editor hoặc atlas)
-        this.icon.spriteFrame = PrefabManager.instance.GetDataSymbol().getIconByType(this.face)
 
+        this.dataSymbols = PrefabManager.instance.GetDataSymbol().getDataByType(this.face)
+
+        this.iconSymbol.spriteFrame = this.dataSymbols.icon
         // Kéo cao Mega Symbol
         if (this.stackSize > 1) {
             const cellSize = this.reel.getCellSizeValue();
@@ -152,6 +155,7 @@ export class Symbol extends Component {
         this.stackIndex = 0;
         this.setRandomFace()
         this.UpdatePositionIcon()
+        this.UpdateBg()
     }
 
     UpdatePositionIcon() {
@@ -162,14 +166,69 @@ export class Symbol extends Component {
             case SymbolFace.JACK:
             case SymbolFace.QUEEN:
             case SymbolFace.KING:
-                this.icon.node.setPosition(0, - ui.height / 2 - 5, 0)
+                this.iconSymbol.node.setPosition(0, - ui.height / 2 - 5, 0)
                 break;
             default:
-                this.icon.node.setPosition(0, - ui.height / 2, 0)
+                this.iconSymbol.node.setPosition(0, - ui.height / 2, 0)
         }
     }
 
     UpdateBg() {
+        if (this.stackIndex == 0) {
+            this.iconSymbol.enabled = true
+            this.bg.enabled = true
 
+            switch (this.stackSize) {
+                case 1:
+                    if (this.dataSymbols.bg1x1)
+                        this.bg.spriteFrame = this.dataSymbols.bg1x1
+                    break
+                case 2:
+                    if (this.dataSymbols.bg1x2)
+                        this.bg.spriteFrame = this.dataSymbols.bg1x2
+                    break
+                case 3:
+                    if (this.dataSymbols.bg1x3)
+                        this.bg.spriteFrame = this.dataSymbols.bg1x3
+                    break
+                case 4:
+                    if (this.dataSymbols.bg1x4)
+                        this.bg.spriteFrame = this.dataSymbols.bg1x4
+                    break
+            }
+        }
+        else {
+            this.iconSymbol.enabled = false
+            this.bg.enabled = false
+        }
     }
+    exploAnim() {
+        if (!this.isRoot || !this.reel) return;
+
+        const node = this.node;
+        Tween.stopAllByTarget(node);
+
+        const basePos = this.reel.getPositionByIndex(this.reelIndex);
+
+        const bounce = 10; // độ nảy
+        const isHorizontal = this.reel.isHorizontal();
+
+        const up = isHorizontal
+            ? new Vec3(bounce, 0, 0)   // reel ngang: nảy theo X
+            : new Vec3(0, bounce, 0);  // reel dọc: nảy theo Y
+
+        const down = isHorizontal
+            ? new Vec3(-bounce, 0, 0)
+            : new Vec3(0, -bounce, 0);
+
+        tween(node)
+            // rơi / trượt về vị trí chuẩn
+            .to(0.18, { position: basePos }, { easing: 'cubicOut' })
+            // bật nhẹ
+            .by(0.08, { position: up }, { easing: 'sineOut' })
+            // trở lại
+            .by(0.08, { position: down }, { easing: 'sineIn' })
+            .start();
+    }
+
 }

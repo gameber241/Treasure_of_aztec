@@ -5,8 +5,8 @@ const { ccclass } = _decorator;
 @ccclass('ReelBase')
 export abstract class ReelBase extends Component {
 
-    protected symbolPadding = 3;
-    protected symbols: Symbol[] = [];
+    protected symbolPadding = 1.5;
+    public symbols: Symbol[] = [];
 
     protected cellSize = 0;
     protected totalSize = 0;
@@ -19,12 +19,15 @@ export abstract class ReelBase extends Component {
     onLoad() {
         this.collectSymbols();
         this.rearrangeSymbols();
-
-        this.startRoll()
-
         this.scheduleOnce(() => {
-            this.stopRoll()
-        }, 3)
+            this.startRoll()
+            this.scheduleOnce(() => {
+                this.stopRoll()
+            }, 1)
+        }, 0.1 * this.node.getSiblingIndex())
+
+
+
     }
 
     protected collectSymbols() {
@@ -90,20 +93,50 @@ export abstract class ReelBase extends Component {
             .start();
     }
 
-    stopRoll() {
+    stopRoll(typeAndFaces: any = null, typeAndFacesAbove: any = null) {
         Tween.stopAllByTarget(this.node);
         this.isRolling = false;
 
-        for (let s of this.symbols) {
-            s.reelIndex++;
-            if (s.reelIndex >= this.symbols.length) {
+        // gán kết quả server
+        if (typeAndFaces) {
+            for (let i = 0; i < typeAndFaces.length; i++) {
+                const symbol = this.symbols.find(s => s.reelIndex === i + 3);
+                if (symbol && typeAndFaces[i]) {
+                    symbol.type = typeAndFaces[i].type;
+                    symbol.face = typeAndFaces[i].face;
+                    symbol.refreshVisual();
+                }
+            }
+        }
+
+        if (typeAndFacesAbove) {
+            for (let i = 0; i < typeAndFacesAbove.length; i++) {
+                const symbol = this.symbols.find(s => s.reelIndex === 2 - i);
+                if (symbol && typeAndFacesAbove[i]) {
+                    symbol.type = typeAndFacesAbove[i].type;
+                    symbol.face = typeAndFacesAbove[i].face;
+                    symbol.refreshVisual();
+                }
+            }
+        }
+
+        // snap + tween về vị trí cuối
+        for (let i = 0; i < this.symbols.length; i++) {
+            const s = this.symbols[i];
+            s.reelIndex += 1;
+            if (s.reelIndex === this.symbols.length) {
                 s.reelIndex = 0;
                 s.node.position = this.getSymbolPosition(-1);
             }
-            s.rollToIndex(0.4);
+            // s.rollToIndex(0.25, Symbol.MoveType.STOP);
         }
-    }
 
+        // delay đúng bằng thời gian STOP rồi mới bật bounce
+        for (let s of this.symbols) {
+            s.exploAnim?.();
+        }
+
+    }
     public getCellSizeValue() {
         return this.cellSize;
     }

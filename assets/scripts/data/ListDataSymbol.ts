@@ -9,10 +9,9 @@ export class ListDataSymbol extends Component {
     listData: dataSymbol[] = []
 
 
-    public getIconByType(type: SymbolFace) {
-        console.log(type)
-        const x = this.listData.find(e => e.type === type)!;
-        return x.icon;
+    public getDataByType(type: SymbolFace) {
+        const x = this.listData.find(e => e.type === type);
+        return x;
     }
 
 }

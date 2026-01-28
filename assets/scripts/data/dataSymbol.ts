@@ -16,5 +16,8 @@ export class dataSymbol {
     public bg1x2: SpriteFrame = null
     @property({ type: SpriteFrame })
     public bg1x3: SpriteFrame = null
+    @property({ type: SpriteFrame })
+    public bg1x4: SpriteFrame = null
+
 }
 

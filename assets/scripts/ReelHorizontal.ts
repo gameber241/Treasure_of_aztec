@@ -9,13 +9,16 @@ export class ReelHorizontal extends ReelBase {
     }
 
     protected computeHalfSize() {
-        // tâm của cell, không phải tâm toàn dải
-        this.halfSize = (this.totalSize - this.cellSize) / 2;
+        // tâm toàn dải reel
+        this.halfSize = this.totalSize / 2 - this.cellSize / 2;
     }
 
     protected getSymbolPosition(i: number) {
-        return v3(-i * this.cellSize + this.halfSize, 0, 0);
+        // index 0 ở bên phải, chạy sang trái
+        console.log(v3(this.halfSize - i * this.cellSize, 0, 0), this.halfSize, this.cellSize)
+        return v3(this.halfSize - i * this.cellSize, 0, 0);
     }
+
 
     protected sortSibling() {
         this.symbols.sort((a, b) => a.node.position.x - b.node.position.x);

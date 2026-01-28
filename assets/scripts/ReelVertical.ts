@@ -10,12 +10,15 @@ export class ReelVertical extends ReelBase {
     }
 
     protected computeHalfSize() {
-        this.halfSize = this.totalSize / 2;
+        // tâm của cell đầu tiên trong reel
+        this.halfSize = this.totalSize / 2 - this.cellSize / 2;
     }
 
     protected getSymbolPosition(i: number) {
-        return v3(0, -i * this.cellSize + this.halfSize + 50,  0) ;
+        // index 0 ở trên cùng, rơi xuống dưới
+        return v3(0, this.halfSize - i * this.cellSize, 0);
     }
+
 
     protected sortSibling() {
         this.symbols.sort((a, b) => b.node.position.y - a.node.position.y);

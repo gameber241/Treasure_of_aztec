@@ -2,12 +2,12 @@
   "ver": "1.1.50",
   "importer": "prefab",
   "imported": true,
-  "uuid": "7641fd6c-01de-4ec4-a5bf-7e79c07a4cfc",
+  "uuid": "69c9791a-bae4-4fc4-a7d7-5b1c7fe6f4ba",
   "files": [
     ".json"
   ],
   "subMetas": {},
   "userData": {
-    "syncNodeName": "symbol"
+    "syncNodeName": "comboItem"
   }
 }
