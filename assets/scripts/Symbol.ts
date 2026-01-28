@@ -1,4 +1,4 @@
-import { _decorator, Component, Tween, tween, UITransform, Sprite, Enum, Node } from 'cc';
+import { _decorator, Component, Tween, tween, UITransform, Sprite, Enum, Node, Vec2, SpriteFrame } from 'cc';
 import { ReelBase } from './ReelBase';
 import { PrefabManager } from './Manager/PrefabManager';
 import { ListDataSymbol } from './data/ListDataSymbol';
@@ -50,6 +50,10 @@ export class Symbol extends Component {
 
     @property({ type: Sprite })
     icon: Sprite = null;     // thay skeleton bằng sprite
+
+    @property({ type: Sprite })
+    bg: Sprite = null
+
 
     reel: ReelBase = null;
     reelIndex: number = 0;
@@ -147,6 +151,25 @@ export class Symbol extends Component {
         this.stackSize = 1;
         this.stackIndex = 0;
         this.setRandomFace()
+        this.UpdatePositionIcon()
+    }
+
+    UpdatePositionIcon() {
+        let ui = this.bg.node.getComponent(UITransform).contentSize
+        switch (this.face) {
+            case SymbolFace.ACE:
+            case SymbolFace.TEN:
+            case SymbolFace.JACK:
+            case SymbolFace.QUEEN:
+            case SymbolFace.KING:
+                this.icon.node.setPosition(0, - ui.height / 2 - 5, 0)
+                break;
+            default:
+                this.icon.node.setPosition(0, - ui.height / 2, 0)
+        }
+    }
+
+    UpdateBg() {
 
     }
 }
