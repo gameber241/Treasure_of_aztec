@@ -1,40 +1,28 @@
-import { _decorator, Component, Tween, tween, UITransform, Sprite, Enum, Node, Vec2, SpriteFrame, Vec3 } from 'cc';
+import { _decorator, Component, Tween, tween, UITransform, Sprite, Enum, Node, Vec2, SpriteFrame, Vec3, randomRangeInt } from 'cc';
 import { ReelBase } from './ReelBase';
 import { PrefabManager } from './Manager/PrefabManager';
 import { ListDataSymbol } from './data/ListDataSymbol';
 import { dataSymbol } from './data/dataSymbol';
+import { ESymbolFace } from './ESymbolFace';
 
 const { ccclass, property, executeInEditMode } = _decorator;
 
 export enum SymbolTileType {
-    NORMAL = 'NORMAL',
-    WILD = 'WILD',
-    SCATTER = 'SCATTER'
-};
+    NORMAL = 0,
+    WILD = 1,
+    SCATTER = 2
+}
+
 
 export enum SymbolFrameState {
-    NORMAL = 'NORMAL',
-    SCRATCH = 'SCRATCH',
-    SILVER = 'SILVER',
-    GOLD = 'GOLD',
-    WILD = 'WILD'
+    NORMAL = 0,   // bình thường
+    SCRATCH = 1,  // scatter frame
+    SILVER = 2,   // mega bạc
+    GOLD = 3,     // mega vàng
+    WILD = 4      // biến thành wild
 }
 
-export enum SymbolFace {
-    MASK_RED = 'MASK_RED',
-    STONE_WHEEL = 'STONE_WHEEL',
-    GREEN_IDOL = 'GREEN_IDOL',
-    PURPLE_SERPENT = 'PURPLE_SERPENT',
-    GOLDEN_IDOL = 'GOLDEN_IDOL',
-    JAGUAR_PINK = 'JAGUAR_PINK',
-    TEN = 'TEN',
-    ACE = 'ACE',
-    JACK = 'JACK',
-    KING = 'KING',
-    QUEEN = 'QUEEN',
-    WILD = "WILD",
-    SCRATCH = "SCRATCH"
-}
+
 
 @ccclass('Symbol')
 @executeInEditMode(true)
@@ -43,8 +31,8 @@ export class Symbol extends Component {
     @property({ type: Enum(SymbolTileType) })
     type: SymbolTileType = SymbolTileType.NORMAL;
 
-    @property({ type: Enum(SymbolFace) })
-    face: SymbolFace = SymbolFace.TEN;
+    @property({ type: Enum(ESymbolFace) })
+    face: ESymbolFace = ESymbolFace.TEN;
 
     @property({ type: Enum(SymbolFrameState) })
     frameState: SymbolFrameState = SymbolFrameState.NORMAL;
@@ -56,6 +44,12 @@ export class Symbol extends Component {
     bg: Sprite = null
 
 
+    @property({ type: Sprite })
+    frame: Sprite = null
+
+
+    @property(SpriteFrame)
+    frames: SpriteFrame[] = []
     reel: ReelBase = null;
     reelIndex: number = 0;
 
@@ -70,18 +64,15 @@ export class Symbol extends Component {
         return this.stackIndex === 0;
     }
 
-    protected onLoad(): void {
-        // this.ResetSymbol()
-    }
     protected start(): void {
         this.ResetSymbol()
     }
 
     rollToIndex(time: number = 0.2) {
         // Chỉ root mới tween
-        if (!this.isRoot || !this.reel) return;
+        if (!this.reel) return;
 
-        const newPosition = this.reel.getPositionByIndex(this.reelIndex);
+        const newPosition = this.reel.getSymbolPosition(this.reelIndex);
         Tween.stopAllByTarget(this.node);
 
         return tween(this.node)
@@ -91,32 +82,29 @@ export class Symbol extends Component {
 
     refreshVisual() {
         if (!this.isRoot || !this.reel) return;
-
-        // TODO: ở đây map face -> spriteFrame (bạn gán trong editor hoặc atlas)
-
         this.dataSymbols = PrefabManager.instance.GetDataSymbol().getDataByType(this.face)
-
+        console.log(this.dataSymbols, this.face)
         this.iconSymbol.spriteFrame = this.dataSymbols.icon
         // Kéo cao Mega Symbol
         if (this.stackSize > 1) {
-            const cellSize = this.reel.getCellSizeValue();
-            this.uiTransform.height = cellSize * this.stackSize;
+            // const cellSize = this.reel.getCellSize();
+            // this.uiTransform.height = cellSize * this.stackSize;
         }
     }
 
     setRandomFace() {
         const faces = [
-            SymbolFace.MASK_RED,
-            SymbolFace.STONE_WHEEL,
-            SymbolFace.GREEN_IDOL,
-            SymbolFace.PURPLE_SERPENT,
-            SymbolFace.GOLDEN_IDOL,
-            SymbolFace.JAGUAR_PINK,
-            SymbolFace.TEN,
-            SymbolFace.ACE,
-            SymbolFace.JACK,
-            SymbolFace.QUEEN,
-            SymbolFace.KING
+            ESymbolFace.MASK_RED,
+            ESymbolFace.STONE_WHEEL,
+            ESymbolFace.GREEN_IDOL,
+            ESymbolFace.PURPLE_SERPENT,
+            ESymbolFace.GOLDEN_IDOL,
+            ESymbolFace.JAGUAR_PINK,
+            ESymbolFace.TEN,
+            ESymbolFace.ACE,
+            ESymbolFace.JACK,
+            ESymbolFace.QUEEN,
+            ESymbolFace.KING
         ];
         this.face = faces[Math.floor(Math.random() * faces.length)];
         this.type = SymbolTileType.NORMAL;
@@ -124,52 +112,29 @@ export class Symbol extends Component {
         this.refreshVisual();
     }
 
-    /** Wilds-on-the-Way */
-    advanceFrameState() {
-        if (this.type === SymbolTileType.SCATTER) return;
-
-        switch (this.frameState) {
-            case SymbolFrameState.NORMAL:
-                this.frameState = SymbolFrameState.SCRATCH;
-                break;
-            case SymbolFrameState.SCRATCH:
-                this.frameState = SymbolFrameState.SILVER;
-                this.setRandomFace();
-                break;
-            case SymbolFrameState.SILVER:
-                this.frameState = SymbolFrameState.GOLD;
-                break;
-            case SymbolFrameState.GOLD:
-                this.frameState = SymbolFrameState.WILD;
-                this.type = SymbolTileType.WILD;
-                break;
-        }
-
-        this.refreshVisual();
-    }
-
-
     ResetSymbol() {
         this.stackId = -1;
         this.stackSize = 1;
         this.stackIndex = 0;
+        this.refreshVisual();
         this.setRandomFace()
         this.UpdatePositionIcon()
         this.UpdateBg()
+        this.UpdateFrame()
     }
 
     UpdatePositionIcon() {
         let ui = this.bg.node.getComponent(UITransform).contentSize
         switch (this.face) {
-            case SymbolFace.ACE:
-            case SymbolFace.TEN:
-            case SymbolFace.JACK:
-            case SymbolFace.QUEEN:
-            case SymbolFace.KING:
-                this.iconSymbol.node.setPosition(0, - ui.height / 2 - 5, 0)
+            case ESymbolFace.ACE:
+            case ESymbolFace.TEN:
+            case ESymbolFace.JACK:
+            case ESymbolFace.QUEEN:
+            case ESymbolFace.KING:
+                this.iconSymbol.node.setPosition(0, -50, 0)
                 break;
             default:
-                this.iconSymbol.node.setPosition(0, - ui.height / 2, 0)
+                this.iconSymbol.node.setPosition(0, -50, 0)
         }
     }
 
@@ -208,7 +173,7 @@ export class Symbol extends Component {
         const node = this.node;
         Tween.stopAllByTarget(node);
 
-        const basePos = this.reel.getPositionByIndex(this.reelIndex);
+        const basePos = this.reel.getSymbolPosition(this.reelIndex);
 
         const bounce = 10; // độ nảy
         const isHorizontal = this.reel.isHorizontal();
@@ -231,4 +196,42 @@ export class Symbol extends Component {
             .start();
     }
 
+
+
+    UpdateFrame() {
+        switch (this.frameState) {
+            case SymbolFrameState.NORMAL:
+                this.frame.enabled = false
+                break
+            case SymbolFrameState.GOLD:
+                this.frame.enabled = true
+                this.frame.spriteFrame = this.frames[1]
+                break;
+            case SymbolFrameState.SILVER:
+                this.frame.enabled = true
+                this.frame.spriteFrame = this.frames[0]
+                break;
+            case SymbolFrameState.SCRATCH:
+                this.frame.enabled = false
+                break;
+            case SymbolFrameState.WILD:
+                this.frame.enabled = false
+
+                break;
+        }
+    }
+
+    InitSymbol(face: ESymbolFace, type: SymbolTileType, frame: SymbolFrameState, stackSize, stackIndex, stackId) {
+        console.log(face)
+        this.face = face
+        this.type = type
+        this.frameState = frame
+        this.stackSize = stackSize
+        this.stackIndex = stackIndex
+        this.stackId = stackId
+        this.refreshVisual();
+        this.UpdatePositionIcon()
+        this.UpdateBg()
+        this.UpdateFrame()
+    }
 }

@@ -1,6 +1,7 @@
 import { _decorator, Component, Node } from 'cc';
 import { dataSymbol } from './dataSymbol';
-import { SymbolFace } from '../Symbol';
+import { ESymbolFace } from '../ESymbolFace';
+
 const { ccclass, property } = _decorator;
 
 @ccclass('ListDataSymbol')
@@ -9,8 +10,8 @@ export class ListDataSymbol extends Component {
     listData: dataSymbol[] = []
 
 
-    public getDataByType(type: SymbolFace) {
-        const x = this.listData.find(e => e.type === type);
+    public getDataByType(type: ESymbolFace) {
+        const x = this.listData.find(e => e.face === type);
         return x;
     }
 

@@ -117,7 +117,7 @@
   },
   {
     "__type__": "dataSymbol",
-    "type": "TEN",
+    "face": 8,
     "icon": {
       "__uuid__": "01af1248-77fe-4cfb-b4cd-fc56b197e1fb@f9941",
       "__expectedType__": "cc.SpriteFrame"
@@ -141,7 +141,7 @@
   },
   {
     "__type__": "dataSymbol",
-    "type": "ACE",
+    "face": 12,
     "icon": {
       "__uuid__": "b160266c-a91d-43ba-9f58-63d640e9d34d@f9941",
       "__expectedType__": "cc.SpriteFrame"
@@ -165,7 +165,7 @@
   },
   {
     "__type__": "dataSymbol",
-    "type": "JACK",
+    "face": 9,
     "icon": {
       "__uuid__": "3af39601-9cf4-47ce-8a06-0269399eca97@f9941",
       "__expectedType__": "cc.SpriteFrame"
@@ -189,7 +189,7 @@
   },
   {
     "__type__": "dataSymbol",
-    "type": "KING",
+    "face": 11,
     "icon": {
       "__uuid__": "fe35db9b-7865-4350-a6b3-cd374eadac94@f9941",
       "__expectedType__": "cc.SpriteFrame"
@@ -213,7 +213,7 @@
   },
   {
     "__type__": "dataSymbol",
-    "type": "QUEEN",
+    "face": 10,
     "icon": {
       "__uuid__": "80483f22-3fca-461b-b0ef-ebf475e6c2b4@f9941",
       "__expectedType__": "cc.SpriteFrame"
@@ -237,7 +237,7 @@
   },
   {
     "__type__": "dataSymbol",
-    "type": "JAGUAR_PINK",
+    "face": 7,
     "icon": {
       "__uuid__": "18909386-f873-4800-9ca7-a616267637da@f9941",
       "__expectedType__": "cc.SpriteFrame"
@@ -261,7 +261,7 @@
   },
   {
     "__type__": "dataSymbol",
-    "type": "GOLDEN_IDOL",
+    "face": 6,
     "icon": {
       "__uuid__": "20a377a2-d001-43c3-9dcf-5f249665610c@f9941",
       "__expectedType__": "cc.SpriteFrame"
@@ -285,7 +285,7 @@
   },
   {
     "__type__": "dataSymbol",
-    "type": "PURPLE_SERPENT",
+    "face": 5,
     "icon": {
       "__uuid__": "82bc1a98-bbc1-4bc8-93a8-ac97028c99e3@f9941",
       "__expectedType__": "cc.SpriteFrame"
@@ -309,7 +309,7 @@
   },
   {
     "__type__": "dataSymbol",
-    "type": "GREEN_IDOL",
+    "face": 4,
     "icon": {
       "__uuid__": "ec3b2ce7-a411-4cc4-93b2-c89dda4c2c8f@f9941",
       "__expectedType__": "cc.SpriteFrame"
@@ -333,7 +333,7 @@
   },
   {
     "__type__": "dataSymbol",
-    "type": "STONE_WHEEL",
+    "face": 3,
     "icon": {
       "__uuid__": "52ed06b0-147b-4277-966c-e4af0a784e3e@f9941",
       "__expectedType__": "cc.SpriteFrame"
@@ -357,7 +357,7 @@
   },
   {
     "__type__": "dataSymbol",
-    "type": "MASK_RED",
+    "face": 2,
     "icon": {
       "__uuid__": "75f35039-09ee-41f7-a10b-116ee7652cc0@f9941",
       "__expectedType__": "cc.SpriteFrame"
@@ -381,7 +381,7 @@
   },
   {
     "__type__": "dataSymbol",
-    "type": "WILD",
+    "face": 0,
     "icon": {
       "__uuid__": "28412df9-db35-4b9b-93d4-615ceccadfa1@f9941",
       "__expectedType__": "cc.SpriteFrame"
@@ -393,7 +393,7 @@
   },
   {
     "__type__": "dataSymbol",
-    "type": "SCRATCH",
+    "face": 1,
     "icon": {
       "__uuid__": "7582dcfe-122b-414a-b4fd-31a02a43e716@f9941",
       "__expectedType__": "cc.SpriteFrame"

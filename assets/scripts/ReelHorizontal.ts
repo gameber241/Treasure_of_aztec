@@ -4,23 +4,24 @@ const { ccclass } = _decorator;
 
 @ccclass('ReelHorizontal')
 export class ReelHorizontal extends ReelBase {
-    protected getCellSize(ui: UITransform): number {
+
+    public VISIBLE_COUNT = 4;
+    public FIRST_VISIBLE = 2;
+
+    public getCellSize(ui: UITransform): number {
         return ui.contentSize.width;
     }
 
-    protected computeHalfSize() {
-        // tâm toàn dải reel
-        this.halfSize = this.totalSize / 2 - this.cellSize / 2;
+    public computeHalfSize() {
+        const ui = this.node.getComponent(UITransform);
+        this.halfSize = ui.contentSize.width * 0.5 - this.cellSize * 0.5;
     }
 
-    protected getSymbolPosition(i: number) {
-        // index 0 ở bên phải, chạy sang trái
-        console.log(v3(this.halfSize - i * this.cellSize, 0, 0), this.halfSize, this.cellSize)
+    public getSymbolPosition(i: number) {
         return v3(this.halfSize - i * this.cellSize, 0, 0);
     }
 
-
-    protected sortSibling() {
+    public sortSibling() {
         this.symbols.sort((a, b) => a.node.position.x - b.node.position.x);
         this.symbols.forEach((s, i) => s.node.setSiblingIndex(i));
     }

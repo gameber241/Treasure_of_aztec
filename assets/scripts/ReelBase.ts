@@ -1,6 +1,7 @@
-import { _decorator, Component, UITransform, Vec3, Tween, tween } from 'cc';
+import { _decorator, Component, UITransform, Vec3, Tween, tween, instantiate } from 'cc';
 import { Symbol } from './Symbol';
-const { ccclass } = _decorator;
+import { PrefabManager } from './Manager/PrefabManager';
+const { ccclass, property } = _decorator;
 
 @ccclass('ReelBase')
 export abstract class ReelBase extends Component {
@@ -12,22 +13,29 @@ export abstract class ReelBase extends Component {
     protected totalSize = 0;
     protected halfSize = 0;
 
-    protected _isStartingRoll = false;
     protected _delay = 0.05;
+    protected _isStopping = false;
+    protected _remainSteps = 0;
+
     isRolling = false;
 
-    onLoad() {
+    @property(Number)
+    numberSymbols: number = 9; // dọc = 9, ngang = 8
+
+    protected abstract VISIBLE_COUNT: number;
+    protected abstract FIRST_VISIBLE: number;
+
+    protected start(): void {
+        this.init();
         this.collectSymbols();
         this.rearrangeSymbols();
-        this.scheduleOnce(() => {
-            this.startRoll()
-            this.scheduleOnce(() => {
-                this.stopRoll()
-            }, 1)
-        }, 0.1 * this.node.getSiblingIndex())
+    }
 
-
-
+    init() {
+        for (let i = 0; i < this.numberSymbols; i++) {
+            let symbol = instantiate(PrefabManager.instance.symbolPrefab);
+            this.node.addChild(symbol);
+        }
     }
 
     protected collectSymbols() {
@@ -41,16 +49,11 @@ export abstract class ReelBase extends Component {
             }
         }
 
-        if (this.symbols.length === 0) return;
-
         const ui = this.symbols[0].node.getComponent(UITransform);
         this.cellSize = this.getCellSize(ui) + this.symbolPadding;
         this.totalSize = this.cellSize * this.symbols.length;
-
-        this.computeHalfSize(); // giao cho class con
+        this.computeHalfSize();
     }
-
-    protected abstract computeHalfSize(): void;
 
     protected rearrangeSymbols() {
         for (let s of this.symbols) {
@@ -58,9 +61,10 @@ export abstract class ReelBase extends Component {
         }
     }
 
+    // ================= QUAY =================
     startRoll() {
-        this._isStartingRoll = true;
         this.isRolling = true;
+        this._isStopping = false;
 
         tween(this.node)
             .call(() => {
@@ -68,86 +72,63 @@ export abstract class ReelBase extends Component {
 
                 for (let s of this.symbols) {
                     s.reelIndex++;
+
                     if (s.reelIndex >= this.symbols.length) {
                         s.reelIndex = 0;
                         s.node.position = this.getSymbolPosition(-1);
-                        s.ResetSymbol()
+
+                        if (!this._isStopping) {
+                            s.ResetSymbol(); // random khi chưa vào pha dừng
+                        }
                     }
 
-                    if (this._isStartingRoll) {
-                        this._delay = 0.8;
-                        s.rollToIndex(0.8);
-                    } else {
-                        this._delay = 0.05;
-                        s.rollToIndex(0.05);
+                    s.rollToIndex(this._isStopping ? 0.08 : 0.05);
+                }
+
+                // đếm bước rơi kết quả
+                if (this._isStopping) {
+                    this._remainSteps--;
+                    if (this._remainSteps <= 0) {
+                        this.isRolling = false;
+                        Tween.stopAllByTarget(this.node);
+                        this.sortSibling();
                     }
                 }
             })
             .delay(this._delay)
-            .call(() => {
-                this._isStartingRoll = false;
-                this.sortSibling();
-            })
             .union()
             .repeatForever()
             .start();
     }
 
-    stopRoll(typeAndFaces: any = null, typeAndFacesAbove: any = null) {
-        Tween.stopAllByTarget(this.node);
-        this.isRolling = false;
+    // ================= CHUẨN BỊ DỪNG KIỂU GAME GỐC =================
+    stopRoll(result: any[]) {
+        const total = this.symbols.length;
+        const visible = this.VISIBLE_COUNT;
+        const firstVisible = this.FIRST_VISIBLE;
 
-        // gán kết quả server
-        if (typeAndFaces) {
-            for (let i = 0; i < typeAndFaces.length; i++) {
-                const symbol = this.symbols.find(s => s.reelIndex === i + 3);
-                if (symbol && typeAndFaces[i]) {
-                    symbol.type = typeAndFaces[i].type;
-                    symbol.face = typeAndFaces[i].face;
-                    symbol.refreshVisual();
-                }
+        // Đặt kết quả vào đúng reelIndex sẽ rơi vào khung sau visible bước
+        for (let i = 0; i < visible; i++) {
+            const targetIndex = firstVisible + i;          // index sẽ nằm trong khung
+            let placeIndex = targetIndex - visible;       // vị trí hiện tại cần đặt
+            if (placeIndex < 0) placeIndex += total;      // wrap vòng
+
+            const s = this.symbols.find(sym => sym.reelIndex === placeIndex);
+            const e = result[i];
+            if (s && e) {
+                console.log(s, e)
+                s.InitSymbol(e.i, e.t, e.f, e.ms, e.mi, e.sid);
             }
         }
 
-        if (typeAndFacesAbove) {
-            for (let i = 0; i < typeAndFacesAbove.length; i++) {
-                const symbol = this.symbols.find(s => s.reelIndex === 2 - i);
-                if (symbol && typeAndFacesAbove[i]) {
-                    symbol.type = typeAndFacesAbove[i].type;
-                    symbol.face = typeAndFacesAbove[i].face;
-                    symbol.refreshVisual();
-                }
-            }
-        }
-
-        // snap + tween về vị trí cuối
-        for (let i = 0; i < this.symbols.length; i++) {
-            const s = this.symbols[i];
-            s.reelIndex += 1;
-            if (s.reelIndex === this.symbols.length) {
-                s.reelIndex = 0;
-                s.node.position = this.getSymbolPosition(-1);
-            }
-            // s.rollToIndex(0.25, Symbol.MoveType.STOP);
-        }
-
-        // delay đúng bằng thời gian STOP rồi mới bật bounce
-        for (let s of this.symbols) {
-            s.exploAnim?.();
-        }
-
-    }
-    public getCellSizeValue() {
-        return this.cellSize;
-    }
-
-    public getPositionByIndex(index: number): Vec3 {
-        return this.getSymbolPosition(index);
+        this._isStopping = true;
+        this._remainSteps = visible; // chạy thêm đúng số ô hiển thị
     }
 
     public isHorizontal(): boolean { return false; }
 
-    protected abstract getCellSize(ui: UITransform): number;
-    protected abstract getSymbolPosition(index: number): Vec3;
-    protected abstract sortSibling(): void;
+    public abstract getCellSize(ui: UITransform): number;
+    public abstract computeHalfSize(): void;
+    public abstract getSymbolPosition(index: number): Vec3;
+    public abstract sortSibling(): void;
 }

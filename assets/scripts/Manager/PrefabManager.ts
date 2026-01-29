@@ -13,6 +13,9 @@ export class PrefabManager extends Component {
     @property({ type: Prefab })
     dataSymbls: Prefab = null
 
+    @property(Prefab)
+    symbolPrefab: Prefab = null
+
     datasymbolNode: Node = null
     public GetDataSymbol() {
         if (this.datasymbolNode == null) {
