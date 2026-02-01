@@ -1,0 +1,202 @@
+
+Scence.png
+size: 2356,2312
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+BG_Free
+  rotate: false
+  xy: 2, 670
+  size: 758, 1640
+  orig: 758, 1640
+  offset: 0, 0
+  index: -1
+VFX_Win_light
+  rotate: true
+  xy: 1200, 801
+  size: 417, 422
+  orig: 417, 422
+  offset: 0, 0
+  index: -1
+VFX_megaWin1
+  rotate: false
+  xy: 1305, 94
+  size: 351, 352
+  orig: 351, 352
+  offset: 0, 0
+  index: -1
+VFX_megaWin2
+  rotate: false
+  xy: 1029, 2
+  size: 274, 275
+  orig: 274, 275
+  offset: 0, 0
+  index: -1
+VFX_megaWin3
+  rotate: false
+  xy: 1624, 780
+  size: 213, 212
+  orig: 213, 212
+  offset: 0, 0
+  index: -1
+VFX_superWin1
+  rotate: false
+  xy: 1260, 448
+  size: 353, 351
+  orig: 353, 351
+  offset: 0, 0
+  index: -1
+VFX_superWin2
+  rotate: true
+  xy: 751, 2
+  size: 275, 276
+  orig: 275, 276
+  offset: 0, 0
+  index: -1
+VFX_superWin3
+  rotate: false
+  xy: 2127, 206
+  size: 214, 212
+  orig: 214, 212
+  offset: 0, 0
+  index: -1
+btn_Start
+  rotate: false
+  xy: 1828, 6
+  size: 442, 118
+  orig: 442, 118
+  offset: 0, 0
+  index: -1
+icon_rotate
+  rotate: false
+  xy: 1839, 822
+  size: 200, 200
+  orig: 200, 200
+  offset: 0, 0
+  index: -1
+popup_BigWinD
+  rotate: true
+  xy: 1637, 994
+  size: 747, 151
+  orig: 747, 151
+  offset: 0, 0
+  index: -1
+popup_BigWinU
+  rotate: true
+  xy: 1790, 1037
+  size: 750, 198
+  orig: 750, 198
+  offset: 0, 0
+  index: -1
+popup_BigWin_light1
+  rotate: false
+  xy: 1638, 1789
+  size: 438, 521
+  orig: 438, 521
+  offset: 0, 0
+  index: -1
+popup_BigWin_light2
+  rotate: false
+  xy: 762, 1743
+  size: 436, 567
+  orig: 436, 567
+  offset: 0, 0
+  index: -1
+popup_MegaWinD
+  rotate: true
+  xy: 1658, 35
+  size: 743, 168
+  orig: 743, 168
+  offset: 0, 0
+  index: -1
+popup_MegaWinU
+  rotate: true
+  xy: 2078, 1560
+  size: 750, 235
+  orig: 750, 235
+  offset: 0, 0
+  index: -1
+popup_MegaWin_light1
+  rotate: false
+  xy: 762, 653
+  size: 435, 519
+  orig: 435, 519
+  offset: 0, 0
+  index: -1
+popup_MegaWin_light2
+  rotate: false
+  xy: 762, 1174
+  size: 436, 567
+  orig: 436, 567
+  offset: 0, 0
+  index: -1
+popup_SuperWinD
+  rotate: false
+  xy: 2, 143
+  size: 747, 240
+  orig: 747, 240
+  offset: 0, 0
+  index: -1
+popup_SuperWinU
+  rotate: false
+  xy: 2, 385
+  size: 753, 283
+  orig: 753, 283
+  offset: 0, 0
+  index: -1
+popup_SuperWin_light1
+  rotate: false
+  xy: 1200, 1220
+  size: 435, 521
+  orig: 435, 521
+  offset: 0, 0
+  index: -1
+popup_SuperWin_light2
+  rotate: false
+  xy: 1200, 1743
+  size: 436, 567
+  orig: 436, 567
+  offset: 0, 0
+  index: -1
+text_BigWin
+  rotate: true
+  xy: 2127, 420
+  size: 602, 218
+  orig: 602, 218
+  offset: 0, 0
+  index: -1
+text_MegaWin
+  rotate: false
+  xy: 757, 279
+  size: 501, 372
+  orig: 501, 372
+  offset: 0, 0
+  index: -1
+text_Start1
+  rotate: false
+  xy: 483, 72
+  size: 237, 69
+  orig: 237, 69
+  offset: 0, 0
+  index: -1
+text_SuperWin
+  rotate: true
+  xy: 1990, 1024
+  size: 534, 364
+  orig: 534, 364
+  offset: 0, 0
+  index: -1
+text_free1
+  rotate: true
+  xy: 1828, 126
+  size: 652, 297
+  orig: 652, 297
+  offset: 0, 0
+  index: -1
+text_free2
+  rotate: false
+  xy: 2, 25
+  size: 479, 116
+  orig: 479, 116
+  offset: 0, 0
+  index: -1

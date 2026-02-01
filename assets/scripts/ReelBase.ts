@@ -1,6 +1,7 @@
 import { _decorator, Component, UITransform, Vec3, Tween, tween, instantiate } from 'cc';
 import { Symbol } from './Symbol';
 import { PrefabManager } from './Manager/PrefabManager';
+import { GameManager } from './Manager/GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('ReelBase')
@@ -13,9 +14,12 @@ export abstract class ReelBase extends Component {
     protected totalSize = 0;
     protected halfSize = 0;
 
-    protected _delay = 0.05;
+    protected _delay = 0.03;
     protected _isStopping = false;
     protected _remainSteps = 0;
+
+    @property(Number)
+    possitionReel: number = 0
 
     isRolling = false;
 
@@ -35,6 +39,7 @@ export abstract class ReelBase extends Component {
         for (let i = 0; i < this.numberSymbols; i++) {
             let symbol = instantiate(PrefabManager.instance.symbolPrefab);
             this.node.addChild(symbol);
+
         }
     }
 
@@ -46,6 +51,7 @@ export abstract class ReelBase extends Component {
                 s.reel = this;
                 s.reelIndex = this.symbols.length;
                 this.symbols.push(s);
+                s.ResetSymbol()
             }
         }
 
@@ -77,6 +83,7 @@ export abstract class ReelBase extends Component {
                         s.reelIndex = 0;
                         s.node.position = this.getSymbolPosition(-1);
 
+
                         if (!this._isStopping) {
                             s.ResetSymbol(); // random khi chưa vào pha dừng
                         }
@@ -92,6 +99,11 @@ export abstract class ReelBase extends Component {
                         this.isRolling = false;
                         Tween.stopAllByTarget(this.node);
                         this.sortSibling();
+                        this.playIdleFX()
+                        this.playExplodeFX();
+                        GameManager.instance.StopCount()
+
+
                     }
                 }
             })
@@ -101,29 +113,138 @@ export abstract class ReelBase extends Component {
             .start();
     }
 
+
     // ================= CHUẨN BỊ DỪNG KIỂU GAME GỐC =================
     stopRoll(result: any[]) {
-        const total = this.symbols.length;
-        const visible = this.VISIBLE_COUNT;
-        const firstVisible = this.FIRST_VISIBLE;
+        if (result) {
+            const total = this.symbols.length;
+            const visible = this.VISIBLE_COUNT;
+            const firstVisible = this.FIRST_VISIBLE;
+            const usedSymbols = new Set<any>();
 
-        // Đặt kết quả vào đúng reelIndex sẽ rơi vào khung sau visible bước
-        for (let i = 0; i < visible; i++) {
-            const targetIndex = firstVisible + i;          // index sẽ nằm trong khung
-            let placeIndex = targetIndex - visible;       // vị trí hiện tại cần đặt
-            if (placeIndex < 0) placeIndex += total;      // wrap vòng
+            for (let i = 0; i < visible; i++) {
 
-            const s = this.symbols.find(sym => sym.reelIndex === placeIndex);
-            const e = result[i];
-            if (s && e) {
-                console.log(s, e)
-                s.InitSymbol(e.i, e.t, e.f, e.ms, e.mi, e.sid);
+                if (!result[i]) continue;
+
+                let targetIndex = firstVisible + i;
+                if (targetIndex >= total) {
+                    targetIndex -= total;
+                }
+
+                let placeIndex = targetIndex - visible;
+                while (placeIndex < 0) {
+                    placeIndex += total;
+                }
+
+                const s = this.symbols.find(sym => sym.reelIndex === placeIndex);
+                if (!s) continue;
+
+                const e = result[i];
+                s.InitSymbol(e);
+                usedSymbols.add(s);
+
+                if (this.possitionReel == 0) {
+                    GameManager.instance.symBolArray[5 - (i + 1)][0] = s
+                    s.col = 5 - (i + 1)
+                    s.row = 0
+                }
+                else {
+                    s.col = this.possitionReel - 1
+                    s.row = i + 1
+
+                    GameManager.instance.symBolArray[this.possitionReel - 1][i + 1] = s
+
+
+
+                }
+            }
+            // for (let s of this.symbols) {
+            //     if (!usedSymbols.has(s)) {
+            //         s.HideAll()
+            //     }
+            // }
+            this._isStopping = true;
+            this._remainSteps = visible;
+        }
+
+
+    }
+
+
+
+
+
+    public cascadeDrop(dataAbove: any[]) {
+        let space = 0
+        let max = 7
+        this.symbols = this.symbols.filter(item => item.node !== null);
+        let listSymbok = []
+        if (this.isHorizontal() == false) max = 8
+        for (let i = max; i >= 4; i--) {
+            let s = this.symbols.find(e => e.reelIndex == i)
+            if (s == undefined || s == null) {
+                space++
+            }
+            else {
+                if (space > 0) {
+                    console.log()
+                    s.reelIndex += space
+                    listSymbok.push(s)
+                    if (this.isHorizontal() == true) {
+                        s.row -= space
+                        GameManager.instance.symBolArray[s.col][s.row]
+                    }
+                    else {
+                        s.col += space
+                        GameManager.instance.symBolArray[s.col][s.row]
+                    }
+                }
+
+            }
+        }
+        console.log(space)
+        for (let i = space - 1; i >= 0; i--) {
+            let Symbol = this.createNewSymbol()
+            this.symbols.push(Symbol)
+            Symbol.reelIndex = 4 + i
+            Symbol.node.setPosition(this.getSymbolPosition(4 - (space - i)))
+            Symbol.reel = this
+            console.log(dataAbove)
+            Symbol.InitSymbol(dataAbove[i]);
+            listSymbok.push(Symbol)
+            if (this.isHorizontal() == true) {
+                Symbol.row = 4 - i
+                GameManager.instance.symBolArray[Symbol.col][Symbol.row]
+            }
+            else {
+                Symbol.col = 1 + i
+                GameManager.instance.symBolArray[Symbol.col][Symbol.row]
             }
         }
 
-        this._isStopping = true;
-        this._remainSteps = visible; // chạy thêm đúng số ô hiển thị
+        listSymbok.forEach((e, i) => {
+            this.scheduleOnce(() => {
+                e.DropToindex(0.1)
+
+            }, 0.05 * i)
+
+        }
+        )
+
     }
+
+    returnSymbolArr(result) {
+
+    }
+
+    private createNewSymbol(): Symbol {
+        let symbol = instantiate(PrefabManager.instance.symbolPrefab);
+        this.node.addChild(symbol);
+
+        return symbol.getComponent(Symbol);
+    }
+
+
 
     public isHorizontal(): boolean { return false; }
 
@@ -131,4 +252,31 @@ export abstract class ReelBase extends Component {
     public abstract computeHalfSize(): void;
     public abstract getSymbolPosition(index: number): Vec3;
     public abstract sortSibling(): void;
+
+    protected playMoveFX() {
+        for (let s of this.symbols) {
+            s.fxMove();
+        }
+    }
+
+    protected playIdleFX() {
+        for (let s of this.symbols) {
+            s.fxIdle();
+        }
+    }
+    protected playExplodeFX() {
+
+        const visible = this.VISIBLE_COUNT;
+        const firstVisible = this.FIRST_VISIBLE;
+
+        for (let s of this.symbols) {
+
+            if (
+                s.reelIndex >= firstVisible &&
+                s.reelIndex < firstVisible + visible
+            ) {
+                s.exploAnim && s.exploAnim();
+            }
+        }
+    }
 }

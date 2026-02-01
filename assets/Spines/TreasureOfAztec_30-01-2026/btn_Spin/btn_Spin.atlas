@@ -1,0 +1,76 @@
+
+btn_Spin.png
+size: 412,616
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Glow
+  rotate: false
+  xy: 308, 104
+  size: 38, 37
+  orig: 38, 37
+  offset: 0, 0
+  index: -1
+Layer 1
+  rotate: true
+  xy: 306, 385
+  size: 110, 102
+  orig: 110, 102
+  offset: 0, 0
+  index: -1
+Layer 2
+  rotate: false
+  xy: 2, 120
+  size: 203, 206
+  orig: 203, 206
+  offset: 0, 0
+  index: -1
+Layer 3
+  rotate: false
+  xy: 207, 143
+  size: 180, 183
+  orig: 180, 183
+  offset: 0, 0
+  index: -1
+Layer 4
+  rotate: true
+  xy: 107, 8
+  size: 110, 102
+  orig: 110, 102
+  offset: 0, 0
+  index: -1
+Layer 5
+  rotate: false
+  xy: 2, 2
+  size: 103, 116
+  orig: 103, 116
+  offset: 0, 0
+  index: -1
+Layer 6
+  rotate: false
+  xy: 306, 497
+  size: 103, 115
+  orig: 103, 115
+  offset: 0, 0
+  index: -1
+light_dot3
+  rotate: false
+  xy: 306, 341
+  size: 42, 42
+  orig: 42, 42
+  offset: 0, 0
+  index: -1
+vfx_light1
+  rotate: false
+  xy: 2, 328
+  size: 302, 284
+  orig: 302, 284
+  offset: 0, 0
+  index: -1
+vfx_light2
+  rotate: false
+  xy: 211, 46
+  size: 95, 95
+  orig: 95, 95
+  offset: 0, 0
+  index: -1

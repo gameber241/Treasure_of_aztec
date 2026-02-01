@@ -6,5 +6,11 @@
       "height": 1440,
       "fitHeight": true
     }
-  }
+  },
+  "layer": [
+    {
+      "name": "spines",
+      "value": 64
+    }
+  ]
 }

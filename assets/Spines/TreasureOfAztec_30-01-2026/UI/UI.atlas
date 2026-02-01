@@ -1,0 +1,181 @@
+
+UI.png
+size: 1192,820
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Background_2
+  rotate: true
+  xy: 558, 90
+  size: 262, 143
+  orig: 262, 143
+  offset: 0, 0
+  index: -1
+Background_2_Light
+  rotate: false
+  xy: 968, 2
+  size: 206, 123
+  orig: 206, 123
+  offset: 0, 0
+  index: -1
+Background_5
+  rotate: false
+  xy: 703, 4
+  size: 263, 121
+  orig: 263, 121
+  offset: 0, 0
+  index: -1
+VFX_Textbox/VFX_TextBox_0000_000_
+  rotate: false
+  xy: 762, 771
+  size: 381, 44
+  orig: 381, 44
+  offset: 0, 0
+  index: -1
+VFX_Textbox/VFX_TextBox_0001_000_
+  rotate: false
+  xy: 762, 725
+  size: 381, 44
+  orig: 381, 44
+  offset: 0, 0
+  index: -1
+VFX_Textbox/VFX_TextBox_0002_000_
+  rotate: false
+  xy: 762, 679
+  size: 381, 44
+  orig: 381, 44
+  offset: 0, 0
+  index: -1
+VFX_Textbox/VFX_TextBox_0003_000_
+  rotate: false
+  xy: 762, 633
+  size: 381, 44
+  orig: 381, 44
+  offset: 0, 0
+  index: -1
+VFX_Textbox/VFX_TextBox_0004_000_
+  rotate: false
+  xy: 762, 587
+  size: 381, 44
+  orig: 381, 44
+  offset: 0, 0
+  index: -1
+VFX_Textbox/VFX_TextBox_0005_000_
+  rotate: false
+  xy: 762, 541
+  size: 381, 44
+  orig: 381, 44
+  offset: 0, 0
+  index: -1
+VFX_Textbox/VFX_TextBox_0006_000_
+  rotate: false
+  xy: 762, 495
+  size: 381, 44
+  orig: 381, 44
+  offset: 0, 0
+  index: -1
+VFX_Textbox/VFX_TextBox_0007_000_
+  rotate: false
+  xy: 762, 449
+  size: 381, 44
+  orig: 381, 44
+  offset: 0, 0
+  index: -1
+VFX_Textbox/VFX_TextBox_0008_000_
+  rotate: false
+  xy: 762, 403
+  size: 381, 44
+  orig: 381, 44
+  offset: 0, 0
+  index: -1
+VFX_Textbox/VFX_TextBox_0009_000_
+  rotate: true
+  xy: 1145, 434
+  size: 381, 44
+  orig: 381, 44
+  offset: 0, 0
+  index: -1
+VFX_Textbox/VFX_TextBox_0010_000_
+  rotate: false
+  xy: 762, 357
+  size: 381, 44
+  orig: 381, 44
+  offset: 0, 0
+  index: -1
+VFX_Textbox/VFX_TextBox_0011_000_
+  rotate: false
+  xy: 762, 311
+  size: 381, 44
+  orig: 381, 44
+  offset: 0, 0
+  index: -1
+VFX_Textbox/VFX_TextBox_0012_000_
+  rotate: false
+  xy: 703, 265
+  size: 381, 44
+  orig: 381, 44
+  offset: 0, 0
+  index: -1
+VFX_Textbox/VFX_TextBox_0013_000_
+  rotate: false
+  xy: 703, 219
+  size: 381, 44
+  orig: 381, 44
+  offset: 0, 0
+  index: -1
+VFX_Textbox/VFX_TextBox_0014_000_
+  rotate: false
+  xy: 703, 173
+  size: 381, 44
+  orig: 381, 44
+  offset: 0, 0
+  index: -1
+VFX_Textbox/VFX_TextBox_0015_000_
+  rotate: false
+  xy: 703, 127
+  size: 381, 44
+  orig: 381, 44
+  offset: 0, 0
+  index: -1
+VFX_textbox_light
+  rotate: false
+  xy: 2, 140
+  size: 554, 212
+  orig: 554, 212
+  offset: 0, 0
+  index: -1
+VFX_textbox_light2
+  rotate: false
+  xy: 2, 7
+  size: 548, 131
+  orig: 548, 131
+  offset: 0, 0
+  index: -1
+light_dot2
+  rotate: false
+  xy: 1145, 390
+  size: 42, 42
+  orig: 42, 42
+  offset: 0, 0
+  index: -1
+textBox1
+  rotate: false
+  xy: 2, 482
+  size: 758, 140
+  orig: 758, 140
+  offset: 0, 0
+  index: -1
+textBox2
+  rotate: false
+  xy: 2, 354
+  size: 758, 126
+  orig: 758, 126
+  offset: 0, 0
+  index: -1
+textBox3
+  rotate: false
+  xy: 2, 624
+  size: 758, 191
+  orig: 758, 191
+  offset: 0, 0
+  index: -1

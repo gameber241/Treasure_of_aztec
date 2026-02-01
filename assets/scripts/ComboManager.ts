@@ -11,8 +11,12 @@ export class ComboManager extends Component {
     containCombo: Node = null
     listCombo: Node[] = []
 
-
+    public static instance: ComboManager = null
+    onLoad() {
+        ComboManager.instance = this
+    }
     protected start(): void {
+
         this.setUp()
     }
 
