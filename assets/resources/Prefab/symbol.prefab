@@ -34,14 +34,14 @@
     "_active": true,
     "_components": [
       {
-        "__id__": 26
+        "__id__": 27
       },
       {
-        "__id__": 28
+        "__id__": 29
       }
     ],
     "_prefab": {
-      "__id__": 30
+      "__id__": 31
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -499,7 +499,7 @@
       }
     ],
     "_prefab": {
-      "__id__": 25
+      "__id__": 26
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -590,7 +590,11 @@
     "_timeScale": 1,
     "_preCacheMode": 0,
     "_cacheMode": 0,
-    "_sockets": [],
+    "_sockets": [
+      {
+        "__id__": 25
+      }
+    ],
     "_useTint": false,
     "_debugMesh": false,
     "_debugBones": false,
@@ -602,6 +606,11 @@
   {
     "__type__": "cc.CompPrefabInfo",
     "fileId": "78tp9tozZDcIaYLU1wYe0j"
+  },
+  {
+    "__type__": "sp.Skeleton.SpineSocket",
+    "path": "root/vfx_burst1",
+    "target": null
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -626,7 +635,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 27
+      "__id__": 28
     },
     "_contentSize": {
       "__type__": "cc.Size",
@@ -654,7 +663,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 29
+      "__id__": 30
     },
     "face": 10,
     "frameState": 0,

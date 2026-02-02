@@ -186,30 +186,27 @@ export class Symbol extends Component {
         switch (this.face) {
             case ESymbolFace.WILD:
                 if (this.stackSize == 1) {
-                    name = "icon_Wild1_move"
+                    name = "icon_Wild1_action"
                 }
                 if (this.stackSize == 2) {
-                    name = "icon_Wild2_move"
+                    name = "icon_Wild2_action"
                 }
                 if (this.stackSize == 3) {
-                    name = "icon_Wild3_move"
+                    name = "icon_Wild3_action"
                 }
                 break;
             case ESymbolFace.SCRATCH:
                 if (this.stackSize == 1) {
-                    name = "Icon_Scatter_small_idle"
+                    name = "Icon_Scatter_small_action"
                 }
                 if (this.stackSize == 2) {
-                    name = "Icon_Scatter_big_idle"
+                    name = "Icon_Scatter_big_action"
                 }
                 break
             default:
 
                 break
-
-
         }
-
         return name
     }
 
@@ -371,6 +368,8 @@ export class Symbol extends Component {
 
             .call(() => {
                 this.spine.node.layer = this.layer;
+                this.playAnimation(this.getNameAction(), this.face)
+                this.addAnimation(this.getNameIdle(), true)
             })
             .start();
     }
@@ -491,8 +490,19 @@ export class Symbol extends Component {
     playAnimation(name, loop) {
         if (name != "") {
             this.EnabledAniamtion(true)
-
+            console.log(name)
             this.spine.setAnimation(0, name, loop)
+        }
+        else {
+            this.EnabledAniamtion(false)
+
+        }
+    }
+
+    addAnimation(name, loop) {
+        if (name != "") {
+            this.EnabledAniamtion(true)
+            this.spine.addAnimation(0, name, loop)
         }
         else {
             this.EnabledAniamtion(false)
@@ -538,7 +548,9 @@ export class Symbol extends Component {
         this.playAnimation(name, false)
         this.scheduleOnce(() => {
             this.InitSymbol(data)
-            this.fxIdle()
+            // this.fxIdle()
+            this.playAnimation(this.getNameAction(), false)
+            this.addAnimation(this.getNameIdle(), true)
         }, 1.5)
     }
 }
