@@ -77,7 +77,6 @@ export class Symbol extends Component {
         let name = ""
         switch (this.face) {
             case ESymbolFace.WILD:
-                console.log(this.stackSize, "WILD")
                 if (this.stackSize == 1) {
                     name = "icon_Wild1_idle"
                 }
@@ -89,8 +88,6 @@ export class Symbol extends Component {
                 }
                 break;
             case ESymbolFace.SCRATCH:
-                console.log(this.stackSize, "SCRATCH")
-
                 if (this.stackSize == 1) {
                     name = "Icon_Scatter_small_idle"
                 }
@@ -101,8 +98,6 @@ export class Symbol extends Component {
             default:
 
                 break
-
-
         }
 
         return name
@@ -343,11 +338,11 @@ export class Symbol extends Component {
         this.bg.getComponent(UITransform).setContentSize(124, height)
         this.bg.node.setPosition(0, -height / 2 + 103 / 2)
     }
-    exploAnim(bounce = 10) {
-        if (!this.isRoot || !this.reel) return;
-
-        const node = this.node;
-        Tween.stopAllByTarget(node);
+    exploAnim(bounce = 10, onComplete?: () => void) {
+        if (!this.isRoot || !this.reel) {
+            onComplete && onComplete();
+            return;
+        }
 
         const basePos = this.reel.getSymbolPosition(this.reelIndex);
         const isHorizontal = this.reel.isHorizontal();
@@ -356,23 +351,42 @@ export class Symbol extends Component {
             ? basePos.clone().add3f(bounce, 0, 0)
             : basePos.clone().add3f(0, bounce, 0);
 
-        tween(node)
-            // đảm bảo đang ở đúng vị trí trước khi nảy
+        tween(this.node)
             .set({ position: basePos })
-
-            // nảy lên
             .to(0.08, { position: upPos }, { easing: 'sineOut' })
-
-            // về lại đúng basePos tuyệt đối
             .to(0.08, { position: basePos }, { easing: 'sineIn' })
-
             .call(() => {
-                this.spine.node.layer = this.layer;
-                this.playAnimation(this.getNameAction(), this.face)
-                this.addAnimation(this.getNameIdle(), true)
+                if (GameManager.instance.CheckScratch() == false)
+                    this.spine.node.layer = this.layer
+                else {
+                    if (this.face == ESymbolFace.SCRATCH) {
+                        this.spine.node.layer = this.layer
+                    }
+                }
+                const animNameAction = this.getNameAction();
+                const animNameIdle = this.getNameIdle()
+                if (animNameAction !== "" && animNameIdle != "") {
+
+                    this.spine.setCompleteListener((tracking) => {
+                        if (tracking.animation.name != animNameIdle) return
+                        this.spine.setCompleteListener(null);
+                        // onComplete && onComplete();
+                    });
+
+                    this.playAnimation(animNameAction, false);
+                    this.addAnimation(animNameIdle, true)
+
+                    onComplete && onComplete();
+
+                }
+                else {
+                    onComplete && onComplete();
+                }
+
             })
             .start();
     }
+
 
 
 
@@ -415,7 +429,6 @@ export class Symbol extends Component {
         this.stackSize = data.ms
         this.stackIndex = data.mi
         this.stackId = data.sid
-        console.log("den day ", data)
         this.UpdateUI()
     }
 
@@ -490,7 +503,6 @@ export class Symbol extends Component {
     playAnimation(name, loop) {
         if (name != "") {
             this.EnabledAniamtion(true)
-            console.log(name)
             this.spine.setAnimation(0, name, loop)
         }
         else {
@@ -533,24 +545,48 @@ export class Symbol extends Component {
         this.bg.enabled = false
         this.frame.enabled = false
     }
-    FlipSymbol(data) {
-        let name = ""
-        if (this.stackSize == 1) {
-            name = "icon_size1_action_upgrade"
+    FlipSymbol(data, onComplete?: () => void) {
+
+        let name = "";
+
+        if (this.stackSize == 1) name = "icon_size1_action_upgrade";
+        if (this.stackSize == 2) name = "icon_size2_action_upgrade";
+        if (this.stackSize == 3) name = "icon_size3_action_upgrade";
+
+        if (name === "" || this.stackIndex > 0) {
+            onComplete?.();
+            return;
         }
-        if (this.stackSize == 2) {
-            name = "icon_size2_action_upgrade"
-        }
-        if (this.stackSize == 3) {
-            name = "icon_size3_action_upgrade"
-        }
-        // this.HideAll()
-        this.playAnimation(name, false)
-        this.scheduleOnce(() => {
-            this.InitSymbol(data)
-            // this.fxIdle()
-            this.playAnimation(this.getNameAction(), false)
-            this.addAnimation(this.getNameIdle(), true)
-        }, 1.5)
+
+        this.spine.setCompleteListener(() => {
+
+            // Clear listener
+            this.spine.setCompleteListener(null);
+
+            // Update symbol
+            this.InitSymbol(data);
+
+            // Play action rồi idle
+            this.playAnimation(this.getNameAction(), false);
+            this.addAnimation(this.getNameIdle(), true);
+            this.spine.setCompleteListener((tracking) => {
+                if (tracking.animation.name != this.getNameAction()) return
+                this.spine.setCompleteListener(null);
+                onComplete?.();
+            });
+        });
+
+        this.playAnimation(name, false);
+    }
+
+    PlayIdleScratch() {
+        let name = "";
+
+        if (this.stackSize == 1) name = "Icon_Scatter_small_action_idle";
+        if (this.stackSize == 2) name = "Icon_Scatter_big_action_idle";
+
+        this.playAnimation(name, true);
+
+
     }
 }

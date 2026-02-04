@@ -1,4 +1,4 @@
-import { _decorator, Component, UITransform, Vec3, Tween, tween, instantiate } from 'cc';
+import { _decorator, Component, UITransform, Vec3, Tween, tween, instantiate, Node } from 'cc';
 import { Symbol } from './Symbol';
 import { PrefabManager } from './Manager/PrefabManager';
 import { GameManager } from './Manager/GameManager';
@@ -6,7 +6,8 @@ const { ccclass, property } = _decorator;
 
 @ccclass('ReelBase')
 export abstract class ReelBase extends Component {
-
+    @property(Node)
+    maskEff: Node = null
     protected symbolPadding = 1.5;
     public symbols: Symbol[] = [];
 
@@ -25,6 +26,11 @@ export abstract class ReelBase extends Component {
 
     @property(Number)
     numberSymbols: number = 9; // dọc = 9, ngang = 8
+    private _onFullyStopped: (() => void) | null = null;
+
+    public setOnFullyStopped(cb: () => void) {
+        this._onFullyStopped = cb;
+    }
 
     protected abstract VISIBLE_COUNT: number;
     protected abstract FIRST_VISIBLE: number;
@@ -72,40 +78,67 @@ export abstract class ReelBase extends Component {
         this.isRolling = true;
         this._isStopping = false;
 
+        Tween.stopAllByTarget(this.node);
+
         tween(this.node)
             .call(() => {
+
                 if (!this.isRolling) return;
 
                 for (let s of this.symbols) {
+
                     s.reelIndex++;
 
                     if (s.reelIndex >= this.symbols.length) {
                         s.reelIndex = 0;
                         s.node.position = this.getSymbolPosition(-1);
 
-
                         if (!this._isStopping) {
-                            s.ResetSymbol(); // random khi chưa vào pha dừng
+                            s.ResetSymbol(); // random khi chưa stop
                         }
                     }
 
                     s.rollToIndex(this._isStopping ? 0.08 : 0.05);
                 }
 
-                // đếm bước rơi kết quả
+                // ===== STOP PHASE =====
                 if (this._isStopping) {
                     this._remainSteps--;
+
                     if (this._remainSteps <= 0) {
+
                         this.isRolling = false;
                         Tween.stopAllByTarget(this.node);
-                        this.sortSibling();
-                        this.playIdleFX()
-                        this.playExplodeFX();
-                        GameManager.instance.StopCount()
 
+                        this.snapToFinalPosition();
 
+                        const visibleSymbols = this.symbols.filter(s =>
+                            this.isVisibleIndex(s.reelIndex)
+                        );
+
+                        if (visibleSymbols.length === 0) {
+                            this._onFullyStopped?.();
+                            this._onFullyStopped = null;
+                            return;
+                        }
+
+                        let completed = 0;
+                        this.playIdleFXVisible();
+                        visibleSymbols.forEach(s => {
+                            s.exploAnim(10, () => {
+                                completed++;
+                                if (completed === visibleSymbols.length) {
+                                    // 🔥 chỉ emit event ở đây
+                                    this._onFullyStopped?.();
+                                    this._onFullyStopped = null;
+                                }
+                            });
+                        });
+
+                        return;
                     }
                 }
+
             })
             .delay(this._delay)
             .union()
@@ -113,6 +146,33 @@ export abstract class ReelBase extends Component {
             .start();
     }
 
+    private snapToFinalPosition() {
+        for (let s of this.symbols) {
+            const pos = this.getSymbolPosition(s.reelIndex);
+            s.node.setPosition(pos);
+        }
+
+        this.sortSibling();
+    }
+    private isVisibleIndex(index: number): boolean {
+        const total = this.symbols.length;
+        const start = this.FIRST_VISIBLE;
+        const end = (start + this.VISIBLE_COUNT) % total;
+
+        if (start < end) {
+            return index >= start && index < end;
+        } else {
+            return index >= start || index < end;
+        }
+    }
+
+    protected playIdleFXVisible() {
+        for (let s of this.symbols) {
+            if (this.isVisibleIndex(s.reelIndex)) {
+                s.fxIdle();
+            }
+        }
+    }
 
     // ================= CHUẨN BỊ DỪNG KIỂU GAME GỐC =================
     stopRoll(result: any[]) {
@@ -158,13 +218,10 @@ export abstract class ReelBase extends Component {
 
                 }
             }
-            // for (let s of this.symbols) {
-            //     if (!usedSymbols.has(s)) {
-            //         s.HideAll()
-            //     }
-            // }
+
             this._isStopping = true;
             this._remainSteps = visible;
+
         }
 
 
@@ -187,7 +244,6 @@ export abstract class ReelBase extends Component {
             }
             else {
                 if (space > 0) {
-                    console.log()
                     s.reelIndex += space
                     listSymbok.push(s)
                     if (this.isHorizontal() == true) {
@@ -202,14 +258,12 @@ export abstract class ReelBase extends Component {
 
             }
         }
-        console.log(space)
         for (let i = space - 1; i >= 0; i--) {
             let Symbol = this.createNewSymbol()
             this.symbols.push(Symbol)
             Symbol.reelIndex = 4 + i
             Symbol.node.setPosition(this.getSymbolPosition(4 - (space - i)))
             Symbol.reel = this
-            console.log(dataAbove)
             Symbol.InitSymbol(dataAbove[i]);
             listSymbok.push(Symbol)
             if (this.isHorizontal() == true) {
@@ -230,10 +284,6 @@ export abstract class ReelBase extends Component {
 
         }
         )
-
-    }
-
-    returnSymbolArr(result) {
 
     }
 
@@ -259,24 +309,33 @@ export abstract class ReelBase extends Component {
         }
     }
 
-    protected playIdleFX() {
-        for (let s of this.symbols) {
-            s.fxIdle();
+
+    protected playExplodeFX(onComplete?: () => void) {
+
+        const visibleSymbols = this.symbols.filter(s =>
+            this.isVisibleIndex(s.reelIndex)
+        );
+
+        if (visibleSymbols.length === 0) {
+            onComplete && onComplete();
+            return;
         }
+
+        let completed = 0;
+
+        visibleSymbols.forEach(s => {
+            s.exploAnim(10, () => {
+                completed++;
+
+                if (completed === visibleSymbols.length) {
+                    onComplete && onComplete();
+                }
+            });
+        });
     }
-    protected playExplodeFX() {
 
-        const visible = this.VISIBLE_COUNT;
-        const firstVisible = this.FIRST_VISIBLE;
-
-        for (let s of this.symbols) {
-
-            if (
-                s.reelIndex >= firstVisible &&
-                s.reelIndex < firstVisible + visible
-            ) {
-                s.exploAnim && s.exploAnim();
-            }
-        }
+    protected update(dt: number): void {
+        this.maskEff.setSiblingIndex(999)
     }
+
 }
