@@ -360,7 +360,7 @@ export class Symbol extends Component {
                     this.spine.node.layer = this.layer
                 else {
                     if (this.face == ESymbolFace.SCRATCH) {
-                        this.spine.node.layer = this.layer
+                        this.spine.node.layer = this.layer 
                     }
                 }
                 const animNameAction = this.getNameAction();

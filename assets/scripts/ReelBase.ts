@@ -82,13 +82,9 @@ export abstract class ReelBase extends Component {
 
         tween(this.node)
             .call(() => {
-
                 if (!this.isRolling) return;
-
                 for (let s of this.symbols) {
-
                     s.reelIndex++;
-
                     if (s.reelIndex >= this.symbols.length) {
                         s.reelIndex = 0;
                         s.node.position = this.getSymbolPosition(-1);
@@ -97,31 +93,23 @@ export abstract class ReelBase extends Component {
                             s.ResetSymbol(); // random khi chưa stop
                         }
                     }
-
                     s.rollToIndex(this._isStopping ? 0.08 : 0.05);
                 }
-
                 // ===== STOP PHASE =====
                 if (this._isStopping) {
                     this._remainSteps--;
-
                     if (this._remainSteps <= 0) {
-
                         this.isRolling = false;
                         Tween.stopAllByTarget(this.node);
-
                         this.snapToFinalPosition();
-
                         const visibleSymbols = this.symbols.filter(s =>
                             this.isVisibleIndex(s.reelIndex)
                         );
-
                         if (visibleSymbols.length === 0) {
                             this._onFullyStopped?.();
                             this._onFullyStopped = null;
                             return;
                         }
-
                         let completed = 0;
                         this.playIdleFXVisible();
                         visibleSymbols.forEach(s => {
@@ -134,13 +122,11 @@ export abstract class ReelBase extends Component {
                                 }
                             });
                         });
-
                         return;
                     }
                 }
-
             })
-            .delay(this._delay)
+            .delay((GameManager.instance.isTurbo == false) ? this._delay : 0.03)
             .union()
             .repeatForever()
             .start();
@@ -151,7 +137,6 @@ export abstract class ReelBase extends Component {
             const pos = this.getSymbolPosition(s.reelIndex);
             s.node.setPosition(pos);
         }
-
         this.sortSibling();
     }
     private isVisibleIndex(index: number): boolean {
@@ -214,17 +199,11 @@ export abstract class ReelBase extends Component {
 
                     GameManager.instance.symBolArray[this.possitionReel - 1][i + 1] = s
 
-
-
                 }
             }
-
             this._isStopping = true;
             this._remainSteps = visible;
-
         }
-
-
     }
 
 
@@ -247,17 +226,20 @@ export abstract class ReelBase extends Component {
                     s.reelIndex += space
                     listSymbok.push(s)
                     if (this.isHorizontal() == true) {
-                        s.row -= space
+                        s.col -= space
                         GameManager.instance.symBolArray[s.col][s.row]
                     }
                     else {
-                        s.col += space
+                        console.log(s.col, space, this.possitionReel)
+                        s.row += space
                         GameManager.instance.symBolArray[s.col][s.row]
                     }
                 }
 
             }
         }
+
+        console.log(this.possitionReel, space, dataAbove)
         for (let i = space - 1; i >= 0; i--) {
             let Symbol = this.createNewSymbol()
             this.symbols.push(Symbol)
@@ -279,7 +261,6 @@ export abstract class ReelBase extends Component {
         listSymbok.forEach((e, i) => {
             this.scheduleOnce(() => {
                 e.DropToindex(0.1)
-
             }, 0.05 * i)
 
         }
