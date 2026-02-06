@@ -1,0 +1,707 @@
+
+VFX_Light.png
+size: 1200,1200
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+VFX_Line/VFX_line_0000_000
+  rotate: true
+  xy: 646, 1069
+  size: 129, 470
+  orig: 129, 470
+  offset: 0, 0
+  index: -1
+VFX_Line/VFX_line_0001_000
+  rotate: true
+  xy: 646, 938
+  size: 129, 470
+  orig: 129, 470
+  offset: 0, 0
+  index: -1
+VFX_Line/VFX_line_0002_000
+  rotate: true
+  xy: 646, 807
+  size: 129, 470
+  orig: 129, 470
+  offset: 0, 0
+  index: -1
+VFX_Line/VFX_line_0003_000
+  rotate: true
+  xy: 646, 676
+  size: 129, 470
+  orig: 129, 470
+  offset: 0, 0
+  index: -1
+VFX_Line/VFX_line_0004_000
+  rotate: false
+  xy: 646, 2
+  size: 129, 470
+  orig: 129, 470
+  offset: 0, 0
+  index: -1
+VFX_Line/VFX_line_0005_000
+  rotate: true
+  xy: 646, 545
+  size: 129, 470
+  orig: 129, 470
+  offset: 0, 0
+  index: -1
+VFX_Line/VFX_line_0006_000
+  rotate: false
+  xy: 777, 2
+  size: 129, 470
+  orig: 129, 470
+  offset: 0, 0
+  index: -1
+VFX_Line/VFX_line_0007_000
+  rotate: false
+  xy: 908, 2
+  size: 129, 470
+  orig: 129, 470
+  offset: 0, 0
+  index: -1
+VFX_Line/VFX_line_0008_000
+  rotate: false
+  xy: 1039, 2
+  size: 129, 470
+  orig: 129, 470
+  offset: 0, 0
+  index: -1
+VFX_line2/VFX_line2_11
+  rotate: false
+  xy: 1118, 474
+  size: 80, 240
+  orig: 80, 240
+  offset: 0, 0
+  index: -1
+VFX_line2/VFX_line2_7
+  rotate: false
+  xy: 1118, 958
+  size: 80, 240
+  orig: 80, 240
+  offset: 0, 0
+  index: -1
+VFX_line2/VFX_line2_9
+  rotate: false
+  xy: 1118, 716
+  size: 80, 240
+  orig: 80, 240
+  offset: 0, 0
+  index: -1
+vfx_smoke/sprite 430007
+  rotate: false
+  xy: 2, 22
+  size: 642, 587
+  orig: 642, 587
+  offset: 0, 0
+  index: -1
+vfx_smoke/sprite 430020
+  rotate: false
+  xy: 2, 611
+  size: 642, 587
+  orig: 642, 587
+  offset: 0, 0
+  index: -1
+vfx_smoke/sprite 430019
+  rotate: false
+  xy: 2, 611
+  size: 642, 587
+  orig: 642, 587
+  offset: 0, 0
+  index: -1
+
+VFX_Light2.png
+size: 1200,1180
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+VFX_Line/VFX_line_0009_000
+  rotate: true
+  xy: 646, 1049
+  size: 129, 470
+  orig: 129, 470
+  offset: 0, 0
+  index: -1
+VFX_Line/VFX_line_0010_000
+  rotate: true
+  xy: 646, 918
+  size: 129, 470
+  orig: 129, 470
+  offset: 0, 0
+  index: -1
+VFX_Line/VFX_line_0011_000
+  rotate: true
+  xy: 646, 787
+  size: 129, 470
+  orig: 129, 470
+  offset: 0, 0
+  index: -1
+VFX_Line/VFX_line_0012_000
+  rotate: true
+  xy: 646, 656
+  size: 129, 470
+  orig: 129, 470
+  offset: 0, 0
+  index: -1
+VFX_Line/VFX_line_0013_000
+  rotate: true
+  xy: 646, 525
+  size: 129, 470
+  orig: 129, 470
+  offset: 0, 0
+  index: -1
+VFX_Line/VFX_line_0014_000
+  rotate: true
+  xy: 646, 394
+  size: 129, 470
+  orig: 129, 470
+  offset: 0, 0
+  index: -1
+VFX_Line/VFX_line_0015_000
+  rotate: true
+  xy: 646, 263
+  size: 129, 470
+  orig: 129, 470
+  offset: 0, 0
+  index: -1
+VFX_Line_partical/VFX_Line_Partical_0000_00
+  rotate: false
+  xy: 979, 9
+  size: 179, 140
+  orig: 179, 140
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0000_000
+  rotate: false
+  xy: 646, 16
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_line2/VFX_line2_10
+  rotate: false
+  xy: 1118, 458
+  size: 80, 238
+  orig: 80, 238
+  offset: 0, 0
+  index: -1
+VFX_line2/VFX_line2_12
+  rotate: false
+  xy: 1118, 218
+  size: 80, 238
+  orig: 80, 238
+  offset: 0, 0
+  index: -1
+VFX_line2/VFX_line2_13
+  rotate: false
+  xy: 1118, 938
+  size: 80, 240
+  orig: 80, 240
+  offset: 0, 0
+  index: -1
+VFX_line2/VFX_line2_8
+  rotate: false
+  xy: 1118, 698
+  size: 80, 238
+  orig: 80, 238
+  offset: 0, 0
+  index: -1
+light_Circle
+  rotate: false
+  xy: 979, 151
+  size: 110, 110
+  orig: 110, 110
+  offset: 0, 0
+  index: -1
+vfx_smoke/sprite 430008
+  rotate: false
+  xy: 2, 591
+  size: 642, 587
+  orig: 642, 587
+  offset: 0, 0
+  index: -1
+vfx_smoke/sprite 430009
+  rotate: false
+  xy: 2, 2
+  size: 642, 587
+  orig: 642, 587
+  offset: 0, 0
+  index: -1
+
+VFX_Light3.png
+size: 1184,1196
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+VFX_Line_partical/VFX_Line_Partical_0001_00
+  rotate: true
+  xy: 888, 2
+  size: 179, 140
+  orig: 179, 140
+  offset: 0, 0
+  index: -1
+VFX_Line_partical/VFX_Line_Partical_0002_00
+  rotate: true
+  xy: 1030, 13
+  size: 179, 140
+  orig: 179, 140
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0001_000
+  rotate: false
+  xy: 646, 991
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0002_000
+  rotate: false
+  xy: 646, 789
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0003_000
+  rotate: true
+  xy: 979, 860
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0004_000
+  rotate: false
+  xy: 646, 587
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0005_000
+  rotate: false
+  xy: 646, 385
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0006_000
+  rotate: true
+  xy: 979, 527
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0007_000
+  rotate: false
+  xy: 646, 183
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0008_000
+  rotate: true
+  xy: 979, 194
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_line2/VFX_line2_1
+  rotate: true
+  xy: 646, 99
+  size: 82, 240
+  orig: 82, 240
+  offset: 0, 0
+  index: -1
+VFX_line2/VFX_line2_3
+  rotate: true
+  xy: 646, 15
+  size: 82, 240
+  orig: 82, 240
+  offset: 0, 0
+  index: -1
+vfx_smoke/sprite 430010
+  rotate: false
+  xy: 2, 604
+  size: 642, 587
+  orig: 642, 587
+  offset: 0, 0
+  index: -1
+vfx_smoke/sprite 430011
+  rotate: false
+  xy: 2, 15
+  size: 642, 587
+  orig: 642, 587
+  offset: 0, 0
+  index: -1
+
+VFX_Light4.png
+size: 1184,1196
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+VFX_Line_partical/VFX_Line_Partical_0003_00
+  rotate: true
+  xy: 979, 13
+  size: 179, 140
+  orig: 179, 140
+  offset: 0, 0
+  index: -1
+VFX_Line_partical/VFX_Line_Partical_0004_00
+  rotate: true
+  xy: 646, 2
+  size: 179, 140
+  orig: 179, 140
+  offset: 0, 0
+  index: -1
+VFX_Line_partical/VFX_Line_Partical_0005_00
+  rotate: true
+  xy: 788, 2
+  size: 179, 140
+  orig: 179, 140
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0009_000
+  rotate: false
+  xy: 646, 991
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0010_000
+  rotate: true
+  xy: 979, 860
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0011_000
+  rotate: false
+  xy: 646, 789
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0012_000
+  rotate: true
+  xy: 979, 527
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0013_000
+  rotate: false
+  xy: 646, 587
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0014_000
+  rotate: false
+  xy: 646, 385
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0015_000
+  rotate: true
+  xy: 979, 194
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0016_000
+  rotate: false
+  xy: 646, 183
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+vfx_smoke/sprite 430012
+  rotate: false
+  xy: 2, 604
+  size: 642, 587
+  orig: 642, 587
+  offset: 0, 0
+  index: -1
+vfx_smoke/sprite 430013
+  rotate: false
+  xy: 2, 15
+  size: 642, 587
+  orig: 642, 587
+  offset: 0, 0
+  index: -1
+
+VFX_Light5.png
+size: 1184,1188
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+VFX_Line_partical/VFX_Line_Partical_0006_00
+  rotate: false
+  xy: 979, 712
+  size: 179, 140
+  orig: 179, 140
+  offset: 0, 0
+  index: -1
+VFX_Line_partical/VFX_Line_Partical_0007_00
+  rotate: false
+  xy: 977, 570
+  size: 179, 140
+  orig: 179, 140
+  offset: 0, 0
+  index: -1
+VFX_Line_partical/VFX_Line_Partical_0008_00
+  rotate: false
+  xy: 977, 428
+  size: 179, 140
+  orig: 179, 140
+  offset: 0, 0
+  index: -1
+VFX_Line_partical/VFX_Line_Partical_0009_00
+  rotate: false
+  xy: 977, 286
+  size: 179, 140
+  orig: 179, 140
+  offset: 0, 0
+  index: -1
+VFX_Line_partical/VFX_Line_Partical_0010_00
+  rotate: false
+  xy: 977, 144
+  size: 179, 140
+  orig: 179, 140
+  offset: 0, 0
+  index: -1
+VFX_Line_partical/VFX_Line_Partical_0011_00
+  rotate: false
+  xy: 977, 2
+  size: 179, 140
+  orig: 179, 140
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0017_000
+  rotate: false
+  xy: 646, 985
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0018_000
+  rotate: true
+  xy: 979, 854
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_Textbox2/VFX_Textbox2_0019_000
+  rotate: false
+  xy: 646, 783
+  size: 331, 200
+  orig: 331, 200
+  offset: 0, 0
+  index: -1
+VFX_explo/VFX_explo_0000_000
+  rotate: true
+  xy: 646, 537
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_explo/VFX_explo_0001_000
+  rotate: true
+  xy: 646, 291
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_explo/VFX_explo_0002_000
+  rotate: true
+  xy: 646, 45
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_line2/VFX_line2_2
+  rotate: false
+  xy: 893, 301
+  size: 82, 238
+  orig: 82, 238
+  offset: 0, 0
+  index: -1
+VFX_line2/VFX_line2_4
+  rotate: false
+  xy: 893, 61
+  size: 82, 238
+  orig: 82, 238
+  offset: 0, 0
+  index: -1
+VFX_line2/VFX_line2_5
+  rotate: false
+  xy: 893, 541
+  size: 82, 240
+  orig: 82, 240
+  offset: 0, 0
+  index: -1
+vfx_smoke/sprite 430014
+  rotate: false
+  xy: 2, 598
+  size: 642, 587
+  orig: 642, 587
+  offset: 0, 0
+  index: -1
+vfx_smoke/sprite 430015
+  rotate: false
+  xy: 2, 9
+  size: 642, 587
+  orig: 642, 587
+  offset: 0, 0
+  index: -1
+vfx_smoke/sprite 430016
+  rotate: false
+  xy: 2, 9
+  size: 642, 587
+  orig: 642, 587
+  offset: 0, 0
+  index: -1
+
+VFX_Light6.png
+size: 1140,1172
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+VFX_explo/VFX_explo_0003_000
+  rotate: false
+  xy: 2, 333
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_explo/VFX_explo_0004_000
+  rotate: false
+  xy: 646, 922
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_explo/VFX_explo_0005_000
+  rotate: false
+  xy: 2, 86
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_explo/VFX_explo_0006_000
+  rotate: false
+  xy: 248, 333
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_explo/VFX_explo_0007_000
+  rotate: false
+  xy: 646, 675
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_explo/VFX_explo_0008_000
+  rotate: false
+  xy: 892, 922
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_explo/VFX_explo_0009_000
+  rotate: false
+  xy: 248, 86
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_explo/VFX_explo_0010_000
+  rotate: false
+  xy: 892, 675
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_explo/VFX_explo_0011_000
+  rotate: false
+  xy: 494, 333
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_explo/VFX_explo_0012_000
+  rotate: false
+  xy: 494, 86
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_explo/VFX_explo_0013_000
+  rotate: false
+  xy: 740, 428
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_explo/VFX_explo_0014_000
+  rotate: false
+  xy: 740, 181
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_line2/VFX_line2_14
+  rotate: false
+  xy: 986, 435
+  size: 80, 238
+  orig: 80, 238
+  offset: 0, 0
+  index: -1
+VFX_line2/VFX_line2_6
+  rotate: true
+  xy: 2, 2
+  size: 82, 238
+  orig: 82, 238
+  offset: 0, 0
+  index: -1
+vfx_smoke/sprite 430017
+  rotate: false
+  xy: 2, 580
+  size: 642, 587
+  orig: 642, 587
+  offset: 0, 0
+  index: -1
+vfx_smoke/sprite 430018
+  rotate: false
+  xy: 2, 580
+  size: 642, 587
+  orig: 642, 587
+  offset: 0, 0
+  index: -1
+
+VFX_Light7.png
+size: 740,252
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+VFX_explo/VFX_explo_0015_000
+  rotate: false
+  xy: 2, 2
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_explo/VFX_explo_0016_000
+  rotate: false
+  xy: 248, 2
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1
+VFX_explo/VFX_explo_0017_000
+  rotate: false
+  xy: 494, 2
+  size: 244, 245
+  orig: 244, 245
+  offset: 0, 0
+  index: -1

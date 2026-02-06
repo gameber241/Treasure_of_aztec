@@ -1,4 +1,4 @@
-import { _decorator, Component, Tween, tween, UITransform, Sprite, Enum, Node, Vec2, SpriteFrame, Vec3, randomRangeInt, sp, size, Layers } from 'cc';
+import { _decorator, Component, Tween, tween, UITransform, Sprite, Enum, Node, Vec2, SpriteFrame, Vec3, randomRangeInt, sp, size, Layers, Widget } from 'cc';
 import { ReelBase } from './ReelBase';
 import { PrefabManager } from './Manager/PrefabManager';
 import { ListDataSymbol } from './data/ListDataSymbol';
@@ -56,6 +56,9 @@ export class Symbol extends Component {
     reel: ReelBase = null;
     @property(Number)
     reelIndex: number = 0;
+
+    @property(sp.Skeleton)
+    fxSmoke: sp.Skeleton = null
 
     // Mega stack
     stackId: number = -1;
@@ -218,6 +221,8 @@ export class Symbol extends Component {
         Tween.stopAllByTarget(this.node);
         return tween(this.node)
             .to(time, { position: newPosition })
+            .call(() => {
+            })
             .start();
     }
 
@@ -229,6 +234,15 @@ export class Symbol extends Component {
         return tween(this.node)
             .to(time, { position: newPosition })
             .call(() => {
+                this.fxSmoke.enabled = true
+                this.fxSmoke.setAnimation(0, "VFX_smoke", false)
+                this.fxSmoke.setCompleteListener((tracking) => {
+                    if (tracking.animation.name == "VFX_smoke") {
+                        this.fxSmoke.setCompleteListener(null)
+                        this.fxSmoke.enabled = false
+                    }
+                })
+
                 this.exploAnim(20)
             })
             .start();
@@ -336,6 +350,7 @@ export class Symbol extends Component {
         if (this.reel.isHorizontal() == true) return
         let height = 103 * (this.stackSize)
         this.bg.getComponent(UITransform).setContentSize(124, height)
+        this.fxSmoke.node.getComponent(Widget).updateAlignment()
         this.bg.node.setPosition(0, -height / 2 + 103 / 2)
     }
     exploAnim(bounce = 10, onComplete?: () => void) {
@@ -356,11 +371,13 @@ export class Symbol extends Component {
             .to(0.08, { position: upPos }, { easing: 'sineOut' })
             .to(0.08, { position: basePos }, { easing: 'sineIn' })
             .call(() => {
+
+
                 if (GameManager.instance.CheckScratch() == false)
                     this.spine.node.layer = this.layer
                 else {
                     if (this.face == ESymbolFace.SCRATCH) {
-                        this.spine.node.layer = this.layer 
+                        this.spine.node.layer = this.layer
                     }
                 }
                 const animNameAction = this.getNameAction();

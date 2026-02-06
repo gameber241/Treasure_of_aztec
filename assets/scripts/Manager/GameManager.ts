@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node, tween, UIOpacity } from 'cc';
+import { _decorator, Component, Label, Node, Sprite, SpriteFrame, tween, UIOpacity } from 'cc';
 import { ReelBase } from '../ReelBase';
 import { ComboManager } from '../ComboManager';
 import { Symbol } from '../Symbol';
@@ -25,6 +25,23 @@ export class GameManager extends Component {
 
     @property(Label)
     totalPrice: Label = null
+
+    @property(Node)
+    headerNormal: Node = null
+
+    @property(Node)
+    headerFreeSpines: Node = null
+
+    @property(Node)
+    frameReel1Normal: Node = null
+
+    @property(Node)
+    frameReel1FreeSpin: Node = null
+
+    @property(Node)
+    footFreeSpin: Node = null
+    @property
+
     isTurbo = false
     onLoad() {
         GameManager.instance = this
@@ -428,7 +445,6 @@ export class GameManager extends Component {
             reel.setOnFullyStopped(() => {
                 current++;
                 if (current >= this.reels.length) {
-                    console.log("scroll xong")
                     this.playAnimReelScratch(99)
                     this.scheduleOnce(() => {
                         this.ShowAllReef()
@@ -610,9 +626,15 @@ export class GameManager extends Component {
     public playAnimReelScratch(index) {
         this.reels.forEach((e, i) => {
             if (i == index) {
+                if (e.spinesEff)
+                    e.spinesEff.enabled = true
                 tween(e.maskEff.getComponent(UIOpacity)).to(0.3, { opacity: 0 }).start()
             }
-            else tween(e.maskEff.getComponent(UIOpacity)).to(0.3, { opacity: 255 }).start()
+            else {
+                if (e.spinesEff)
+                    e.spinesEff.enabled = false
+                tween(e.maskEff.getComponent(UIOpacity)).to(0.3, { opacity: 255 }).start()
+            }
         })
     }
 

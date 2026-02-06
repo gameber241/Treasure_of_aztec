@@ -1,4 +1,4 @@
-import { _decorator, Component, UITransform, Vec3, Tween, tween, instantiate, Node } from 'cc';
+import { _decorator, Component, UITransform, Vec3, Tween, tween, instantiate, Node, sp } from 'cc';
 import { Symbol } from './Symbol';
 import { PrefabManager } from './Manager/PrefabManager';
 import { GameManager } from './Manager/GameManager';
@@ -8,6 +8,8 @@ const { ccclass, property } = _decorator;
 export abstract class ReelBase extends Component {
     @property(Node)
     maskEff: Node = null
+    @property(sp.Skeleton)
+    spinesEff: sp.Skeleton = null
     protected symbolPadding = 1.5;
     public symbols: Symbol[] = [];
 
@@ -32,8 +34,8 @@ export abstract class ReelBase extends Component {
         this._onFullyStopped = cb;
     }
 
-    protected abstract VISIBLE_COUNT: number;
-    protected abstract FIRST_VISIBLE: number;
+    public abstract VISIBLE_COUNT: number;
+    public abstract FIRST_VISIBLE: number;
 
     protected start(): void {
         this.init();
