@@ -439,8 +439,9 @@ export class Symbol extends Component {
         this.spine.node.setPosition(0, -ui.height * this.stackSize / 2 + 50, 0)
 
     }
-
+    isInit = false
     InitSymbol(data: SymbolCell) {
+        this.isInit = true
         this.face = data.i
         this.frameState = data.f
         this.stackSize = data.ms
@@ -550,7 +551,88 @@ export class Symbol extends Component {
     }
 
     Dispose() {
+        let time = 2
+        switch (this.face) {
+            case ESymbolFace.ACE:
+                this.iconSymbol.enabled = false
+                this.spine.setSkin("Icon1")
+                this.spine.timeScale = time
+                this.bg.enabled = false
+                break;
+            case ESymbolFace.KING:
+                this.iconSymbol.enabled = false
+                this.spine.setSkin("Icon2")
+                this.spine.timeScale = time
+                this.bg.enabled = false
+
+                break;
+            case ESymbolFace.QUEEN:
+                this.iconSymbol.enabled = false
+                this.spine.timeScale = time
+                this.bg.enabled = false
+
+                this.spine.setSkin("Icon3")
+                break;
+            case ESymbolFace.JACK:
+                this.iconSymbol.enabled = false
+                this.spine.timeScale = time
+                this.bg.enabled = false
+
+                this.spine.setSkin("Icon4")
+                break;
+            case ESymbolFace.TEN:
+                this.iconSymbol.enabled = false
+                this.spine.timeScale = time
+                this.bg.enabled = false
+
+                this.spine.setSkin("Icon5")
+                break;
+            case ESymbolFace.GOLDEN_IDOL:
+                this.iconSymbol.enabled = false
+                this.spine.timeScale = time
+                this.bg.enabled = false
+
+                this.spine.setSkin("Icon11")
+                break;
+
+            case ESymbolFace.GREEN_IDOL:
+                this.iconSymbol.enabled = false
+                this.spine.timeScale = time
+                this.bg.enabled = false
+
+                this.spine.setSkin("Icon10")
+                break;
+            case ESymbolFace.JAGUAR_PINK:
+                this.iconSymbol.enabled = false
+                this.spine.timeScale = time
+                this.bg.enabled = false
+
+                this.spine.setSkin("Icon7")
+                break;
+            case ESymbolFace.MASK_RED:
+                this.iconSymbol.enabled = false
+                this.spine.timeScale = time
+                this.bg.enabled = false
+
+                this.spine.setSkin("Icon6")
+                break;
+            case ESymbolFace.PURPLE_SERPENT:
+                this.iconSymbol.enabled = false
+                this.spine.timeScale = time
+                this.bg.enabled = false
+
+                this.spine.setSkin("Icon9")
+                break;
+            case ESymbolFace.STONE_WHEEL:
+                this.iconSymbol.enabled = false
+                this.spine.timeScale = time
+                this.bg.enabled = false
+
+                this.spine.setSkin("Icon8")
+                break;
+        }
         this.playAnimation(this.getNameWin(), false)
+
         this.scheduleOnce(() => {
             this.node.destroy()
         }, 1.2)

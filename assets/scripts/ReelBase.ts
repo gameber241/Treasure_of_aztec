@@ -79,7 +79,9 @@ export abstract class ReelBase extends Component {
     startRoll() {
         this.isRolling = true;
         this._isStopping = false;
-
+        this.symbols.forEach(e => {
+            e.isInit = false
+        })
         Tween.stopAllByTarget(this.node);
 
         tween(this.node)
@@ -89,11 +91,12 @@ export abstract class ReelBase extends Component {
                     s.reelIndex++;
                     if (s.reelIndex >= this.symbols.length) {
                         s.reelIndex = 0;
-                        s.node.position = this.getSymbolPosition(-1);
-
-                        if (!this._isStopping) {
+                        if (!this._isStopping || s.isInit == false) {
                             s.ResetSymbol(); // random khi chưa stop
                         }
+                        s.node.position = this.getSymbolPosition(-1);
+
+
                     }
                     s.rollToIndex(this._isStopping ? 0.08 : 0.05);
                 }
@@ -128,7 +131,7 @@ export abstract class ReelBase extends Component {
                     }
                 }
             })
-            .delay((GameManager.instance.isTurbo == false) ? this._delay : 0.03)
+            .delay(this._delay)
             .union()
             .repeatForever()
             .start();

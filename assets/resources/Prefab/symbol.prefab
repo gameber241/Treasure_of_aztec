@@ -764,7 +764,7 @@
       "__expectedType__": "sp.SkeletonData"
     },
     "defaultSkin": "default",
-    "defaultAnimation": "icon_size1_idle",
+    "defaultAnimation": "<None>",
     "_premultipliedAlpha": false,
     "_timeScale": 1,
     "_preCacheMode": 0,
@@ -800,6 +800,8 @@
       "__id__": 0
     },
     "fileId": "daKp3/Bc5CzrpLKa370K2M",
+    "instance": null,
+    "targetOverrides": null,
     "nestedPrefabInstanceRoots": null
   },
   {
