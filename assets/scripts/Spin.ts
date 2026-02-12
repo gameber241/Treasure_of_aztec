@@ -70,7 +70,7 @@ export class Spin extends Component {
     }
 
     ActiveSpin() {
-        this.isSpin = true
+        this.isSpin = false
         this.btnMinus.interactable = true
         this.btnPlus.interactable = true
         this.auto.interactable = true
@@ -110,12 +110,16 @@ export class Spin extends Component {
     }
 
     CheckAuto() {
+        console.log(this.count, "check  ")
         if (this.count == 0) {
             this.spAuto.node.active = false
             this.skeletonSpin.node.active = true
             this.skeletonSpin.addAnimation(0, "idle", true)
             this.isAuto = false
             this.countAuto.node.active = false
+            // Spin.instance.ActiveSpin()
+            // GameManager.instance.indexCurrentReel = 0
+            // GameManager.instance.SetNormal()
         }
         else {
             this.PlayResume()

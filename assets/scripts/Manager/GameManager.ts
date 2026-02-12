@@ -8,6 +8,7 @@ import { Spin } from '../Spin';
 import { BigWin } from '../BigWin';
 import { FreeSpines } from '../FreeSpines';
 import { AutoCtrl } from '../AutoCtrl';
+import { H_story } from '../Hístory';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameManager')
@@ -26,6 +27,8 @@ export class GameManager extends Component {
 
     @property(Label)
     totalPrice: Label = null
+    @property(Label)
+    totalPriceBot: Label = null
 
     @property(Node)
     headerNormal: Node = null
@@ -58,6 +61,7 @@ export class GameManager extends Component {
         GameManager.instance = this
     }
     protected start(): void {
+        this.UpdatePrice()
         this.SetNormal()
         this.initGrid()
 
@@ -1519,7 +1523,6 @@ export class GameManager extends Component {
             if (this.sampleJson.rounds[this.indexCurrentReel].totalPrice && this.sampleJson.rounds[this.indexCurrentReel].totalPrice > 0 && this.sampleJson.rounds[this.indexCurrentReel].isScratch) {
                 FreeSpines.instance.ShowTotalSpin(() => {
                     this.CheckContinueSpin()
-
                 }, 4000)
             }
             else {
@@ -1531,22 +1534,20 @@ export class GameManager extends Component {
     }
 
     CheckContinueSpin() {
-        if (this.sampleJson.rounds.length - 1 > this.indexCurrentReel) {
-            this.indexCurrentReel++
-            this.PlaySpin()
-        }
-        else {
-            this.indexCurrentReel = 0
-            this.SetNormal()
-            if (Spin.instance.isAuto == false) {
-                Spin.instance.ActiveSpin()
-
+        if (Spin.instance.isAuto == false) {
+            console.log("den day", this.sampleJson.rounds.length - 1 > this.indexCurrentReel)
+            if (this.sampleJson.rounds.length - 1 > this.indexCurrentReel) {
+                this.indexCurrentReel++
+                this.PlaySpin()
             }
             else {
-                Spin.instance.CheckAuto()
+                Spin.instance.ActiveSpin()
+                this.indexCurrentReel = 0
+                this.SetNormal()
             }
-
-
+        }
+        else {
+            Spin.instance.CheckAuto()
         }
     }
 
@@ -1655,6 +1656,33 @@ export class GameManager extends Component {
 
     public ShowAuto() {
         this.UiAuto.show()
+    }
+
+    priceOffset = 2000
+    priceCurrent = 10000
+    priceMax = 20000
+    BtnMinus() {
+        if (this.priceCurrent > this.priceOffset) {
+            this.priceCurrent -= this.priceOffset
+            this.UpdatePrice()
+        }
+    }
+
+    BtnPlus() {
+        if (this.priceCurrent < this.priceMax) {
+            this.priceCurrent += this.priceOffset
+            this.UpdatePrice()
+        }
+    }
+
+    UpdatePrice() {
+        this.totalPrice.string = this.priceCurrent.toString()
+        this.totalPriceBot.string = this.priceCurrent.toString()
+    }
+
+    @property(Node) history: Node = null
+    BtnHistory() {
+        this.history.getComponent(H_story).show()
     }
 
 }

@@ -58,10 +58,10 @@ export class FreeSpines extends Component {
         this.totlSpines.setCompleteListener((tracking) => {
             if (tracking.animation.name != "_TotalWin_Idle") return
             this.totlSpines.setCompleteListener(null)
-            this.scheduleOnce(() => {
-                this.totlSpines.node.active = false
-                callback?.()
-            }, 2)
+
+            // this.scheduleOnce(() => {
+            //     callback?.()
+            // }, 2)
         });
     }
 
@@ -125,9 +125,7 @@ export class FreeSpines extends Component {
         console.log("den day ne")
         // delay hide giống slot
         this.scheduleOnce(() => {
-            this.totlSpines.node.active = false;
-            console.log(callback, "check")
-            callback?.();
+            this.totlSpines.node.active = false; callback?.();
         }, 2);
     }
 
