@@ -2,6 +2,8 @@ import { _decorator, Component, UITransform, Vec3, Tween, tween, instantiate, No
 import { Symbol } from './Symbol';
 import { PrefabManager } from './Manager/PrefabManager';
 import { GameManager } from './Manager/GameManager';
+import { SoundManager } from './SoundManager';
+import { SoundToggle } from './Sound';
 const { ccclass, property } = _decorator;
 
 @ccclass('ReelBase')
@@ -91,19 +93,20 @@ export abstract class ReelBase extends Component {
                     s.reelIndex++;
                     if (s.reelIndex >= this.symbols.length) {
                         s.reelIndex = 0;
-                        if (!this._isStopping || s.isInit == false) {
+                        if (!this._isStopping) {
                             s.ResetSymbol(); // random khi chưa stop
                         }
                         s.node.position = this.getSymbolPosition(-1);
 
 
                     }
-                    s.rollToIndex(this._isStopping ? 0.08 : 0.05);
+                    s.rollToIndex(0.05);
                 }
                 // ===== STOP PHASE =====
                 if (this._isStopping) {
                     this._remainSteps--;
                     if (this._remainSteps <= 0) {
+                        SoundToggle.instance.PlayRoll()
                         this.isRolling = false;
                         Tween.stopAllByTarget(this.node);
                         this.snapToFinalPosition();
@@ -268,8 +271,7 @@ export abstract class ReelBase extends Component {
                 e.DropToindex(0.1)
             }, 0.05 * i)
 
-        }
-        )
+        })
 
     }
 

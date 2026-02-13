@@ -9,6 +9,7 @@ import { BigWin } from '../BigWin';
 import { FreeSpines } from '../FreeSpines';
 import { AutoCtrl } from '../AutoCtrl';
 import { H_story } from '../Hístory';
+import { SoundToggle } from '../Sound';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameManager')
@@ -175,9 +176,9 @@ export class GameManager extends Component {
                 ],
                 stepWin: 2000
             },
-            BigWin: 0,
-            MegaWin: 0,
-            SuperWin: 0,
+            BigWin: 300,
+            MegaWin: 1000,
+            SuperWin: 100000,
             flips: [],
             copies: [],
             hasNext: false
@@ -1335,7 +1336,7 @@ export class GameManager extends Component {
                 this.scheduleOnce(() => {
                     reel.startRoll();
 
-                }, (this.isTurbo == false) ? 0.1 : 0.03)
+                }, (this.isTurbo == false) ? 0.3 : 0.16)
             });
             let stoppedPhase1 = 0;
             let phase1Count = indexReel + 1;
@@ -1355,7 +1356,7 @@ export class GameManager extends Component {
                 });
                 this.scheduleOnce(() => {
                     this.reels[i].stopRoll(grid[i]);
-                }, (this.isTurbo == false) ? (1 + 0.3 * i) : (0.2 + 0.2 * i))
+                }, (this.isTurbo == false) ? (1 + 0.3 * i) : (0.16 + 0.16 * i))
             }
 
         }
@@ -1364,10 +1365,11 @@ export class GameManager extends Component {
     private stopPhase2(index: number, grid) {
         let current = index + 1;
         this.playAnimReelScratch(current)
-        let time = 2
+        SoundToggle.instance.PlayRollScatch()
+
+        let time = 4
         const stopNext = () => {
             const reel = this.reels[current];
-
             reel.setOnFullyStopped(() => {
                 current++;
                 reel.symbols.forEach(e => {
@@ -1388,7 +1390,9 @@ export class GameManager extends Component {
                         }
                         this.scheduleOnce(() => {
                             if (this.sampleJson.rounds[this.indexCurrentReel].freeSpin > 0) {
+                                SoundToggle.instance.playFreewin()
                                 FreeSpines.instance.playAnimation(() => {
+
                                     this.SetFreeSpines()
                                     this.PlayFreeSpin(this.sampleJson.rounds[this.indexCurrentReel].freeSpin)
                                     this.scheduleOnce(() => {
@@ -1406,6 +1410,8 @@ export class GameManager extends Component {
                     }, 0.4)
                     return;
                 }
+                SoundToggle.instance.PlayRollScatch()
+
                 this.playAnimReelScratch(current)
                 this.scheduleOnce(() => {
                     stopNext();
@@ -1451,6 +1457,10 @@ export class GameManager extends Component {
             return;
         }
         let completed = 0;
+        this.scheduleOnce(() => {
+            SoundToggle.instance.PlayChangeSymbol()
+
+        }, 0.7)
         dataRound.forEach(e => {
             const symbol = this.symBolArray[e.from.c][e.from.r];
             symbol.FlipSymbol(e.to, () => {
@@ -1465,7 +1475,7 @@ export class GameManager extends Component {
 
     ClearData() {
         let dataRound = this.sampleJson.rounds[this.indexCurrentReel].win.positions
-
+        SoundToggle.instance.PlaySymbolWin()
         dataRound.forEach(e => {
             if (this.symBolArray[e.c][e.r])
                 this.symBolArray[e.c][e.r].Dispose()
@@ -1473,6 +1483,7 @@ export class GameManager extends Component {
         this.scheduleOnce(() => {
             if (this.sampleJson.rounds[this.indexCurrentReel].flips.length > 0) {
                 this.FlipData(() => {
+                    SoundToggle.instance.PlaySymbolDrop()
                     this.reels.forEach((e, index) => {
                         e.cascadeDrop(this.sampleJson.rounds[this.indexCurrentReel].above[index]);
                     });
@@ -1485,7 +1496,8 @@ export class GameManager extends Component {
             else {
                 console.log(this.sampleJson.rounds[this.indexCurrentReel].above)
                 this.reels.forEach((e, index) => {
-                    this.scheduleOnce(() => { })
+                    SoundToggle.instance.PlaySymbolDrop()
+
                     e.cascadeDrop(this.sampleJson.rounds[this.indexCurrentReel].above[index])
                 })
                 this.scheduleOnce(() => {
@@ -1501,11 +1513,19 @@ export class GameManager extends Component {
 
     ShowBigWin() {
         if (this.sampleJson.rounds[this.indexCurrentReel].BigWin > 0) {
+            SoundToggle.instance.playBigWin()
             BigWin.instance.showBigWin(() => {
+
                 if (this.sampleJson.rounds[this.indexCurrentReel].MegaWin > 0) {
+                    SoundToggle.instance.playBigWin()
+
                     BigWin.instance.showMegaWin(() => {
+
                         if (this.sampleJson.rounds[this.indexCurrentReel].SuperWin > 0) {
+                            SoundToggle.instance.playBigWin()
+
                             BigWin.instance.showSuperWin(() => {
+
                                 this.CheckContinueSpin()
                             }, this.sampleJson.rounds[this.indexCurrentReel].SuperWin)
                         }
@@ -1521,7 +1541,10 @@ export class GameManager extends Component {
         }
         else {
             if (this.sampleJson.rounds[this.indexCurrentReel].totalPrice && this.sampleJson.rounds[this.indexCurrentReel].totalPrice > 0 && this.sampleJson.rounds[this.indexCurrentReel].isScratch) {
+                SoundToggle.instance.playTotalWin()
                 FreeSpines.instance.ShowTotalSpin(() => {
+                    SoundToggle.instance.stopTotalWIn()
+
                     this.CheckContinueSpin()
                 }, 4000)
             }
@@ -1535,7 +1558,6 @@ export class GameManager extends Component {
 
     CheckContinueSpin() {
         if (Spin.instance.isAuto == false) {
-            console.log("den day", this.sampleJson.rounds.length - 1 > this.indexCurrentReel)
             if (this.sampleJson.rounds.length - 1 > this.indexCurrentReel) {
                 this.indexCurrentReel++
                 this.PlaySpin()
@@ -1601,8 +1623,12 @@ export class GameManager extends Component {
             tween(e.maskEff.getComponent(UIOpacity)).to(0.3, { opacity: 0 }).start()
         })
     }
-
+    isFree = false
     public SetNormal() {
+        if (this.isFree == true) {
+            SoundToggle.instance.playNormal()
+            this.isFree = false
+        }
         this.headerNormal.active = true
         this.headerFreeSpines.active = false
         this.frameReel1Normal.active = true
@@ -1612,6 +1638,7 @@ export class GameManager extends Component {
     }
 
     public SetFreeSpines() {
+        this.isFree = true
         this.headerNormal.active = false
         this.headerFreeSpines.active = true
         this.frameReel1Normal.active = false

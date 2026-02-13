@@ -6,6 +6,7 @@ import { dataSymbol } from './data/dataSymbol';
 import { ESymbolFace } from './ESymbolFace';
 import { GameManager } from './Manager/GameManager';
 import { SymbolCell } from './SymbolCell';
+import { SoundToggle } from './Sound';
 
 const { ccclass, property, executeInEditMode } = _decorator;
 
@@ -354,6 +355,10 @@ export class Symbol extends Component {
         this.bg.node.setPosition(0, -height / 2 + 103 / 2)
     }
     exploAnim(bounce = 10, onComplete?: () => void) {
+        if (this.face == ESymbolFace.SCRATCH) {
+            SoundToggle.instance.PlayScatchIdle()
+
+        }
         if (!this.isRoot || !this.reel) {
             onComplete && onComplete();
             return;
@@ -382,12 +387,12 @@ export class Symbol extends Component {
                 }
                 const animNameAction = this.getNameAction();
                 const animNameIdle = this.getNameIdle()
+
                 if (animNameAction !== "" && animNameIdle != "") {
 
                     this.spine.setCompleteListener((tracking) => {
                         if (tracking.animation.name != animNameIdle) return
                         this.spine.setCompleteListener(null);
-                        // onComplete && onComplete();
                     });
 
                     this.playAnimation(animNameAction, false);
@@ -680,10 +685,8 @@ export class Symbol extends Component {
 
     PlayIdleScratch() {
         let name = "";
-
         if (this.stackSize == 1) name = "Icon_Scatter_small_action_idle";
         if (this.stackSize == 2) name = "Icon_Scatter_big_action_idle";
-
         this.playAnimation(name, true);
 
 

@@ -1,4 +1,5 @@
 import { _decorator, Component, Input, Label, sp, Tween, tween } from 'cc';
+import { SoundToggle } from './Sound';
 const { ccclass, property } = _decorator;
 
 @ccclass('BigWin')
@@ -135,12 +136,13 @@ export class BigWin extends Component {
             this.node.off(Input.EventType.TOUCH_END, this.touchHandler, this);
             this.touchHandler = null;
         }
-
+        SoundToggle.instance.stopBigwin()
+        SoundToggle.instance.PlayBustCoin()
         // delay hide giống slot
         this.scheduleOnce(() => {
             this.node.children[0].active = false;
             callback?.();
-        }, 2);
+        }, 3);
     }
 
     // =============================

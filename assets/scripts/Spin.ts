@@ -1,5 +1,6 @@
 import { _decorator, Button, Component, Input, Label, Node, sp } from 'cc';
 import { GameManager } from './Manager/GameManager';
+import { SoundToggle } from './Sound';
 const { ccclass, property } = _decorator;
 
 @ccclass('Spin')
@@ -55,6 +56,7 @@ export class Spin extends Component {
     isSpin = false
     TouchEnd() {
         if (this.isSpin == true) return
+        SoundToggle.instance.PlaySpin()
         this.PlaySpin()
         this.skeletonSpin.setAnimation(0, "action", false)
         this.skeletonSpin.addAnimation(0, "idle", true)
