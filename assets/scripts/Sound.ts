@@ -63,12 +63,6 @@ export class SoundToggle extends Component {
     }
     start() {
         // Lấy trạng thái đã lưu
-
-        const saved = localStorage.getItem("bg_sound");
-        if (saved !== null) {
-            this.isSound = saved === "true";
-        }
-
         this.updateState();
 
         this.playNormal()
@@ -77,9 +71,6 @@ export class SoundToggle extends Component {
     btnClick() {
         this.isSound = !this.isSound;
         this.updateState();
-
-        // Lưu lại trạng thái
-        localStorage.setItem("bg_sound", this.isSound.toString());
     }
 
     private updateState() {
