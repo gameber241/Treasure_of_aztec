@@ -17,6 +17,7 @@ export enum SymbolFrameState {
     GOLD = 3,     // mega vàng
     WILD = 4      // biến thành wild
 }
+
 export enum StateSymbol {
     IDLE = 0,
     MOVE = 1,
@@ -556,6 +557,14 @@ export class Symbol extends Component {
     }
 
     Dispose() {
+        console.log(`[Symbol.Dispose] Disposing symbol at col:${this.col}, row:${this.row}, face:${this.face}, stackSize:${this.stackSize}`);
+
+        // Check if already disposed
+        if (!this.node || !this.bg || !this.iconSymbol || !this.spine) {
+            console.warn(`[Symbol.Dispose] Symbol already disposed or not initialized`);
+            return;
+        }
+
         let time = 2
         switch (this.face) {
             case ESymbolFace.ACE:

@@ -170,6 +170,11 @@ export abstract class ReelBase extends Component {
     // ================= CHUẨN BỊ DỪNG KIỂU GAME GỐC =================
     stopRoll(result: any[]) {
         if (result) {
+            // Horizontal reel visual: reelIndex 0=rightmost, 3=leftmost
+            // Server: result[0]=leftmost, result[3]=rightmost
+            // Reverse for horizontal to match visual layout
+            const processedResult = this.isHorizontal() ? [...result].reverse() : result;
+
             const total = this.symbols.length;
             const visible = this.VISIBLE_COUNT;
             const firstVisible = this.FIRST_VISIBLE;
@@ -177,7 +182,7 @@ export abstract class ReelBase extends Component {
 
             for (let i = 0; i < visible; i++) {
 
-                if (!result[i]) continue;
+                if (!processedResult[i]) continue;
 
                 let targetIndex = firstVisible + i;
                 if (targetIndex >= total) {
@@ -192,13 +197,16 @@ export abstract class ReelBase extends Component {
                 const s = this.symbols.find(sym => sym.reelIndex === placeIndex);
                 if (!s) continue;
 
-                const e = result[i];
+                const e = processedResult[i];
                 s.InitSymbol(e);
                 usedSymbols.add(s);
 
                 if (this.possitionReel == 0) {
-                    GameManager.instance.symBolArray[5 - (i + 1)][0] = s
-                    s.col = 5 - (i + 1)
+                    // After reverse: processedResult[0]=rightmost, processedResult[3]=leftmost
+                    // Map to symBolArray: col 4=rightmost, col 1=leftmost
+                    const col = 4 - i;  // i=0→col=4, i=1→col=3, i=2→col=2, i=3→col=1
+                    GameManager.instance.symBolArray[col][0] = s
+                    s.col = col
                     s.row = 0
                 }
                 else {
@@ -219,60 +227,100 @@ export abstract class ReelBase extends Component {
 
 
     public cascadeDrop(dataAbove: any[]) {
-        let space = 0
-        let max = 7
         this.symbols = this.symbols.filter(item => item.node !== null);
         let listSymbok = []
-        if (this.isHorizontal() == false) max = 8
-        for (let i = max; i >= 4; i--) {
-            let s = this.symbols.find(e => e.reelIndex == i)
-            if (s == undefined || s == null) {
-                space++
+
+        if (this.isHorizontal()) {
+            // Horizontal reel: reverse above to match visual layout
+            const reversedAbove = [...dataAbove].reverse();
+
+            // Get remaining symbols from symBolArray (not disposed)
+            let remainingSymbols = [];
+            for (let col = 1; col <= 4; col++) {
+                const s = GameManager.instance.symBolArray[col][0];
+                if (s && s.node && s.node.isValid) {
+                    remainingSymbols.push({ symbol: s, oldCol: col });
+                }
             }
-            else {
-                if (space > 0) {
-                    s.reelIndex += space
-                    listSymbok.push(s)
-                    if (this.isHorizontal() == true) {
-                        s.col -= space
-                        GameManager.instance.symBolArray[s.col][s.row]
-                    }
-                    else {
-                        console.log(s.col, space, this.possitionReel)
-                        s.row += space
-                        GameManager.instance.symBolArray[s.col][s.row]
+
+            // Clear symBolArray
+            for (let col = 1; col <= 4; col++) {
+                GameManager.instance.symBolArray[col][0] = null;
+            }
+
+            // Reassign remaining symbols to leftmost columns (slide left)
+            remainingSymbols.forEach((item, index) => {
+                const s = item.symbol;
+                const newCol = index + 1;
+                const newReelIndex = 8 - newCol;  // col 1→reelIndex 7, col 2→6, etc
+
+                s.col = newCol;
+                s.reelIndex = newReelIndex;
+                GameManager.instance.symBolArray[newCol][0] = s;
+
+                // Always add to listSymbok to trigger animation
+                listSymbok.push(s);
+            });
+
+            // Add above symbols to rightmost positions
+            const startCol = remainingSymbols.length + 1;
+            reversedAbove.forEach((data, i) => {
+                const Symbol = this.createNewSymbol();
+                this.symbols.push(Symbol);
+
+                const col = startCol + i;
+                const finalReelIndex = 8 - col;
+
+                // Start from outside visible area (low reelIndex = far right)
+                Symbol.reelIndex = finalReelIndex;
+                Symbol.node.setPosition(this.getSymbolPosition(finalReelIndex - reversedAbove.length));
+                Symbol.reel = this;
+                Symbol.InitSymbol(data);
+                listSymbok.push(Symbol);
+
+                Symbol.col = col;
+                Symbol.row = 0;
+                GameManager.instance.symBolArray[col][0] = Symbol;
+            });
+        } else {
+            // Vertical reel: drop down, fill from top
+            let space = 0;
+            let max = 8;
+
+            for (let i = max; i >= 4; i--) {
+                let s = this.symbols.find(e => e.reelIndex == i);
+                if (s == undefined || s == null) {
+                    space++;
+                } else {
+                    if (space > 0) {
+                        s.reelIndex += space;
+                        listSymbok.push(s);
+                        s.row += space;
+                        GameManager.instance.symBolArray[s.col][s.row] = s;
                     }
                 }
-
             }
-        }
 
-        console.log(this.possitionReel, space, dataAbove)
-        for (let i = space - 1; i >= 0; i--) {
-            let Symbol = this.createNewSymbol()
-            this.symbols.push(Symbol)
-            Symbol.reelIndex = 4 + i
-            Symbol.node.setPosition(this.getSymbolPosition(4 - (space - i)))
-            Symbol.reel = this
-            Symbol.InitSymbol(dataAbove[i]);
-            listSymbok.push(Symbol)
-            if (this.isHorizontal() == true) {
-                Symbol.row = 4 - i
-                GameManager.instance.symBolArray[Symbol.col][Symbol.row]
-            }
-            else {
-                Symbol.col = 1 + i
-                GameManager.instance.symBolArray[Symbol.col][Symbol.row]
+            for (let i = space - 1; i >= 0; i--) {
+                let Symbol = this.createNewSymbol();
+                this.symbols.push(Symbol);
+                Symbol.reelIndex = 4 + i;
+                Symbol.node.setPosition(this.getSymbolPosition(4 - (space - i)));
+                Symbol.reel = this;
+                Symbol.InitSymbol(dataAbove[i]);
+                listSymbok.push(Symbol);
+
+                Symbol.col = this.possitionReel - 1;
+                Symbol.row = space - i;
+                GameManager.instance.symBolArray[Symbol.col][Symbol.row] = Symbol;
             }
         }
 
         listSymbok.forEach((e, i) => {
             this.scheduleOnce(() => {
-                e.DropToindex(0.1)
-            }, 0.05 * i)
-
-        })
-
+                e.DropToindex(0.1);
+            }, 0.05 * i);
+        });
     }
 
     private createNewSymbol(): Symbol {
