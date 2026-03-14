@@ -1,7 +1,10 @@
 // Game Configuration for Treasures of Aztec
 export const GameConfig = {
-    url_api: "http://localhost:3000",
-    url_ws: "ws://localhost:3001",
+    // url_api: "http://localhost:3000",
+    // url_ws: "ws://localhost:3001", 
+    
+    url_api: "https://server.kjcgame.com",
+    url_ws: "wss://ws.kjcgame.com",
 
     gameName: "Treasures of Aztec",
     gameId: "1004",
