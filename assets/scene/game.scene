@@ -706,7 +706,7 @@
       "__id__": 20
     },
     "possitionReel": 1,
-    "numberSymbols": 13,
+    "numberSymbols": 15,
     "_id": "38ibkp8RNPZpC49W8liDDi"
   },
   {
@@ -2663,7 +2663,7 @@
       "__id__": 28
     },
     "possitionReel": 2,
-    "numberSymbols": 13,
+    "numberSymbols": 15,
     "_id": "72zr7P7QtENKF1abV/sekT"
   },
   {
@@ -2753,7 +2753,7 @@
       "__id__": 36
     },
     "possitionReel": 3,
-    "numberSymbols": 13,
+    "numberSymbols": 15,
     "_id": "32D/O7j8pMrpk5DMNdrBAB"
   },
   {
@@ -2843,7 +2843,7 @@
       "__id__": 44
     },
     "possitionReel": 4,
-    "numberSymbols": 13,
+    "numberSymbols": 15,
     "_id": "96KtwQP49IOL2C+6ZvANNe"
   },
   {
@@ -2933,7 +2933,7 @@
       "__id__": 52
     },
     "possitionReel": 5,
-    "numberSymbols": 13,
+    "numberSymbols": 15,
     "_id": "1cy1pPwdNO5ZcO2TGsXIkX"
   },
   {
@@ -3023,7 +3023,7 @@
       "__id__": 60
     },
     "possitionReel": 6,
-    "numberSymbols": 13,
+    "numberSymbols": 15,
     "_id": "aflEDbGx5LOJKFs/cn4rZy"
   },
   {
@@ -23615,6 +23615,7 @@
     "priceTienCuoc": {
       "__id__": 628
     },
+    "priceWin": null,
     "totalPrice": {
       "__id__": 628
     },

@@ -1,4 +1,4 @@
-import { _decorator, Component, Tween, tween, UITransform, Sprite, Enum, Node, Vec2, SpriteFrame, Vec3, randomRangeInt, sp, size, Layers, Widget } from 'cc';
+import { _decorator, Component, Tween, tween, UITransform, Sprite, Enum, Node, Vec2, SpriteFrame, Vec3, randomRangeInt, sp, size, Layers, Widget, Color } from 'cc';
 import { ReelBase } from './ReelBase';
 import { PrefabManager } from './Manager/PrefabManager';
 import { ListDataSymbol } from './data/ListDataSymbol';
@@ -7,16 +7,9 @@ import { ESymbolFace } from './ESymbolFace';
 import { GameManager } from './Manager/GameManager';
 import { SymbolCell } from './SymbolCell';
 import { SoundToggle } from './Sound';
+import { SymbolFrameState } from './Enum/SymbolFrameState';
 
 const { ccclass, property, executeInEditMode } = _decorator;
-
-export enum SymbolFrameState {
-    NORMAL = 0,   // bình thường
-    SCRATCH = 1,  // scatter frame
-    SILVER = 2,   // mega bạc
-    GOLD = 3,     // mega vàng
-    WILD = 4      // biến thành wild
-}
 
 export enum StateSymbol {
     IDLE = 0,
@@ -28,8 +21,35 @@ export enum StateSymbol {
 }
 
 
+
+const SymbolAnim = {
+    WILD: {
+        idle: ["icon_Wild1_idle", "icon_Wild2_idle", "icon_Wild3_idle"],
+        move: ["icon_Wild1_move", "icon_Wild2_move", "icon_Wild3_move"],
+        action: ["icon_Wild1_appear", "icon_Wild2_appear", "icon_Wild3_appear"],
+        win: ["icon_Wild1_action", "icon_Wild2_action", "icon_Wild3_action"]
+    },
+    SCRATCH: {
+        idle: ["Icon_Scatter_small_idle", "Icon_Scatter_big_idle"],
+        move: ["Icon_Scatter_small_idle", "Icon_Scatter_big_idle"],
+        action: ["Icon_Scatter_small_action", "Icon_Scatter_big_action"],
+        win: ["", ""]
+    },
+    DEFAULT: {
+        idle: ["icon_size1_idle", "icon_size2_idle", "icon_size3_idle"],
+        move: ["icon_size1_move", "icon_size2_move", "icon_size3_move"],
+        action: ["", "", ""],
+        win: ["icon_size1_action", "icon_size2_action", "icon_size3_action"]
+    },
+    FRAME: {
+        idle: ["icon_size1_idle", "icon_size2_idle", "icon_size3_idle"],
+        move: ["icon_size1_move", "icon_size2_move", "icon_size3_move"],
+    }
+};
+
 @ccclass('Symbol')
 @executeInEditMode(true)
+
 export class Symbol extends Component {
 
     @property({ type: Enum(ESymbolFace) })
@@ -37,235 +57,143 @@ export class Symbol extends Component {
 
     @property({ type: Enum(SymbolFrameState) })
     frameState: SymbolFrameState = SymbolFrameState.NORMAL;
+    @property(sp.Skeleton) icon: sp.Skeleton = null!;
+    @property(sp.Skeleton) frame: sp.Skeleton = null!;
+    reel: ReelBase = null!;
+    reelIndex = 0;
 
-    @property(Sprite)
-    iconSymbol: Sprite = null;
+    stackId = -1; stackSize = 1; stackIndex = 0;
+    col = 0; row = 0; layer = 0;
+    isInit = false;
 
-    @property({ type: Sprite })
-    bg: Sprite = null
-
-
-    @property({ type: Sprite })
-    frame: Sprite = null
-
-
-    @property(SpriteFrame)
-    frames: SpriteFrame[] = []
-
-    @property(sp.Skeleton)
-    spine: sp.Skeleton = null
-
-    reel: ReelBase = null;
-    @property(Number)
-    reelIndex: number = 0;
+    get isRoot() { return this.stackIndex === 0; }
 
     @property(sp.Skeleton)
     fxSmoke: sp.Skeleton = null
 
-    // Mega stack
-    stackId: number = -1;
-    stackSize: number = 1;     // 1..4
-    stackIndex: number = 0;    // 0 = root, >0 = cell phụ
+
     dataSymbols: dataSymbol = null
     uiTransform: UITransform = null;
 
-    col = 0
-    row = 0
-    layer = 0
-    get isRoot(): boolean {
-        return this.stackIndex === 0;
+    static MoveType = {
+        'START': 'start',
+        'STOP': 'stop',
+        'MOVING': 'moving'
+    } as const
+    private SkinMap = {
+        [ESymbolFace.ACE]: "Icon1",
+        [ESymbolFace.KING]: "Icon2",
+        [ESymbolFace.QUEEN]: "Icon3",
+        [ESymbolFace.JACK]: "Icon4",
+        [ESymbolFace.TEN]: "Icon5",
+        [ESymbolFace.MASK_RED]: "Icon6",
+        [ESymbolFace.JAGUAR_PINK]: "Icon7",
+        [ESymbolFace.STONE_WHEEL]: "Icon8",
+        [ESymbolFace.PURPLE_SERPENT]: "Icon9",
+        [ESymbolFace.GREEN_IDOL]: "Icon10",
+        [ESymbolFace.GOLDEN_IDOL]: "Icon11"
+    };
+
+
+    protected start() {
+        this.layer = this.icon.node.layer
+        // this.layer = 1
+        this.icon.node.layer = Layers.Enum.DEFAULT
     }
 
+    private getAnim(type: "idle" | "move" | "action" | "win"): string {
 
+        const size = Math.max(0, this.stackSize - 1);
 
-    public getNameIdle() {
-        let name = ""
-        switch (this.face) {
-            case ESymbolFace.WILD:
-                if (this.stackSize == 1) {
-                    name = "icon_Wild1_idle"
-                }
-                if (this.stackSize == 2) {
-                    name = "icon_Wild2_idle"
-                }
-                if (this.stackSize == 3) {
-                    name = "icon_Wild3_idle"
-                }
-                break;
-            case ESymbolFace.SCRATCH:
-                if (this.stackSize == 1) {
-                    name = "Icon_Scatter_small_idle"
-                }
-                if (this.stackSize == 2) {
-                    name = "Icon_Scatter_big_idle"
-                }
-                break
-            default:
+        let cfg = SymbolAnim.DEFAULT;
+        if (this.face === ESymbolFace.WILD) cfg = SymbolAnim.WILD;
+        if (this.face === ESymbolFace.SCRATCH) cfg = SymbolAnim.SCRATCH;
 
-                break
+        return cfg[type]?.[size] ?? "";
+    }
+
+    getNameIdle() { return this.getAnim("idle"); }
+    getNameMove() { return this.getAnim("move"); }
+    getNameAction() { return this.getAnim("action"); }
+    getNameWin() { return this.getAnim("win"); }
+
+    SetSkin() {
+        this.icon.setSkin(this.SkinMap[this.face] ?? "default");
+    }
+
+    EnabledAniamtion(enable: boolean) {
+        this.icon.enabled = enable && this.isRoot;
+    }
+
+    playiconAnimation(name: string, loop: boolean) {
+
+        if (!name) { this.EnabledAniamtion(false); return; }
+
+        this.SetSkin();
+        this.EnabledAniamtion(true);
+        this.icon.setAnimation(0, name, loop);
+    }
+
+    addAnimation(name: string, loop: boolean) {
+        if (name) this.icon.addAnimation(0, name, loop);
+    }
+
+    playFrameAnimation(name: string, loop: boolean) {
+        this.frame?.setAnimation(0, name, loop);
+    }
+
+    UpdateFrame() {
+        if (this.stackIndex > 0) {
+            this.frame.enabled = false
+            return
         }
-
-        return name
-    }
-
-
-    public getNameWin() {
-        let name = ""
-        switch (this.face) {
-            case ESymbolFace.WILD:
-                if (this.stackSize == 1) {
-                    name = "icon_Wild1_broken_action"
-                }
-                if (this.stackSize == 2) {
-                    name = "icon_Wild2_broken_action"
-                }
-                if (this.stackSize == 3) {
-                    name = "icon_Wild3_broken_action"
-                }
-                break;
-            case ESymbolFace.SCRATCH:
-                if (this.stackSize == 1) {
-                    // name = "Icon_Scatter_small_idle"
-                }
-                if (this.stackSize == 2) {
-                    // name = "Icon_Scatter_big_idle"
-                }
-                break
-            default:
-                if (this.stackSize == 1) {
-                    name = "icon_size1_action"
-                }
-                if (this.stackSize == 2) {
-                    name = "icon_size2_action"
-                }
-                if (this.stackSize == 3) {
-                    name = "icon_size3_action"
-                }
-                break
-
-
+        if (this.frameState == SymbolFrameState.FRAME) {
+            this.frame.enabled = true
         }
+        else
+            this.frame.enabled = false
 
-        return name
     }
 
-    public getNameMove() {
-        let name = ""
-        switch (this.face) {
-            case ESymbolFace.WILD:
-                if (this.stackSize == 1) {
-                    name = "icon_Wild1_move"
-                }
-                if (this.stackSize == 2) {
-                    name = "icon_Wild2_move"
-                }
-                if (this.stackSize == 3) {
-                    name = "icon_Wild3_move"
-                }
-                break;
-            case ESymbolFace.SCRATCH:
-                if (this.stackSize == 1) {
-                    name = "Icon_Scatter_small_idle"
-                }
-                if (this.stackSize == 2) {
-                    name = "Icon_Scatter_big_idle"
-                }
-                break
-            default:
-
-                break
+    SetUISymbolNormal() {
+        this.UpdateFrame();
+        this.playiconAnimation(this.getNameIdle(), true);
+        this.playFrameAnimation(this.getNameIdle(), true)
+        this.icon.node.setPosition(0, -84 * this.stackSize / 2 + 84 / 2, 0)
+        this.frame.node.setPosition(0, -84 * this.stackSize / 2 + 84 / 2, 0)
 
 
-        }
 
-        return name
     }
 
-    public getNameAction() {
-        let name = ""
-        switch (this.face) {
-            case ESymbolFace.WILD:
-                if (this.stackSize == 1) {
-                    name = "icon_Wild1_action"
-                }
-                if (this.stackSize == 2) {
-                    name = "icon_Wild2_action"
-                }
-                if (this.stackSize == 3) {
-                    name = "icon_Wild3_action"
-                }
-                break;
-            case ESymbolFace.SCRATCH:
-                if (this.stackSize == 1) {
-                    name = "Icon_Scatter_small_action"
-                }
-                if (this.stackSize == 2) {
-                    name = "Icon_Scatter_big_action"
-                }
-                break
-            default:
-
-                break
-        }
-        return name
+    SetUiMove() {
+        const name = this.getNameMove();
+        this.playiconAnimation(name, true);
+        this.playFrameAnimation(name, true);
     }
 
-    protected start(): void {
-        this.layer = this.spine.node.layer
-        // this.ResetSymbol()
+    InitSymbol(data: SymbolCell) {
+
+        this.isInit = true;
+        this.face = data.i;
+        this.frameState = data.f;
+        this.stackSize = data.ms;
+        this.stackIndex = data.mi;
+        this.stackId = data.sid;
+
+        this.SetUISymbolNormal();
     }
 
-    rollToIndex(time: number = 0.2) {
-        // Chỉ root mới tween
-        if (!this.reel) return;
-        this.fxMove()
-        const newPosition = this.reel.getSymbolPosition(this.reelIndex);
-        Tween.stopAllByTarget(this.node);
-        return tween(this.node)
-            .to(time, { position: newPosition })
-            .call(() => {
-            })
-            .start();
-    }
-
-    DropToindex(time: number = 0.2) {
-        if (!this.reel) return;
-
-        const newPosition = this.reel.getSymbolPosition(this.reelIndex);
-        Tween.stopAllByTarget(this.node);
-        return tween(this.node)
-            .to(time, { position: newPosition })
-            .call(() => {
-                this.fxSmoke.enabled = true
-                this.fxSmoke.setAnimation(0, "VFX_smoke", false)
-                this.fxSmoke.setCompleteListener((tracking) => {
-                    if (tracking.animation.name == "VFX_smoke") {
-                        this.fxSmoke.setCompleteListener(null)
-                        this.fxSmoke.enabled = false
-                    }
-                })
-
-                this.exploAnim(20)
-            })
-            .start();
-    }
-
-    refreshVisual() {
-        if (!this.isRoot || !this.reel) return;
-        this.dataSymbols = PrefabManager.instance.GetDataSymbol().getDataByType(this.face)
-        if (this.dataSymbols == null) return
-        this.iconSymbol.node.setScale(1, 1)
-
-        if (this.stackSize == 1) {
-            this.iconSymbol.spriteFrame = this.dataSymbols.icon
-        }
-        else {
-            this.iconSymbol.spriteFrame = this.dataSymbols.iconV2
-        }
-
+    ResetSymbol() {
+        this.stackId = -1;
+        this.stackSize = 1;
+        this.stackIndex = 0;
+        this.setRandomFace();
+        this.SetUISymbolNormal();
     }
 
     setRandomFace() {
+
         const faces = [
             ESymbolFace.MASK_RED,
             ESymbolFace.STONE_WHEEL,
@@ -281,90 +209,58 @@ export class Symbol extends Component {
         ];
         this.face = faces[Math.floor(Math.random() * faces.length)];
         this.frameState = SymbolFrameState.NORMAL;
-        this.refreshVisual();
     }
 
-    ResetSymbol() {
-        this.stackId = -1;
-        this.stackSize = 1;
-        this.stackIndex = 0;
-        this.setRandomFace()
-        this.UpdateUI()
-    }
+    rollToIndex(time: number = 0.2, type: string = Symbol.MoveType.MOVING) {
 
-    UpdatePositionIcon() {
-        let ui = this.bg.node.getComponent(UITransform).contentSize
-        switch (this.face) {
-            case ESymbolFace.ACE:
-            case ESymbolFace.TEN:
-            case ESymbolFace.JACK:
-            case ESymbolFace.QUEEN:
-            case ESymbolFace.KING:
-                if (this.reel.isHorizontal() == false)
-                    this.iconSymbol.node.setPosition(0, -ui.height / 2 + 50, 0)
-                break;
-            case ESymbolFace.SCRATCH:
-                this.iconSymbol.enabled = false
-                this.bg.enabled = false
-                this.frame.enabled = false
-                break;
-            case ESymbolFace.WILD:
-                this.iconSymbol.enabled = false
-                this.bg.enabled = false
-                this.frame.enabled = false
-                break;
-            default:
-                if (this.reel.isHorizontal() == false)
-                    this.iconSymbol.node.setPosition(0, -ui.height / 2 + 50, 0)
-        }
-    }
+        const newPosition = this.reel.getSymbolPosition(this.reelIndex);
 
-    UpdateBg() {
-        if (this.dataSymbols == null) return
-        if (this.stackIndex == 0) {
-            this.iconSymbol.enabled = true
-            this.bg.enabled = true
-            this.bg.node.setScale(1, 1, 1)
-            switch (this.stackSize) {
-                case 1:
-                    if (this.dataSymbols.bg1x1)
-                        this.bg.spriteFrame = this.dataSymbols.bg1x1
-                    break
-                case 2:
-                    if (this.dataSymbols.bg1x2)
-                        this.bg.spriteFrame = this.dataSymbols.bg1x2
-                    break
-                case 3:
-                    if (this.dataSymbols.bg1x3)
-                        this.bg.spriteFrame = this.dataSymbols.bg1x3
-                    break
-                case 4:
-                    if (this.dataSymbols.bg1x4)
-                        this.bg.spriteFrame = this.dataSymbols.bg1x4
-                    break
-            }
-        }
-        else {
-            this.iconSymbol.enabled = false
-            this.bg.enabled = false
+        // ❗ CHỈ stop tween khi STOP, không stop khi MOVING
+        if (type === Symbol.MoveType.STOP) {
+            Tween.stopAllByTarget(this.node);
         }
 
-        if (this.reel.isHorizontal() == true) return
-        let height = 103 * (this.stackSize)
-        this.bg.getComponent(UITransform).setContentSize(124, height)
-        this.fxSmoke.node.getComponent(Widget).updateAlignment()
-        this.bg.node.setPosition(0, -height / 2 + 103 / 2)
+        const easingType =
+            type === Symbol.MoveType.MOVING
+                ? "linear"
+                : "cubicOut";
+
+        return tween(this.node)
+            .to(time, { position: newPosition }, { easing: easingType })
+            .call(() => {
+
+                this.reelIndex =
+                    this.reelIndex % this.reel.symbols.length;
+
+                if (type === Symbol.MoveType.STOP) {
+                    this.exploAnim();
+                }
+
+            })
+            .start();
     }
+
+
+    DropToindex(time: number = 0.2) {
+        if (!this.reel) return;
+
+        const newPosition = this.reel.getSymbolPosition(this.reelIndex);
+        Tween.stopAllByTarget(this.node);
+        return tween(this.node)
+            .to(time, { position: newPosition })
+            .call(() => {
+                this.exploAnim()
+            })
+            .start();
+    }
+
+
+
     exploAnim(bounce = 10, onComplete?: () => void) {
-        if (this.face == ESymbolFace.SCRATCH) {
-            SoundToggle.instance.PlayScatchIdle()
-
-        }
         if (!this.isRoot || !this.reel) {
             onComplete && onComplete();
             return;
         }
-
         const basePos = this.reel.getSymbolPosition(this.reelIndex);
         const isHorizontal = this.reel.isHorizontal();
 
@@ -377,327 +273,106 @@ export class Symbol extends Component {
             .to(0.08, { position: upPos }, { easing: 'sineOut' })
             .to(0.08, { position: basePos }, { easing: 'sineIn' })
             .call(() => {
-
-
-                if (GameManager.instance.CheckScratch() == false)
-                    this.spine.node.layer = this.layer
-                else {
-                    if (this.face == ESymbolFace.SCRATCH) {
-                        this.spine.node.layer = this.layer
-                    }
-                }
-                const animNameAction = this.getNameAction();
-                const animNameIdle = this.getNameIdle()
-
-                if (animNameAction !== "" && animNameIdle != "") {
-
-                    this.spine.setCompleteListener((tracking) => {
+                if (this.face == ESymbolFace.SCRATCH) {
+                    SoundToggle.instance.PlayScatchIdle()
+                    this.icon.node.layer = this.layer
+                    const animNameAction = this.getNameAction();
+                    const animNameIdle = this.getNameIdle()
+                    this.icon.setCompleteListener((tracking) => {
                         if (tracking.animation.name != animNameIdle) return
-                        this.spine.setCompleteListener(null);
+                        this.icon.setCompleteListener(null);
                     });
-
-                    this.playAnimation(animNameAction, false);
+                    this.playiconAnimation(animNameAction, true)
                     this.addAnimation(animNameIdle, true)
 
-                    onComplete && onComplete();
-
                 }
                 else {
-                    onComplete && onComplete();
+                    const animNameAction = this.getNameAction();
+                    const animNameIdle = this.getNameIdle()
+                    this.icon.setCompleteListener((tracking) => {
+                        if (tracking.animation.name != animNameIdle) return
+                        this.icon.setCompleteListener(null);
+                    });
+                    this.playiconAnimation(animNameIdle, true)
                 }
+
+                onComplete && onComplete();
+
 
             })
             .start();
     }
 
+    snapToGrid() {
+        const cellHeight = 84; // hoặc this.height nếu bạn lưu
+        const y = this.node.position.y;
 
+        const snappedY = Math.round(y / cellHeight) * cellHeight;
 
-
-    UpdateFrame() {
-        let height = 103 * (this.stackSize)
-        this.frame.getComponent(UITransform).setContentSize(124, height)
-        this.frame.node.setPosition(0, -height / 2 + 103 / 2)
-        switch (this.frameState) {
-            case SymbolFrameState.NORMAL:
-                this.frame.enabled = false
-                break
-            case SymbolFrameState.GOLD:
-                this.frame.enabled = true
-                this.frame.spriteFrame = this.frames[1]
-                break;
-            case SymbolFrameState.SILVER:
-                this.frame.enabled = true
-                this.frame.spriteFrame = this.frames[0]
-                break;
-            case SymbolFrameState.SCRATCH:
-                this.frame.enabled = false
-                break;
-            case SymbolFrameState.WILD:
-                this.frame.enabled = false
-                break;
-
-
-        }
+        this.node.setPosition(
+            this.node.position.x,
+            snappedY,
+            this.node.position.z
+        );
     }
+    FlipSymbol(data, onComplete?: () => void) {
+        this.AnimationWin()
+        if (!this.isRoot) { onComplete?.(); return; }
+        this.isInit = true;
+        this.face = data.i;
+        this.frameState = data.f;
+        this.stackSize = data.ms;
+        this.stackIndex = data.mi;
+        this.stackId = data.sid;
+        const name = `icon_Wild${this.stackSize}_appear`;
+        this.playiconAnimation(name, false);
 
-    UpdateSpines() {
-        let ui = this.node.getComponent(UITransform).contentSize
-        this.spine.node.setPosition(0, -ui.height * this.stackSize / 2 + 50, 0)
+        this.icon.setCompleteListener(() => {
+            this.icon.setCompleteListener(null);
 
-    }
-    isInit = false
-    InitSymbol(data: SymbolCell) {
-        this.isInit = true
-        this.face = data.i
-        this.frameState = data.f
-        this.stackSize = data.ms
-        this.stackIndex = data.mi
-        this.stackId = data.sid
-        this.UpdateUI()
-    }
+            this.UpdateFrame()
+            // this.InitSymbol(data);
 
+            // this.playiconAnimation(this.getNameAction(), false);
+            this.addAnimation(this.getNameIdle(), true);
 
-    UpdateUI() {
-        this.refreshVisual();
-        this.UpdateBg()
-        this.UpdatePositionIcon()
-        this.UpdateFrame()
-        this.UpdateSpines()
-
-        if (this.stackIndex > 0) {
-            this.iconSymbol.enabled = false
-            this.bg.enabled = false
-            this.frame.enabled = false
-            this.EnabledAniamtion(false)
-        }
-    }
-
-    fxMove() {
-        this.UpdateUIMove()
-    }
-
-    UpdateUIMove() {
-        this.spine.node.layer = Layers.Enum.UI_2D
-
-        switch (this.face) {
-            case ESymbolFace.SCRATCH:
-            case ESymbolFace.WILD:
-                this.playAnimation(this.getNameMove(), true)
-                break;
-            default:
-                if (this.reel.isHorizontal() == true) return
-                this.bg.node.setScale(1.1, 1.1)
-                this.iconSymbol.node.setPosition(0, -103 / 2 + 50, 0)
-                this.iconSymbol.node.setScale(1.2, 1.2)
-                let height = 103 * (this.stackSize)
-                this.bg.getComponent(UITransform).setContentSize(124, height)
-                this.bg.node.setPosition(0, -height / 2 + 103 / 2)
-                if (this.stackSize == 1) {
-                    this.bg.spriteFrame = this.dataSymbols.bg1x1_move
-                }
-                if (this.stackSize == 2) {
-                    this.bg.spriteFrame = this.dataSymbols.bg1x2_move
-
-                }
-                if (this.stackSize == 3) {
-                    this.bg.spriteFrame = this.dataSymbols.bg1x3_move
-                }
-
-                if (this.stackSize == 4) {
-                    this.bg.spriteFrame = this.dataSymbols.bg1x4_move
-                }
-
-                if (this.stackSize == 1) {
-                    this.iconSymbol.spriteFrame = this.dataSymbols.icon_move
-                }
-                else {
-                    this.iconSymbol.spriteFrame = this.dataSymbols.iconV2_move
-                }
-
-                break;
-        }
-    }
-
-    fxIdle() {
-        this.playAnimation(this.getNameIdle(), true)
-        this.UpdateUI()
-        // Lấy index từ bitmask
-    }
-
-    playAnimation(name, loop) {
-        if (name != "") {
-            this.EnabledAniamtion(true)
-            this.spine.setAnimation(0, name, loop)
-        }
-        else {
-            this.EnabledAniamtion(false)
-
-        }
-    }
-
-    addAnimation(name, loop) {
-        if (name != "") {
-            this.EnabledAniamtion(true)
-            this.spine.addAnimation(0, name, loop)
-        }
-        else {
-            this.EnabledAniamtion(false)
-
-        }
-    }
-
-    EnabledAniamtion(isEnabled) {
-        if (this.stackIndex == 0) {
-            this.spine.enabled = isEnabled
-        }
-        else {
-            this.spine.enabled = false
-
-        }
+            onComplete?.();
+        });
     }
 
     Dispose() {
-        console.log(`[Symbol.Dispose] Disposing symbol at col:${this.col}, row:${this.row}, face:${this.face}, stackSize:${this.stackSize}`);
-
-        // Check if already disposed
-        if (!this.node || !this.bg || !this.iconSymbol || !this.spine) {
-            console.warn(`[Symbol.Dispose] Symbol already disposed or not initialized`);
-            return;
-        }
-
-        let time = 2
-        switch (this.face) {
-            case ESymbolFace.ACE:
-                this.iconSymbol.enabled = false
-                this.spine.setSkin("Icon1")
-                this.spine.timeScale = time
-                this.bg.enabled = false
-                break;
-            case ESymbolFace.KING:
-                this.iconSymbol.enabled = false
-                this.spine.setSkin("Icon2")
-                this.spine.timeScale = time
-                this.bg.enabled = false
-
-                break;
-            case ESymbolFace.QUEEN:
-                this.iconSymbol.enabled = false
-                this.spine.timeScale = time
-                this.bg.enabled = false
-
-                this.spine.setSkin("Icon3")
-                break;
-            case ESymbolFace.JACK:
-                this.iconSymbol.enabled = false
-                this.spine.timeScale = time
-                this.bg.enabled = false
-
-                this.spine.setSkin("Icon4")
-                break;
-            case ESymbolFace.TEN:
-                this.iconSymbol.enabled = false
-                this.spine.timeScale = time
-                this.bg.enabled = false
-
-                this.spine.setSkin("Icon5")
-                break;
-            case ESymbolFace.GOLDEN_IDOL:
-                this.iconSymbol.enabled = false
-                this.spine.timeScale = time
-                this.bg.enabled = false
-
-                this.spine.setSkin("Icon11")
-                break;
-
-            case ESymbolFace.GREEN_IDOL:
-                this.iconSymbol.enabled = false
-                this.spine.timeScale = time
-                this.bg.enabled = false
-
-                this.spine.setSkin("Icon10")
-                break;
-            case ESymbolFace.JAGUAR_PINK:
-                this.iconSymbol.enabled = false
-                this.spine.timeScale = time
-                this.bg.enabled = false
-
-                this.spine.setSkin("Icon7")
-                break;
-            case ESymbolFace.MASK_RED:
-                this.iconSymbol.enabled = false
-                this.spine.timeScale = time
-                this.bg.enabled = false
-
-                this.spine.setSkin("Icon6")
-                break;
-            case ESymbolFace.PURPLE_SERPENT:
-                this.iconSymbol.enabled = false
-                this.spine.timeScale = time
-                this.bg.enabled = false
-
-                this.spine.setSkin("Icon9")
-                break;
-            case ESymbolFace.STONE_WHEEL:
-                this.iconSymbol.enabled = false
-                this.spine.timeScale = time
-                this.bg.enabled = false
-
-                this.spine.setSkin("Icon8")
-                break;
-        }
-        this.playAnimation(this.getNameWin(), false)
-
+        this.playiconAnimation(this.getNameWin(), false);
         this.scheduleOnce(() => {
-            this.node.destroy()
-        }, 1.2)
+            this.node.destroy();
+        }, 1);
+
+
     }
 
-    HideAll() {
-        this.EnabledAniamtion(false)
-        this.iconSymbol.enabled = false
-        this.bg.enabled = false
-        this.frame.enabled = false
-    }
-    FlipSymbol(data, onComplete?: () => void) {
-
-        let name = "";
-
-        if (this.stackSize == 1) name = "icon_size1_action_upgrade";
-        if (this.stackSize == 2) name = "icon_size2_action_upgrade";
-        if (this.stackSize == 3) name = "icon_size3_action_upgrade";
-
-        if (name === "" || this.stackIndex > 0) {
-            onComplete?.();
-            return;
-        }
-
-        this.spine.setCompleteListener(() => {
-
-            // Clear listener
-            this.spine.setCompleteListener(null);
-
-            // Update symbol
-            this.InitSymbol(data);
-
-            // Play action rồi idle
-            this.playAnimation(this.getNameAction(), false);
-            this.addAnimation(this.getNameIdle(), true);
-            this.spine.setCompleteListener((tracking) => {
-                if (tracking.animation.name != this.getNameAction()) return
-                this.spine.setCompleteListener(null);
-                onComplete?.();
-            });
-        });
-
-        this.playAnimation(name, false);
-    }
+    HideAll() { this.EnabledAniamtion(false); }
 
     PlayIdleScratch() {
-        let name = "";
-        if (this.stackSize == 1) name = "Icon_Scatter_small_action_idle";
-        if (this.stackSize == 2) name = "Icon_Scatter_big_action_idle";
-        this.playAnimation(name, true);
 
+        const name = this.stackSize === 1
+            ? "Icon_Scatter_small_action_idle"
+            : "Icon_Scatter_big_action_idle";
+
+        this.playiconAnimation(name, true);
+    }
+
+
+    ShowMask() {
+        this.icon.color = new Color(158, 158, 158, 255)
+        this.frame.color = new Color(158, 158, 158, 255)
+    }
+
+
+    AnimationWin() {
+        tween(this.icon).to(0.1, { color: new Color(255, 255, 255, 255) }).start()
+        tween(this.frame).to(0.1, { color: new Color(255, 255, 255, 255) }).start()
 
     }
+
+
+
 }

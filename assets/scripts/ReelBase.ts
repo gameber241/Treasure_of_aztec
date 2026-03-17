@@ -1,4 +1,4 @@
-import { _decorator, Component, UITransform, Vec3, Tween, tween, instantiate, Node, sp } from 'cc';
+import { _decorator, Component, UITransform, Vec3, Tween, tween, instantiate, Node, sp, Layers } from 'cc';
 import { Symbol } from './Symbol';
 import { PrefabManager } from './Manager/PrefabManager';
 import { GameManager } from './Manager/GameManager';
@@ -19,7 +19,7 @@ export abstract class ReelBase extends Component {
     protected totalSize = 0;
     protected halfSize = 0;
 
-    protected _delay = 0.03;
+    _delay = 0.04;
     protected _isStopping = false;
     protected _remainSteps = 0;
 
@@ -30,11 +30,6 @@ export abstract class ReelBase extends Component {
 
     @property(Number)
     numberSymbols: number = 9; // dọc = 9, ngang = 8
-    private _onFullyStopped: (() => void) | null = null;
-
-    public setOnFullyStopped(cb: () => void) {
-        this._onFullyStopped = cb;
-    }
 
     public abstract VISIBLE_COUNT: number;
     public abstract FIRST_VISIBLE: number;
@@ -78,67 +73,102 @@ export abstract class ReelBase extends Component {
     }
 
     // ================= QUAY =================
+    // startRoll() {
+    //     this.isRolling = true;
+    //     this._isStopping = false;
+    //     this.symbols.forEach(e => {
+    //         e.isInit = false
+    //     })
+    //     Tween.stopAllByTarget(this.node);
+
+    //     tween(this.node)
+    //         .call(() => {
+    //             if (!this.isRolling) return;
+    //             for (let s of this.symbols) {
+    //                 s.reelIndex++;
+    //                 if (s.reelIndex >= this.symbols.length) {
+    //                     s.reelIndex = 0;
+    //                     if (!this._isStopping) {
+    //                         s.ResetSymbol(); // random khi chưa stop
+    //                     }
+    //                     s.node.position = this.getSymbolPosition(-1);
+
+
+    //                 }
+    //                 s.rollToIndex(0.05);
+    //             }
+    //             // ===== STOP PHASE =====
+    //             if (this._isStopping) {
+    //                 this._remainSteps--;
+    //                 if (this._remainSteps <= 0) {
+    //                     SoundToggle.instance.PlayRoll()
+    //                     this.isRolling = false;
+    //                     Tween.stopAllByTarget(this.node);
+    //                     this.snapToFinalPosition();
+    //                     const visibleSymbols = this.symbols.filter(s =>
+    //                         this.isVisibleIndex(s.reelIndex)
+    //                     );
+    //                     if (visibleSymbols.length === 0) {
+    //                         this._onFullyStopped?.();
+    //                         this._onFullyStopped = null;
+    //                         return;
+    //                     }
+    //                     let completed = 0;
+    //                     this.playIdleFXVisible();
+    //                     visibleSymbols.forEach(s => {
+    //                         s.exploAnim(10, () => {
+    //                             completed++;
+    //                             if (completed === visibleSymbols.length) {
+    //                                 // 🔥 chỉ emit event ở đây
+    //                                 this._onFullyStopped?.();
+    //                                 this._onFullyStopped = null;
+    //                             }
+    //                         });
+    //                     });
+    //                     return;
+    //                 }
+    //             }
+    //         })
+    //         .delay(this._delay)
+    //         .union()
+    //         .repeatForever()
+    //         .start();
+    // }
+
+
     startRoll() {
         this.isRolling = true;
-        this._isStopping = false;
+        this.collectSymbols();
+        this.rearrangeSymbols();
         this.symbols.forEach(e => {
-            e.isInit = false
+            e.icon.node.layer = Layers.Enum.DEFAULT
         })
-        Tween.stopAllByTarget(this.node);
-
         tween(this.node)
             .call(() => {
-                if (!this.isRolling) return;
+                if (this.isRolling === false) return;
                 for (let s of this.symbols) {
-                    s.reelIndex++;
+                    s.reelIndex += 1
                     if (s.reelIndex >= this.symbols.length) {
                         s.reelIndex = 0;
                         if (!this._isStopping) {
-                            s.ResetSymbol(); // random khi chưa stop
+                            s.ResetSymbol();
                         }
                         s.node.position = this.getSymbolPosition(-1);
-
-
                     }
-                    s.rollToIndex(0.05);
+                    s.rollToIndex(this._delay, Symbol.MoveType.MOVING);
+
                 }
-                // ===== STOP PHASE =====
-                if (this._isStopping) {
-                    this._remainSteps--;
-                    if (this._remainSteps <= 0) {
-                        SoundToggle.instance.PlayRoll()
-                        this.isRolling = false;
-                        Tween.stopAllByTarget(this.node);
-                        this.snapToFinalPosition();
-                        const visibleSymbols = this.symbols.filter(s =>
-                            this.isVisibleIndex(s.reelIndex)
-                        );
-                        if (visibleSymbols.length === 0) {
-                            this._onFullyStopped?.();
-                            this._onFullyStopped = null;
-                            return;
-                        }
-                        let completed = 0;
-                        this.playIdleFXVisible();
-                        visibleSymbols.forEach(s => {
-                            s.exploAnim(10, () => {
-                                completed++;
-                                if (completed === visibleSymbols.length) {
-                                    // 🔥 chỉ emit event ở đây
-                                    this._onFullyStopped?.();
-                                    this._onFullyStopped = null;
-                                }
-                            });
-                        });
-                        return;
-                    }
-                }
+
             })
             .delay(this._delay)
+            .call(() => {
+                this.sortSibling();
+            })
             .union()
             .repeatForever()
             .start();
     }
+
 
     private snapToFinalPosition() {
         for (let s of this.symbols) {
@@ -159,71 +189,111 @@ export abstract class ReelBase extends Component {
         }
     }
 
-    protected playIdleFXVisible() {
-        for (let s of this.symbols) {
-            if (this.isVisibleIndex(s.reelIndex)) {
-                s.fxIdle();
-            }
-        }
-    }
 
     // ================= CHUẨN BỊ DỪNG KIỂU GAME GỐC =================
+    // stopRoll(result: any[]) {
+    //     if (result) {
+    //         // Horizontal reel visual: reelIndex 0=rightmost, 3=leftmost
+    //         // Server: result[0]=leftmost, result[3]=rightmost
+    //         // Reverse for horizontal to match visual layout
+    //         const processedResult = this.isHorizontal() ? [...result].reverse() : result;
+
+    //         const total = this.symbols.length;
+    //         const visible = this.VISIBLE_COUNT;
+    //         const firstVisible = this.FIRST_VISIBLE;
+    //         const usedSymbols = new Set<any>();
+
+    //         for (let i = 0; i < visible; i++) {
+
+    //             if (!processedResult[i]) continue;
+
+    //             let targetIndex = firstVisible + i;
+    //             if (targetIndex >= total) {
+    //                 targetIndex -= total;
+    //             }
+
+    //             let placeIndex = targetIndex - visible;
+    //             while (placeIndex < 0) {
+    //                 placeIndex += total;
+    //             }
+
+    //             const s = this.symbols.find(sym => sym.reelIndex === placeIndex);
+    //             if (!s) continue;
+
+    //             const e = processedResult[i];
+    //             s.InitSymbol(e);
+    //             usedSymbols.add(s);
+
+    //             if (this.possitionReel == 0) {
+    //                 // After reverse: processedResult[0]=rightmost, processedResult[3]=leftmost
+    //                 // Map to symBolArray: col 4=rightmost, col 1=leftmost
+    //                 const col = 4 - i;  // i=0→col=4, i=1→col=3, i=2→col=2, i=3→col=1
+    //                 GameManager.instance.symBolArray[col][0] = s
+    //                 s.col = col
+    //                 s.row = 0
+    //             }
+    //             else {
+    //                 s.col = this.possitionReel - 1
+    //                 s.row = i + 1
+
+    //                 GameManager.instance.symBolArray[this.possitionReel - 1][i + 1] = s
+
+    //             }
+    //         }
+    //         this._isStopping = true;
+    //         this._remainSteps = visible;
+    //     }
+    // }
+
+
     stopRoll(result: any[]) {
-        if (result) {
-            // Horizontal reel visual: reelIndex 0=rightmost, 3=leftmost
-            // Server: result[0]=leftmost, result[3]=rightmost
-            // Reverse for horizontal to match visual layout
-            const processedResult = this.isHorizontal() ? [...result].reverse() : result;
+        this.isRolling = false;
+        this._isStopping = true;
 
-            const total = this.symbols.length;
-            const visible = this.VISIBLE_COUNT;
-            const firstVisible = this.FIRST_VISIBLE;
-            const usedSymbols = new Set<any>();
+        Tween.stopAllByTarget(this.node);
 
-            for (let i = 0; i < visible; i++) {
+        if (!result) return;
 
-                if (!processedResult[i]) continue;
+        const total = this.symbols.length;     // 15
+        const visible = this.VISIBLE_COUNT;   // 5
+        const firstVisible = this.FIRST_VISIBLE;
 
-                let targetIndex = firstVisible + i;
-                if (targetIndex >= total) {
-                    targetIndex -= total;
-                }
+        // 1️⃣ Set result vào 5 symbol phía trên (không đụng visible hiện tại)
+        for (let i = 0; i < visible; i++) {
 
-                let placeIndex = targetIndex - visible;
-                while (placeIndex < 0) {
-                    placeIndex += total;
-                }
+            const targetIndex = (firstVisible + i) % total;
+            const placeIndex = (targetIndex - visible + total) % total;
 
-                const s = this.symbols.find(sym => sym.reelIndex === placeIndex);
-                if (!s) continue;
+            const s = this.symbols.find(sym => sym.reelIndex === placeIndex);
+            if (!s) continue;
 
-                const e = processedResult[i];
-                s.InitSymbol(e);
-                usedSymbols.add(s);
+            s.InitSymbol(result[i]);
 
-                if (this.possitionReel == 0) {
-                    // After reverse: processedResult[0]=rightmost, processedResult[3]=leftmost
-                    // Map to symBolArray: col 4=rightmost, col 1=leftmost
-                    const col = 4 - i;  // i=0→col=4, i=1→col=3, i=2→col=2, i=3→col=1
-                    GameManager.instance.symBolArray[col][0] = s
-                    s.col = col
-                    s.row = 0
-                }
-                else {
-                    s.col = this.possitionReel - 1
-                    s.row = i + 1
-
-                    GameManager.instance.symBolArray[this.possitionReel - 1][i + 1] = s
-
-                }
+            if (this.possitionReel == 0) {
+                console.log(result[i])
+                const col = 4 - i;  // i=0→col=4, i=1→col=3, i=2→col=2, i=3→col=1
+                GameManager.instance.symBolArray[col][0] = s
+                s.col = col
+                s.row = 0
             }
-            this._isStopping = true;
-            this._remainSteps = visible;
+            else {
+                s.col = this.possitionReel - 1
+                s.row = i + 1
+
+                GameManager.instance.symBolArray[this.possitionReel - 1][i + 1] = s
+
+            }
         }
+
+        // 2️⃣ Cho tất cả symbol scroll xuống như bình thường bằng rollToIndex
+        this.symbols.forEach(s => {
+            s.reelIndex += visible;
+            s.rollToIndex(this._delay * 5, Symbol.MoveType.STOP);
+
+        });
+        SoundToggle.instance.PlaySymbolDrop()
+
     }
-
-
-
 
 
     public cascadeDrop(dataAbove: any[]) {
@@ -339,39 +409,5 @@ export abstract class ReelBase extends Component {
     public abstract getSymbolPosition(index: number): Vec3;
     public abstract sortSibling(): void;
 
-    protected playMoveFX() {
-        for (let s of this.symbols) {
-            s.fxMove();
-        }
-    }
-
-
-    protected playExplodeFX(onComplete?: () => void) {
-
-        const visibleSymbols = this.symbols.filter(s =>
-            this.isVisibleIndex(s.reelIndex)
-        );
-
-        if (visibleSymbols.length === 0) {
-            onComplete && onComplete();
-            return;
-        }
-
-        let completed = 0;
-
-        visibleSymbols.forEach(s => {
-            s.exploAnim(10, () => {
-                completed++;
-
-                if (completed === visibleSymbols.length) {
-                    onComplete && onComplete();
-                }
-            });
-        });
-    }
-
-    protected update(dt: number): void {
-        this.maskEff.setSiblingIndex(999)
-    }
 
 }

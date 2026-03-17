@@ -16,12 +16,14 @@ export class Turbo extends Component {
 
     onClick() {
         if (GameManager.instance.isTurbo == false) {
-            GameManager.instance.isTurbo = true
+            // GameManager.instance.isTurbo = true
             this.turboSP.spriteFrame = this.turboOn
+            GameManager.instance.turboMode = 2
         }
         else {
             GameManager.instance.isTurbo = false
             this.turboSP.spriteFrame = this.turboOff
+            GameManager.instance.turboMode = 0
 
 
         }
