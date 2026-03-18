@@ -27,7 +27,6 @@ export class ReelHorizontal extends ReelBase {
             0
         );
     }
-
     public sortSibling() {
         this.symbols.sort((a, b) => b.node.position.x - a.node.position.x);
         this.symbols.forEach((s, i) => s.node.setSiblingIndex(i));

@@ -154,12 +154,15 @@ export class GameManager extends Component {
     symBolArray: Symbol[][]
 
     initGrid() {
-        const cols = 7;  // 7 columns (reels)
-        const rows = 5;  // max 5 rows per reel
-
-        this.symBolArray = Array.from({ length: cols }, () =>
-            Array.from({ length: rows }, () => null)
-        );
+        const cols = 7
+        this.symBolArray = []
+        for (let col = 0; col < cols; col++) {
+            const rows = (col == 0) ? 4 : 5
+            this.symBolArray[col] = Array.from(
+                { length: rows },
+                () => null
+            )
+        }
     }
 
     sampleJson = null
@@ -273,10 +276,11 @@ export class GameManager extends Component {
 
         // this.Disabledbtns()
         const round = this.sampleJson.rounds[this.indexCurrentReel];
-        console.log(round)
         round.isScratch
             ? (this.SetFreeSpines(), this.PlayFreeSpin(round.freeSpin))
             : this.SetNormal();
+        // console.log(round.grid[0][0])
+        round.grid[0].reverse()
         this.GenerateMap(round.grid);
         if (round.isScratch == true && round.freeSpinCurrent > 0) {
             // this.currentFree.string = round.freeSpinCurrent
@@ -294,109 +298,95 @@ export class GameManager extends Component {
         }
     }
 
-    RollDataScratch(grid) {
-        // let indexReel = this.CheckReelFull3Scratch()
-        // if (indexReel == this.reels.length - 1) {
-        //     this.RollDataNormal(this)
-        // }
-        // else {
-        //     this.reels.forEach((reel, i) => {
-        //         this.scheduleOnce(() => {
-        //             reel.startRoll();
+    async RollDataScratch(grid) {
+        const indexReel = this.CheckReelFull3Scratch();
+        if (indexReel === this.reels.length - 1) {
+            this.RollDataNormal(this);
+            return;
+        }
+        for (let i = 0; i < this.reels.length; i++) {
+            let current = i;
+            this.reels[current].startRoll();
+        }
+        await GameManager.waitForSeconds(this.GetTimeTurboScratchStart());
 
-        //         }, (this.isTurbo == false) ? 0.3 : 0.16)
-        //     });
-        //     let stoppedPhase1 = 0;
-        //     let phase1Count = indexReel + 1;
-        //     for (let i = 0; i <= indexReel; i++) {
-        //         this.reels[i].setOnFullyStopped(() => {
-        //             stoppedPhase1++;
-        //             if (stoppedPhase1 === phase1Count) {
-        //                 this.stopPhase2(indexReel, grid);
-        //                 for (let j = 0; j <= indexReel; j++) {
-        //                     this.reels[j].symbols.forEach(e => {
-        //                         if (e.face == ESymbolFace.SCRATCH) {
-        //                             e.PlayIdleScratch()
-        //                         }
-        //                     })
-        //                 }
-        //             }
-        //         });
-        //         this.scheduleOnce(() => {
-        //             this.reels[i].stopRoll(grid[i]);
-        //         }, (this.isTurbo == false) ? (1 + 0.3 * i) : (0.16 + 0.16 * i))
-        //     }
 
-        // }
+        let stopped = 0;
+        const phase1 = indexReel + 1;
+        for (let i = 0; i <= indexReel; i++) {
+            this.reels[i].stopRoll(grid[i])
+            await GameManager.waitForSeconds(this.GetTimeTurboScratchStart());
 
+            if (++stopped !== phase1) continue;
+            this.stopPhase2(indexReel, grid);
+            for (let j = 0; j <= indexReel; j++)
+                this.reels[j].symbols
+                    .forEach(e => {
+                        if (e.face === ESymbolFace.SCRATCH && e.stackIndex == 0)
+                            e.PlayIdleScratch();
+                    });
+            return
+
+
+        }
     }
-    private stopPhase2(index: number, grid) {
-        // let current = index + 1;
-        // this.playAnimReelScratch(current)
-        // SoundToggle.instance.PlayRollScatch()
 
-        // let time = 4
-        // const stopNext = () => {
-        //     const reel = this.reels[current];
-        //     reel.setOnFullyStopped(() => {
-        //         current++;
-        //         reel.symbols.forEach(e => {
-        //             if (e.face == ESymbolFace.SCRATCH) {
-        //                 e.PlayIdleScratch()
-        //             }
-        //         })
-        //         if (current >= this.reels.length) {
-        //             this.playAnimReelScratch(99)
-        //             this.scheduleOnce(() => {
-        //                 if (this.sampleJson.rounds[this.indexCurrentReel].freeSpin > 0) {
-        //                     this.ShowAllReef(true)
+    private async stopPhase2(index: number, grid: any[]) {
+        // Total.instance.setTextScratch()
+        let current = index + 1;
 
-        //                 }
-        //                 else {
-        //                     this.ShowAllReef()
+        while (current < this.reels.length) {
+            const reel = this.reels[current];
+            reel.changeSpeed(0.07)
+            // play animation scratch cho reel hiện tại
+            this.playAnimReelScratch(current);
+            // play idle scratch cho symbol
+            reel.symbols.forEach(e => {
+                if (e.face === ESymbolFace.SCRATCH && e.stackIndex === 0) {
+                    e.PlayIdleScratch();
+                }
+            });
 
-        //                 }
-        //                 this.scheduleOnce(() => {
-        //                     if (this.sampleJson.rounds[this.indexCurrentReel].freeSpin > 0) {
-        //                         SoundToggle.instance.playFreewin()
-        //                         FreeSpines.instance.playAnimation(() => {
+            // đợi 4s
+            await GameManager.waitForSeconds(this.GetTimeTurboScratchSpin());
 
-        //                             this.SetFreeSpines()
-        //                             this.PlayFreeSpin(this.sampleJson.rounds[this.indexCurrentReel].freeSpin)
-        //                             this.scheduleOnce(() => {
-        //                                 this.ClearData()
+            // stop reel
+            reel.stopRoll(grid[current]);
+            reel._delay = 0.04
 
-        //                             }, 2)
-        //                         })
-        //                     }
-        //                     else {
-        //                         this.ClearData()
+            current++;
+        }
 
-        //                     }
-        //                 }, 1)
+        // Khi stop hết reel
+        this.playAnimReelScratch(99);
+        this.scheduleOnce(() => {
+            this.ShowAllReef(true)
+            this.scheduleOnce(() => {
+                if (this.sampleJson.rounds[this.indexCurrentReel].freeSpin > 0) {
+                    SoundToggle.instance.playFreewin()
+                    FreeSpines.instance.playAnimation(() => {
 
-        //             }, 0.4)
-        //             return;
-        //         }
-        //         SoundToggle.instance.PlayRollScatch()
+                        this.SetFreeSpines()
+                        this.PlayFreeSpin(this.sampleJson.rounds[this.indexCurrentReel].freeSpin)
+                        this.scheduleOnce(() => {
+                            this.ClearData()
+                        }, 2)
+                    })
+                }
+                else {
+                    this.ClearData()
 
-        //         this.playAnimReelScratch(current)
-        //         this.scheduleOnce(() => {
-        //             stopNext();
-        //         }, time)
+                }
+            }, 1)
 
-        //     });
-
-        //     reel.stopRoll(grid[current]);
-        // };
-        // this.scheduleOnce(() => {
-        //     stopNext();
-        // }, time)
+        }, 0.4)
     }
 
     async RollDataNormal(grid) {
         for (let i = 0; i < this.reels.length; i++) {
             let current = i;
+            await GameManager.waitForSeconds(0.05);
+
             this.reels[current].startRoll();
         }
         await GameManager.waitForSeconds(this.GetTimeTurboStarSpin());
@@ -406,31 +396,21 @@ export class GameManager extends Component {
             await GameManager.waitForSeconds(this.GetTimeTurboStopSpin());
         }
         await GameManager.waitForSeconds(0.5);
-        // this.ClearData()
+        this.ClearData()
 
 
     }
 
 
-    FlipData(onComplete?: () => void) {
+    FlipData() {
         let dataRound = this.sampleJson.rounds[this.indexCurrentReel].flips;
-        if (!dataRound || dataRound.length === 0) {
-            onComplete?.();
-            return;
-        }
-        let completed = 0;
         this.scheduleOnce(() => {
             SoundToggle.instance.PlayChangeSymbol()
 
         }, 0.7)
         dataRound.forEach(e => {
             const symbol = this.symBolArray[e.from.c][e.from.r];
-            symbol.FlipSymbol(e.to, () => {
-                completed++;
-                if (completed === dataRound.length) {
-                    onComplete?.();
-                }
-            });
+            symbol.FlipSymbol(e.to);
         });
     }
 
@@ -439,116 +419,128 @@ export class GameManager extends Component {
         await GameManager.waitForSeconds(0.05);
 
         const r = this.sampleJson.rounds[this.indexCurrentReel];
-        this.reels.forEach(e => {
-            e.symbols.forEach(e => {
-                e.ShowMask()
+
+
+        if (r.win.positions.length > 0) {
+            if (r.flips.length) {
+                this.FlipData();
+                await GameManager.waitForSeconds(1.1);
+
+            }
+            // dispose sau khi animation xong
+            for (const e of r.win.positions) {
+                if (this.symBolArray[e.c][e.r] == null) {
+                    console.log(this.symBolArray[e.c][e.r], e.c, e.r, "checkkkkk")
+                    continue;
+                }
+                this.symBolArray[e.c][e.r].Dispose();
+            }
+
+            SoundToggle.instance.PlaySymbolWin()
+            ComboManager.instance.ScrollToCombo(this.sampleJson.rounds[this.indexCurrentReel].multiplier)
+            await GameManager.waitForSeconds(1.1);
+            this.reels.forEach(e => {
+                e.symbols.forEach(e => {
+                    e.AnimationWin()
+                })
             })
-        })
-        // Win animation delay từng symbol
-        for (let i = 0; i < r.win.positions.length; i++) {
-            const e = r.win.positions[i];
-            this.symBolArray[e.c][e.r].AnimationWin();
-            await GameManager.waitForSeconds(0.05);
+            this.reels.forEach((reel, i) => reel.cascadeDrop(r.above[i]));
+
+            await GameManager.waitForSeconds(1);
         }
-
-        if (r.flips.length) {
-            this.FlipData();
-        }
-        // dispose sau khi animation xong
-        for (const e of r.win.positions) {
-            this.symBolArray[e.c][e.r].Dispose();
-        }
-
-        SoundToggle.instance.PlaySymbolWin()
-        ComboManager.instance.ScrollToCombo(this.sampleJson.rounds[this.indexCurrentReel].multiplier)
-
-        await GameManager.waitForSeconds(1.1);
-        this.reels.forEach(e => {
-            e.symbols.forEach(e => {
-                e.AnimationWin()
-            })
-        })
-        this.reels.forEach((reel, i) => reel.cascadeDrop(r.above[i]));
-
-        await GameManager.waitForSeconds(1);
         if (r.hasNext) {
-
             this.indexCurrentReel++;
-            // await this.ClearData(); // ⭐ cực quan trọng
+            await this.ClearData(); // ⭐ cực quan trọng
         }
         else {
             // ComboManager.instantiate.total.node.active = false
-            // this.ShowBigWin();
+            this.ShowBigWin();
         }
     }
 
-    // ShowBigWin() {
-    //     if (this.sampleJson.rounds[this.indexCurrentReel].BigWin > 0) {
-    //         SoundToggle.instance.playBigWin()
-    //         BigWin.instance.showBigWin(() => {
 
-    //             if (this.sampleJson.rounds[this.indexCurrentReel].MegaWin > 0) {
-    //                 SoundToggle.instance.playBigWin()
-
-    //                 BigWin.instance.showMegaWin(() => {
-
-    //                     if (this.sampleJson.rounds[this.indexCurrentReel].SuperWin > 0) {
-    //                         SoundToggle.instance.playBigWin()
-
-    //                         BigWin.instance.showSuperWin(() => {
-
-    //                             this.CheckContinueSpin()
-    //                         }, this.sampleJson.rounds[this.indexCurrentReel].SuperWin)
-    //                     }
-    //                     else {
-    //                         this.CheckContinueSpin()
-    //                     }
-    //                 }, this.sampleJson.rounds[this.indexCurrentReel].MegaWin)
-    //             }
-    //             else {
-    //                 this.CheckContinueSpin()
-    //             }
-    //         }, this.sampleJson.rounds[this.indexCurrentReel].BigWin)
-    //     }
-    //     else {
-    //         if (this.sampleJson.rounds[this.indexCurrentReel].totalPrice && this.sampleJson.rounds[this.indexCurrentReel].totalPrice > 0 && this.sampleJson.rounds[this.indexCurrentReel].isScratch) {
-    //             SoundToggle.instance.playTotalWin()
-    //             FreeSpines.instance.ShowTotalSpin(() => {
-    //                 SoundToggle.instance.stopTotalWIn()
-    //                 this.CheckContinueSpin()
-    //             }, 4000)
-    //         }
-    //         else {
-    //             this.CheckContinueSpin()
-
-    //         }
-
-    //     }
-    // }
-
-
-
-
-    CheckContinueSpin() {
-        if (Spin.instance.isAuto == false) {
-            if (this.sampleJson.rounds.length - 1 > this.indexCurrentReel) {
-                // Has next round (cascade) - don't spin again, just process next round
-                this.indexCurrentReel++
-                console.log('[CheckContinueSpin] Processing cascade round:', this.indexCurrentReel);
-                this.scheduleOnce(() => {
-                    this.ClearData();
-                }, 0.5);
+    ShowBigWin() {
+        const r = this.sampleJson.rounds[this.indexCurrentReel];
+        const next = () => {
+            this.indexCurrentReel = 0;
+            if (r.isScratch === true && r.freeSpinCurrent > 1) {
+                this.SetFreeSpines()
+                this.PlaySpin();
             }
             else {
                 Spin.instance.ActiveSpin()
-                this.indexCurrentReel = 0
-                this.SetNormal()
+                this.SetNormal();
+                SoundToggle.instance.playNormal()
+                if (Spin.instance.isAuto == true) {
+                    Spin.instance.AutoSpinNext()
+                }
+                else {
+                    Spin.instance.isSpin = false;
+                }
             }
+
+        };
+        // danh sách animation cần chạy
+        const winQueue: Array<() => void> = [];
+
+        if (r.BigWin) {
+
+            winQueue.push(() => {
+                SoundToggle.instance.playBigWin()
+                BigWin.instance.showBigWin(runNext, r.BigWin);
+            });
         }
-        else {
-            Spin.instance.CheckAuto()
+
+        if (r.SuperWin) {
+
+            winQueue.push(() => {
+                SoundToggle.instance.playBigWin()
+                BigWin.instance.showSuperWin(runNext, r.SuperWin);
+            });
         }
+
+        if (r.MegaWin) {
+
+            winQueue.push(() => {
+                SoundToggle.instance.playBigWin()
+                BigWin.instance.showMegaWin(runNext, r.MegaWin);
+            });
+        }
+
+        // total win
+        if (r.totalPrice > 0 && r.isScratch) {
+
+
+            winQueue.push(() => {
+                SoundToggle.instance.playBigWin()
+                FreeSpines.instance.ShowTotalSpin(() => {
+                    runNext();
+                }, 4000);
+            });
+        }
+
+        // nếu không có animation nào
+        if (winQueue.length === 0) {
+            next();
+            return;
+        }
+
+        let index = 0;
+
+        const runNext = () => {
+            if (index >= winQueue.length) {
+                next();
+                return;
+            }
+
+            const fn = winQueue[index];
+            index++;
+            fn();
+        };
+        // bắt đầu chạy queue
+        runNext();
     }
+
 
     CheckScratch() {
         let indexScratch = 0
@@ -590,15 +582,17 @@ export class GameManager extends Component {
         })
     }
 
+
+
     ShowAllReef(iSpine = false) {
-        // this.reels.forEach((e, i) => {
-        //     e.symbols.forEach(s => {
-        //         if (s.face == ESymbolFace.SCRATCH && iSpine == false) {
-        //             s.playAnimation(s.getNameIdle(), true)
-        //         }
-        //     })
-        //     tween(e.maskEff.getComponent(UIOpacity)).to(0.3, { opacity: 0 }).start()
-        // })
+        this.reels.forEach((e, i) => {
+            e.symbols.forEach(s => {
+                if (s.face == ESymbolFace.SCRATCH && iSpine == false) {
+                    s.playiconAnimation(s.getNameIdle(), true)
+                }
+            })
+            tween(e.maskEff.getComponent(UIOpacity)).to(0.3, { opacity: 0 }).start()
+        })
     }
     isFree = false
     public SetNormal() {
@@ -707,7 +701,7 @@ export class GameManager extends Component {
     }
 
     GetTimeTurboStopSpin() {
-        if (this.turboMode == 0) return 0.3
+        if (this.turboMode == 0) return 0.1
         if (this.turboMode == 1) {
             SoundToggle.instance.PlayScatchIdle()
             return 0

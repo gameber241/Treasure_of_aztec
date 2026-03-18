@@ -111,7 +111,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 1073741824,
+    "_layer": 64,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -229,7 +229,7 @@
     },
     "defaultSkin": "default",
     "defaultAnimation": "VFX_smoke",
-    "_premultipliedAlpha": false,
+    "_premultipliedAlpha": true,
     "_timeScale": 1,
     "_preCacheMode": 0,
     "_cacheMode": 0,
@@ -350,8 +350,8 @@
       "__expectedType__": "sp.SkeletonData"
     },
     "defaultSkin": "Icon2",
-    "defaultAnimation": "icon_size1_idle",
-    "_premultipliedAlpha": false,
+    "defaultAnimation": "icon_size1_move",
+    "_premultipliedAlpha": true,
     "_timeScale": 1,
     "_preCacheMode": 0,
     "_cacheMode": 0,
@@ -496,7 +496,7 @@
     },
     "defaultSkin": "default",
     "defaultAnimation": "<None>",
-    "_premultipliedAlpha": false,
+    "_premultipliedAlpha": true,
     "_timeScale": 1,
     "_preCacheMode": 0,
     "_cacheMode": 0,

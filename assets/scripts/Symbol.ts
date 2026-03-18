@@ -1,4 +1,4 @@
-import { _decorator, Component, Tween, tween, UITransform, Sprite, Enum, Node, Vec2, SpriteFrame, Vec3, randomRangeInt, sp, size, Layers, Widget, Color } from 'cc';
+import { _decorator, Component, Tween, tween, UITransform, Sprite, Enum, Node, Vec2, SpriteFrame, Vec3, randomRangeInt, sp, size, Layers, Widget, Color, Game } from 'cc';
 import { ReelBase } from './ReelBase';
 import { PrefabManager } from './Manager/PrefabManager';
 import { ListDataSymbol } from './data/ListDataSymbol';
@@ -27,7 +27,7 @@ const SymbolAnim = {
         idle: ["icon_Wild1_idle", "icon_Wild2_idle", "icon_Wild3_idle"],
         move: ["icon_Wild1_move", "icon_Wild2_move", "icon_Wild3_move"],
         action: ["icon_Wild1_appear", "icon_Wild2_appear", "icon_Wild3_appear"],
-        win: ["icon_Wild1_action", "icon_Wild2_action", "icon_Wild3_action"]
+        win: ["icon_Wild1_broken_action", "icon_Wild2_broken_action", "icon_Wild3_broken_action"]
     },
     SCRATCH: {
         idle: ["Icon_Scatter_small_idle", "Icon_Scatter_big_idle"],
@@ -193,13 +193,12 @@ export class Symbol extends Component {
     }
 
     setRandomFace() {
-
         const faces = [
             ESymbolFace.MASK_RED,
             ESymbolFace.STONE_WHEEL,
             ESymbolFace.GREEN_IDOL,
             ESymbolFace.PURPLE_SERPENT,
-            ESymbolFace.GOLDEN_IDOL,
+            // ESymbolFace.GOLDEN_IDOL,
             ESymbolFace.JAGUAR_PINK,
             ESymbolFace.TEN,
             ESymbolFace.ACE,
@@ -219,7 +218,9 @@ export class Symbol extends Component {
         if (type === Symbol.MoveType.STOP) {
             Tween.stopAllByTarget(this.node);
         }
-
+        if (type === Symbol.MoveType.MOVING) {
+            this.SetUiMove()
+        }
         const easingType =
             type === Symbol.MoveType.MOVING
                 ? "linear"
@@ -273,9 +274,22 @@ export class Symbol extends Component {
             .to(0.08, { position: upPos }, { easing: 'sineOut' })
             .to(0.08, { position: basePos }, { easing: 'sineIn' })
             .call(() => {
+                if (this.isInit == true) {
+                    if (this.face == ESymbolFace.WILD || this.face == ESymbolFace.GOLDEN_IDOL) {
+                        if (GameManager.instance.CheckScratch() == false)
+                            this.icon.node.layer = this.layer
+                    }
+                }
+                else {
+                    this.node.active = false
+                }
                 if (this.face == ESymbolFace.SCRATCH) {
-                    SoundToggle.instance.PlayScatchIdle()
                     this.icon.node.layer = this.layer
+
+                }
+                if (this.face == ESymbolFace.SCRATCH || this.face == ESymbolFace.WILD) {
+
+                    SoundToggle.instance.PlayScatchIdle()
                     const animNameAction = this.getNameAction();
                     const animNameIdle = this.getNameIdle()
                     this.icon.setCompleteListener((tracking) => {
@@ -287,7 +301,6 @@ export class Symbol extends Component {
 
                 }
                 else {
-                    const animNameAction = this.getNameAction();
                     const animNameIdle = this.getNameIdle()
                     this.icon.setCompleteListener((tracking) => {
                         if (tracking.animation.name != animNameIdle) return
@@ -324,19 +337,15 @@ export class Symbol extends Component {
         this.stackSize = data.ms;
         this.stackIndex = data.mi;
         this.stackId = data.sid;
-        const name = `icon_Wild${this.stackSize}_appear`;
+        const name = `icon_size${this.stackSize}_action_upgrade`;
         this.playiconAnimation(name, false);
-
         this.icon.setCompleteListener(() => {
             this.icon.setCompleteListener(null);
-
-            this.UpdateFrame()
-            // this.InitSymbol(data);
-
-            // this.playiconAnimation(this.getNameAction(), false);
+            this.UpdateFrame();
             this.addAnimation(this.getNameIdle(), true);
-
-            onComplete?.();
+            if (this.face == ESymbolFace.SCRATCH || this.face == ESymbolFace.WILD || this.face == ESymbolFace.GOLDEN_IDOL) {
+                this.icon.node.layer = this.layer
+            }
         });
     }
 
@@ -344,6 +353,7 @@ export class Symbol extends Component {
         this.playiconAnimation(this.getNameWin(), false);
         this.scheduleOnce(() => {
             this.node.destroy();
+            GameManager.instance.symBolArray[this.col][this.row] = null
         }, 1);
 
 

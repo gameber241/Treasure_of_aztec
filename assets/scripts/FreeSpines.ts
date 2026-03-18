@@ -122,7 +122,6 @@ export class FreeSpines extends Component {
             this.node.off(Input.EventType.TOUCH_END, this.touchHandler, this);
             this.touchHandler = null;
         }
-        console.log("den day ne")
         // delay hide giống slot
         this.scheduleOnce(() => {
             this.totlSpines.node.active = false; callback?.();
