@@ -212,13 +212,26 @@ export class WebSocketService extends Component {
             const timeout = setTimeout(() => {
                 console.error('[WS] spin timeout after 30 seconds');
                 this.off('spin');
+                this.off('error');
                 reject(new Error('Spin timeout'));
             }, 30000);
 
-            this.on('spin', (message: any) => {
-                // console.log('[WS] spin handler received message:', message);
+            const cleanup = () => {
                 clearTimeout(timeout);
                 this.off('spin');
+                this.off('error');
+            };
+
+            // Handle error messages from server
+            this.on('error', (message: any) => {
+                console.error('[WS] Received error message:', message);
+                cleanup();
+                reject(new Error(message.error || 'Server error'));
+            });
+
+            this.on('spin', (message: any) => {
+                // console.log('[WS] spin handler received message:', message);
+                cleanup();
 
                 const result = message.payload || message;
                 // console.log('[WS] spin result:', JSON.stringify(result, null, 2));

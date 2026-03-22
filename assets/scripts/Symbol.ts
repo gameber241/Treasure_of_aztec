@@ -147,11 +147,34 @@ export class Symbol extends Component {
             this.frame.enabled = false
             return
         }
-        if (this.frameState == SymbolFrameState.FRAME) {
+
+        if (this.frameState == SymbolFrameState.FRAME ||
+            this.frameState == SymbolFrameState.SILVER ||
+            this.frameState == SymbolFrameState.WILD) {
             this.frame.enabled = true
+
+            // Debug frame details
+            const currentAnim = this.frame.animation;
+            const framePos = this.frame.node.getWorldPosition();
+            const frameScale = this.frame.node.scale;
+            const iconPos = this.icon.node.getWorldPosition();
+
+            console.log(`[Symbol] Frame ENABLED - frameState: ${this.frameState}, face: ${this.face}, col: ${this.col}, row: ${this.row}`);
+            console.log(`  Frame Position: (${framePos.x.toFixed(1)}, ${framePos.y.toFixed(1)})`);
+            console.log(`  Icon Position: (${iconPos.x.toFixed(1)}, ${iconPos.y.toFixed(1)})`);
+            console.log(`  Frame Scale: (${frameScale.x}, ${frameScale.y})`);
+            console.log(`  Frame Animation: ${currentAnim ?? 'none'}`);
+            console.log(`  Frame enabled: ${this.frame.enabled}, node active: ${this.frame.node.active}`);
+
+            // Force set frame to a known good animation
+            if (this.frameState == SymbolFrameState.SILVER) {
+                console.log(`  [DEBUG] Trying to set frame animation to idle...`);
+                this.playFrameAnimation('icon_size1_idle', true);
+            }
         }
-        else
+        else {
             this.frame.enabled = false
+        }
 
     }
 
