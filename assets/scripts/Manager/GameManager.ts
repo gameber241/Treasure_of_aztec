@@ -8,7 +8,7 @@ import { Spin } from '../Spin';
 import { BigWin } from '../BigWin';
 import { FreeSpines } from '../FreeSpines';
 import { AutoCtrl } from '../AutoCtrl';
-import { H_story } from '../Hístory';
+import { H_story } from '../History';
 import { SoundToggle } from '../Sound';
 import { EventBus } from '../EventBus';
 import { UserInfo } from '../UserInfo';

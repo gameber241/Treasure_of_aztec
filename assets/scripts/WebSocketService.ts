@@ -22,6 +22,7 @@ interface SpinResult {
     };
 }
 
+
 @ccclass('WebSocketService')
 export class WebSocketService extends Component {
     private static instance: WebSocketService = null;
@@ -282,8 +283,82 @@ export class WebSocketService extends Component {
         });
     }
 
-    public getLogs(options?: any): void {
-        this.send('getLogs', options);
+    public getLogs(options?: any): Promise<any> {
+        return new Promise((resolve, reject) => {
+            console.log('[WS] getLogs() called with options:', options);
+
+            if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+                console.error('[WS] getLogs failed: WebSocket not connected');
+                reject(new Error('WebSocket not connected'));
+                return;
+            }
+
+            const timeout = setTimeout(() => {
+                console.error('[WS] getLogs timeout after 10 seconds');
+                this.off('getLogsResult');
+                this.off('error');
+                reject(new Error('getLogs timeout'));
+            }, 10000);
+
+            const cleanup = () => {
+                clearTimeout(timeout);
+                this.off('getLogsResult');
+                this.off('error');
+            };
+
+            this.on('error', (message: any) => {
+                console.error('[WS] getLogs error message:', message);
+                cleanup();
+                reject(new Error(message.error || 'getLogs failed'));
+            });
+
+            this.on('getLogsResult', (message: any) => {
+                cleanup();
+                const result = message.payload || message;
+                resolve(result);
+            });
+
+            this.send('getLogs', options || {});
+        });
+    }
+
+    public getLogDetail(id: number | string): Promise<any> {
+        return new Promise((resolve, reject) => {
+            console.log('[WS] getLogDetail() called with id:', id);
+
+            if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+                console.error('[WS] getLogDetail failed: WebSocket not connected');
+                reject(new Error('WebSocket not connected'));
+                return;
+            }
+
+            const timeout = setTimeout(() => {
+                console.error('[WS] getLogDetail timeout after 10 seconds');
+                this.off('getLogDetailResult');
+                this.off('error');
+                reject(new Error('getLogDetail timeout'));
+            }, 10000);
+
+            const cleanup = () => {
+                clearTimeout(timeout);
+                this.off('getLogDetailResult');
+                this.off('error');
+            };
+
+            this.on('error', (message: any) => {
+                console.error('[WS] getLogDetail error message:', message);
+                cleanup();
+                reject(new Error(message.error || 'getLogDetail failed'));
+            });
+
+            this.on('getLogDetailResult', (message: any) => {
+                cleanup();
+                const result = message.payload || message;
+                resolve(result);
+            });
+
+            this.send('getLogDetail', { id });
+        });
     }
 
     public ping(): void {
