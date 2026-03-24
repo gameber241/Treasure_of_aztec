@@ -111,7 +111,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 64,
+    "_layer": 1073741824,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -350,7 +350,7 @@
       "__expectedType__": "sp.SkeletonData"
     },
     "defaultSkin": "Icon2",
-    "defaultAnimation": "icon_size1_move",
+    "defaultAnimation": "icon_size1_idle",
     "_premultipliedAlpha": true,
     "_timeScale": 1,
     "_preCacheMode": 0,
@@ -431,7 +431,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 64,
+    "_layer": 33554432,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -476,7 +476,7 @@
     "node": {
       "__id__": 17
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": {
       "__id__": 21
     },
@@ -494,7 +494,7 @@
       "__uuid__": "ac1024a5-6840-4a21-b23e-80babe5374df",
       "__expectedType__": "sp.SkeletonData"
     },
-    "defaultSkin": "default",
+    "defaultSkin": "Border_Gold",
     "defaultAnimation": "<None>",
     "_premultipliedAlpha": true,
     "_timeScale": 1,
@@ -550,7 +550,7 @@
     "_contentSize": {
       "__type__": "cc.Size",
       "width": 124,
-      "height": 102
+      "height": 100
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",

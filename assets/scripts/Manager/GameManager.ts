@@ -13,6 +13,7 @@ import { SoundToggle } from '../Sound';
 import { EventBus } from '../EventBus';
 import { UserInfo } from '../UserInfo';
 import { WebSocketService } from '../WebSocketService';
+import { Waymanager } from '../Waymanager';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameManager')
@@ -60,6 +61,12 @@ export class GameManager extends Component {
 
     @property(Node)
     optionSetting: Node = null
+
+    @property(Node)
+    bgBotNormal: Node = null
+
+    @property(Node)
+    bgFreeGame: Node = null
 
     @property(AutoCtrl)
     UiAuto: AutoCtrl = null
@@ -174,1232 +181,11 @@ export class GameManager extends Component {
         }
     }
 
-    sampleJson2 = {
-        success: true,
-        totalWin: 2250,
-        usingFreeSpin: false,
-
-        rounds: [{
-            index: 0,
-            multiplier: 1,
-            isScratch: false,
-            freeSpin: 0,
-
-            grid: [
-                // Reel 0
-                [
-                    { i: 10, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 1 (NO mega)
-                [
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: 200 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 2 (MEGA 3 stack)
-                [
-                    { i: 7, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 8, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 9, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 3
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 4
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 5
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 6 (Wild giữ nguyên)
-                [
-                    { i: 3, f: 4, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 10, f: 0, ms: 1, mi: 0, sid: -1 }
-                ]
-            ],
-
-            above: [
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [],
-                [{ i: 7, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 9, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }, { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }],
-            ],
-
-            win: {
-                positions: [
-                    { c: 1, r: 0 },
-                    { c: 0, r: 4 },
-                    { c: 2, r: 5 },
-                    { c: 3, r: 4 },
-                    { c: 4, r: 4 },
-                    { c: 4, r: 2 },
-                    { c: 5, r: 3 },
-                ],
-                stepWin: 2000
-            },
-            BigWin: 300,
-            MegaWin: 1000,
-            SuperWin: 100000,
-            flips: [],
-            copies: [],
-            hasNext: false
-        },
-
-        // // =================================================
-        // // ROUND 0 – TEN WIN
-        // // =================================================
-        {
-            index: 0,
-            multiplier: 1,
-            isScratch: false,
-            freeSpin: 10,
-            grid: [
-
-                // Reel 0 (4 rows)
-                [
-                    { i: 1, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }, // WIN
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 1
-                [
-                    { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }, // WIN
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 1, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 2
-                [
-                    { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }, // WIN
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 3
-                [
-                    { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }, // WIN
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 1, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 4
-                [
-                    { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }, // WIN
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 10, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 5
-                [
-                    { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }, // WIN
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 6 (Wild)
-                [
-                    { i: 1, f: 4, ms: 1, mi: 0, sid: -1 },
-                    { i: 10, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 }
-                ]
-            ],
-
-            above: [
-
-            ],
-
-            win: {
-                positions: [
-
-                ],
-                stepWin: 250
-            },
-
-            flips: [],
-            copies: [],
-            hasNext: true,
-            BigWin: 0,
-            MegaWin: 0,
-            SuperWin: 0,
-        },
-
-        // // =================================================
-        // // ROUND 1 – GOLDEN_IDOL + MEGA
-        // // =================================================
-        {
-            index: 0,
-            multiplier: 2,
-            isScratch: true,
-            freeSpin: 9,
-
-            grid: [
-
-                // Reel 0
-                [
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 1 (NO mega)
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 2 (MEGA 3 stack)
-                [
-                    { i: 6, f: 3, ms: 3, mi: 0, sid: 200 },
-                    { i: 6, f: 3, ms: 3, mi: 1, sid: 200 },
-                    { i: 6, f: 3, ms: 3, mi: 2, sid: 200 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 3
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 10, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 4
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 5
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 10, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 6 (Wild giữ nguyên)
-                [
-                    { i: 0, f: 4, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 10, f: 0, ms: 1, mi: 0, sid: -1 }
-                ]
-            ],
-
-            above: [
-                [],
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }, { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }, { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }, { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }, { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [],
-                [{ i: 7, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 9, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }],
-
-            ],
-
-            win: {
-                positions: [
-                    { c: 0, r: 1 },
-                    { c: 0, r: 2 },
-                    { c: 0, r: 3 },
-                    { c: 0, r: 4 },
-                    { c: 0, r: 5 },
-                    { c: 2, r: 1 },
-                    { c: 3, r: 1 },
-                    { c: 4, r: 1 },
-                    { c: 5, r: 1 },
-                ],
-                stepWin: 2000
-            },
-
-            flips: [
-                {
-                    from: { c: 1, r: 1 },
-                    to: { i: 0, f: 4, ms: 3, mi: 0, sid: 1 } // biến thành Wild
-                },
-                {
-                    from: { c: 1, r: 2 },
-                    to: { i: 0, f: 4, ms: 3, mi: 1, sid: 1 } // biến thành Wild
-                },
-                {
-                    from: { c: 1, r: 3 },
-                    to: { i: 0, f: 4, ms: 3, mi: 2, sid: 1 } // biến thành Wild
-                },
-            ],
-            copies: [],
-            hasNext: false,
-            BigWin: 0,
-            MegaWin: 0,
-            SuperWin: 0,
-        },
-        {
-            index: 0,
-            multiplier: 4,
-            isScratch: true,
-            freeSpin: 8,
-
-            grid: [
-
-                // Reel 0
-                [
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 1 (NO mega)
-                [
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 2 (MEGA 3 stack)
-                [
-                    { i: 7, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 8, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 9, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 3
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 4
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 5
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 6 (Wild giữ nguyên)
-                [
-                    { i: 3, f: 4, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 10, f: 0, ms: 1, mi: 0, sid: -1 }
-                ]
-            ],
-
-            above: [
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [],
-                [{ i: 7, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 9, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }, { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }],
-            ],
-
-            win: {
-                positions: [
-                    { c: 1, r: 0 },
-                    { c: 0, r: 4 },
-                    { c: 2, r: 5 },
-                    { c: 3, r: 4 },
-                    { c: 4, r: 4 },
-                    { c: 4, r: 2 },
-                    { c: 5, r: 3 },
-                ],
-                stepWin: 2000
-            },
-            BigWin: 0,
-            MegaWin: 0,
-            SuperWin: 0,
-            flips: [],
-            copies: [],
-            hasNext: false
-        },
-        {
-            index: 0,
-            multiplier: 8,
-            isScratch: true,
-            freeSpin: 7,
-
-            grid: [
-
-                // Reel 0
-                [
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 1 (NO mega)
-                [
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 2 (MEGA 3 stack)
-                [
-                    { i: 7, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 8, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 9, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 3
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 4
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 5
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 6 (Wild giữ nguyên)
-                [
-                    { i: 3, f: 4, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 10, f: 0, ms: 1, mi: 0, sid: -1 }
-                ]
-            ],
-
-            above: [
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [],
-                [{ i: 7, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 9, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }, { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }],
-            ],
-
-            win: {
-                positions: [
-                    { c: 1, r: 0 },
-                    { c: 0, r: 4 },
-                    { c: 2, r: 5 },
-                    { c: 3, r: 4 },
-                    { c: 4, r: 4 },
-                    { c: 4, r: 2 },
-                    { c: 5, r: 3 },
-                ],
-                stepWin: 2000
-            },
-            BigWin: 0,
-            MegaWin: 0,
-            SuperWin: 0,
-            flips: [],
-            copies: [],
-            hasNext: false
-        },
-        {
-            index: 0,
-            multiplier: 16,
-            isScratch: true,
-            freeSpin: 6,
-
-            grid: [
-
-                // Reel 0
-                [
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 1 (NO mega)
-                [
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 2 (MEGA 3 stack)
-                [
-                    { i: 7, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 8, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 9, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 3
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 4
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 5
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 6 (Wild giữ nguyên)
-                [
-                    { i: 3, f: 4, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 10, f: 0, ms: 1, mi: 0, sid: -1 }
-                ]
-            ],
-
-            above: [
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [],
-                [{ i: 7, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 9, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }, { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }],
-            ],
-
-            win: {
-                positions: [
-                    { c: 1, r: 0 },
-                    { c: 0, r: 4 },
-                    { c: 2, r: 5 },
-                    { c: 3, r: 4 },
-                    { c: 4, r: 4 },
-                    { c: 4, r: 2 },
-                    { c: 5, r: 3 },
-                ],
-                stepWin: 2000
-            },
-            BigWin: 0,
-            MegaWin: 0,
-            SuperWin: 0,
-            flips: [],
-            copies: [],
-            hasNext: false
-        },
-        {
-            index: 0,
-            multiplier: 32,
-            isScratch: true,
-            freeSpin: 5,
-
-            grid: [
-
-                // Reel 0
-                [
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 1 (NO mega)
-                [
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 2 (MEGA 3 stack)
-                [
-                    { i: 7, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 8, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 9, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 3
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 4
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 5
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 6 (Wild giữ nguyên)
-                [
-                    { i: 3, f: 4, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 10, f: 0, ms: 1, mi: 0, sid: -1 }
-                ]
-            ],
-
-            above: [
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [],
-                [{ i: 7, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 9, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }, { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }],
-            ],
-
-            win: {
-                positions: [
-                    { c: 1, r: 0 },
-                    { c: 0, r: 4 },
-                    { c: 2, r: 5 },
-                    { c: 3, r: 4 },
-                    { c: 4, r: 4 },
-                    { c: 4, r: 2 },
-                    { c: 5, r: 3 },
-                ],
-                stepWin: 2000
-            },
-            BigWin: 0,
-            MegaWin: 0,
-            SuperWin: 0,
-            flips: [],
-            copies: [],
-            hasNext: false
-        },
-        {
-            index: 0,
-            multiplier: 64,
-            isScratch: true,
-            freeSpin: 4,
-
-            grid: [
-
-                // Reel 0
-                [
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 1 (NO mega)
-                [
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 2 (MEGA 3 stack)
-                [
-                    { i: 7, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 8, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 9, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 3
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 4
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 5
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 6 (Wild giữ nguyên)
-                [
-                    { i: 3, f: 4, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 10, f: 0, ms: 1, mi: 0, sid: -1 }
-                ]
-            ],
-
-            above: [
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [],
-                [{ i: 7, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 9, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }, { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }],
-            ],
-
-            win: {
-                positions: [
-                    { c: 1, r: 0 },
-                    { c: 0, r: 4 },
-                    { c: 2, r: 5 },
-                    { c: 3, r: 4 },
-                    { c: 4, r: 4 },
-                    { c: 4, r: 2 },
-                    { c: 5, r: 3 },
-                ],
-                stepWin: 2000
-            },
-            BigWin: 0,
-            MegaWin: 0,
-            SuperWin: 0,
-            flips: [],
-            copies: [],
-            hasNext: false
-        },
-        {
-            index: 0,
-            multiplier: 128,
-            isScratch: true,
-            freeSpin: 3,
-
-            grid: [
-
-                // Reel 0
-                [
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 1 (NO mega)
-                [
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 2 (MEGA 3 stack)
-                [
-                    { i: 7, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 8, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 9, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 3
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 4
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 5
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 6 (Wild giữ nguyên)
-                [
-                    { i: 3, f: 4, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 10, f: 0, ms: 1, mi: 0, sid: -1 }
-                ]
-            ],
-
-            above: [
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [],
-                [{ i: 7, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 9, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }, { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }],
-            ],
-
-            win: {
-                positions: [
-                    { c: 1, r: 0 },
-                    { c: 0, r: 4 },
-                    { c: 2, r: 5 },
-                    { c: 3, r: 4 },
-                    { c: 4, r: 4 },
-                    { c: 4, r: 2 },
-                    { c: 5, r: 3 },
-                ],
-                stepWin: 2000
-            },
-            BigWin: 0,
-            MegaWin: 0,
-            SuperWin: 0,
-            flips: [],
-            copies: [],
-            hasNext: false
-        },
-        {
-            index: 0,
-            multiplier: 256,
-            isScratch: true,
-            freeSpin: 2,
-
-            grid: [
-
-                // Reel 0
-                [
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 1 (NO mega)
-                [
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 2 (MEGA 3 stack)
-                [
-                    { i: 7, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 8, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 9, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 3
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 4
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 5
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 6 (Wild giữ nguyên)
-                [
-                    { i: 3, f: 4, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 10, f: 0, ms: 1, mi: 0, sid: -1 }
-                ]
-            ],
-
-            above: [
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [],
-                [{ i: 7, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 9, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }, { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }],
-            ],
-
-            win: {
-                positions: [
-                    { c: 1, r: 0 },
-                    { c: 0, r: 4 },
-                    { c: 2, r: 5 },
-                    { c: 3, r: 4 },
-                    { c: 4, r: 4 },
-                    { c: 4, r: 2 },
-                    { c: 5, r: 3 },
-                ],
-                stepWin: 2000
-            },
-            BigWin: 0,
-            MegaWin: 0,
-            SuperWin: 0,
-            flips: [],
-            copies: [],
-            hasNext: false
-        },
-        {
-            index: 0,
-            multiplier: 1024,
-            isScratch: true,
-            freeSpin: 1,
-
-            grid: [
-
-                // Reel 0
-                [
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 1 (NO mega)
-                [
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 2 (MEGA 3 stack)
-                [
-                    { i: 7, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 8, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 9, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 3
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 4
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 5
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 6 (Wild giữ nguyên)
-                [
-                    { i: 3, f: 4, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 10, f: 0, ms: 1, mi: 0, sid: -1 }
-                ]
-            ],
-
-            above: [
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [],
-                [{ i: 7, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 9, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }, { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }],
-            ],
-
-            win: {
-                positions: [
-                    { c: 1, r: 0 },
-                    { c: 0, r: 4 },
-                    { c: 2, r: 5 },
-                    { c: 3, r: 4 },
-                    { c: 4, r: 4 },
-                    { c: 4, r: 2 },
-                    { c: 5, r: 3 },
-                ],
-                stepWin: 2000
-            },
-            BigWin: 0,
-            MegaWin: 0,
-            SuperWin: 0,
-            flips: [],
-            copies: [],
-            hasNext: false
-        },
-        {
-            index: 0,
-            multiplier: 4,
-            isScratch: true,
-            freeSpin: 0,
-            totalPrice: 10000,
-            grid: [
-
-                // Reel 0
-                [
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 1 (NO mega)
-                [
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 3, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 5, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 2 (MEGA 3 stack)
-                [
-                    { i: 7, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 8, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 9, f: 3, ms: 1, mi: 0, sid: 200 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 3
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 4
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 9, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 5
-                [
-                    { i: 6, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 2, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 12, f: 0, ms: 1, mi: 0, sid: -1 }
-                ],
-
-                // Reel 6 (Wild giữ nguyên)
-                [
-                    { i: 3, f: 4, ms: 1, mi: 0, sid: -1 },
-                    { i: 11, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 4, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 7, f: 0, ms: 1, mi: 0, sid: -1 },
-                    { i: 10, f: 0, ms: 1, mi: 0, sid: -1 }
-                ]
-            ],
-
-            above: [
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [],
-                [{ i: 7, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 9, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }, { i: 8, f: 0, ms: 1, mi: 0, sid: -1 }],
-                [{ i: 2, f: 0, ms: 1, mi: 0, sid: -1 }],
-            ],
-
-            win: {
-                positions: [
-                    { c: 1, r: 0 },
-                    { c: 0, r: 4 },
-                    { c: 2, r: 5 },
-                    { c: 3, r: 4 },
-                    { c: 4, r: 4 },
-                    { c: 4, r: 2 },
-                    { c: 5, r: 3 },
-                ],
-                stepWin: 2000
-            },
-            BigWin: 0,
-            MegaWin: 0,
-            SuperWin: 0,
-            flips: [],
-            copies: [],
-            hasNext: false
-        }
-        ]
-    };
-
     sampleJson = null;
 
     indexCurrentReel = 0
     public async PlaySpin() {
         console.log("[GameManager] PlaySpin called - round " + this.indexCurrentReel);
-
         // If this is the first round, fetch spin result from server
         if (this.indexCurrentReel === 0) {
             const testMode = false; // Set to false to use real server data
@@ -1417,7 +203,6 @@ export class GameManager extends Component {
                             reject(err);
                             return;
                         }
-
                         const spinResult = jsonAsset.json;
                         console.log("[GameManager] Using TEST data:", spinResult);
 
@@ -1437,7 +222,6 @@ export class GameManager extends Component {
                     });
                 });
             } else {
-
                 try {
                     console.log("[GameManager] Calling spin API with bet:", this.priceCurrent);
 
@@ -1500,11 +284,14 @@ export class GameManager extends Component {
 
 
     SpinGame() {
+
+
         Spin.instance.isSpin = true
         // Total.instance.SetTextNormal()
-
+        Waymanager.instance.resetWay()
         // this.Disabledbtns()
         const round = this.sampleJson.rounds[this.indexCurrentReel];
+        console.log("round", round)
         round.isScratch
             ? (this.SetFreeSpines(), this.PlayFreeSpin(round.freeSpin))
             : this.SetNormal();
@@ -1614,15 +401,13 @@ export class GameManager extends Component {
     async RollDataNormal(grid) {
         for (let i = 0; i < this.reels.length; i++) {
             let current = i;
-            await GameManager.waitForSeconds(0.05);
-
+            await GameManager.waitForSeconds(i == 0 ? 0 : this.GetTimeTurboStopSpin());
             this.reels[current].startRoll();
         }
-        await GameManager.waitForSeconds(this.GetTimeTurboStarSpin());
         for (let i = 0; i < this.reels.length; i++) {
             let current = i;
             this.reels[current].stopRoll(grid[i]);
-            await GameManager.waitForSeconds(this.GetTimeTurboStopSpin());
+            await GameManager.waitForSeconds(i == 0 ? 0 : this.GetTimeTurboStopSpin());
         }
         await GameManager.waitForSeconds(0.5);
         this.ClearData()
@@ -1645,29 +430,36 @@ export class GameManager extends Component {
 
 
     async ClearData() {
-        await GameManager.waitForSeconds(0.05);
-
         const r = this.sampleJson.rounds[this.indexCurrentReel];
-
+        Waymanager.instance.animWay(r.win.ways)
 
         if (r.win.positions.length > 0) {
-            if (r.flips.length) {
-                this.FlipData();
-                await GameManager.waitForSeconds(1.1);
-
-            }
+            this.removeWinDuplicateFlip(r)
             // dispose sau khi animation xong
+            const flipPos = new Set(
+                r.flips.map(f => `${f.from.c}_${f.from.r}`)
+            );
+
             for (const e of r.win.positions) {
-                if (this.symBolArray[e.c][e.r] == null) {
-                    console.log(this.symBolArray[e.c][e.r], e.c, e.r, "checkkkkk")
-                    continue;
-                }
-                this.symBolArray[e.c][e.r].Dispose();
+
+                const key = `${e.c}_${e.r}`;
+
+                // ⭐ nếu viên này sẽ flip → KHÔNG dispose
+                if (flipPos.has(key)) continue;
+
+                const symbol = this.symBolArray[e.c][e.r];
+                if (!symbol) continue;
+                symbol.Dispose();
             }
 
             SoundToggle.instance.PlaySymbolWin()
             ComboManager.instance.ScrollToCombo(this.sampleJson.rounds[this.indexCurrentReel].multiplier)
             await GameManager.waitForSeconds(1.1);
+
+            if (r.flips.length > 0) {
+                this.FlipData();
+                await GameManager.waitForSeconds(1.1);
+            }
             this.reels.forEach(e => {
                 e.symbols.forEach(e => {
                     e.AnimationWin()
@@ -1839,6 +631,8 @@ export class GameManager extends Component {
         this.frameReel1FreeSpin.active = false
         this.footFreeSpin.active = false
         this.walletNode.setPosition(0, -436)
+        this.bgBotNormal.active = true
+        this.bgFreeGame.active = false
     }
 
     public SetFreeSpines() {
@@ -1849,7 +643,8 @@ export class GameManager extends Component {
         this.frameReel1FreeSpin.active = true
         this.footFreeSpin.active = true
         this.walletNode.setPosition(0, -679.364)
-
+        this.bgBotNormal.active = false
+        this.bgFreeGame.active = true
     }
 
 
@@ -1934,7 +729,7 @@ export class GameManager extends Component {
     }
 
     GetTimeTurboStopSpin() {
-        if (this.turboMode == 0) return 0.1
+        if (this.turboMode == 0) return 0.15
         if (this.turboMode == 1) {
             SoundToggle.instance.PlayScatchIdle()
             return 0
@@ -1958,6 +753,22 @@ export class GameManager extends Component {
             return 0
         }
 
+    }
+
+
+    removeWinDuplicateFlip(round: any) {
+        if (!round?.flip || !round?.win?.positions) return;
+
+        // tạo list vị trí flip
+        const flipPos = new Set(
+            round.flip.map(f => `${f.from.c}_${f.from.r}`)
+        );
+
+        // lọc win
+        round.win.positions = round.win.positions.filter(p => {
+            const key = `${p.c}_${p.r}`;
+            return !flipPos.has(key);
+        });
     }
 }
 

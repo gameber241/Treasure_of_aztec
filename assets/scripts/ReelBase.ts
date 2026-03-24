@@ -79,6 +79,7 @@ export abstract class ReelBase extends Component {
         this.rearrangeSymbols();
         this.symbols.forEach(e => {
             e.icon.node.layer = Layers.Enum.DEFAULT
+            e.frame.node.layer = Layers.Enum.DEFAULT
             e.isInit = false
             e.node.active = true
         })
@@ -128,7 +129,6 @@ export abstract class ReelBase extends Component {
         const total = this.symbols.length;     // 15
         const visible = this.VISIBLE_COUNT;   // 5
         const firstVisible = this.FIRST_VISIBLE;
-
         // 1️⃣ Set result vào 5 symbol phía trên (không đụng visible hiện tại)
         for (let i = 0; i < visible; i++) {
             const targetIndex = (firstVisible + i) % total;
@@ -202,7 +202,6 @@ export abstract class ReelBase extends Component {
 
             }
         }
-        console.log(this.possitionReel, space)
         for (let i = space - 1; i >= 0; i--) {
             let Symbol = this.createNewSymbol()
             this.symbols.push(Symbol)

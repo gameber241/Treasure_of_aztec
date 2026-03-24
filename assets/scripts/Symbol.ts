@@ -96,8 +96,8 @@ export class Symbol extends Component {
 
 
     protected start() {
-        this.layer = this.icon.node.layer
-        // this.layer = 1
+        this.layer = 64
+
         this.icon.node.layer = Layers.Enum.DEFAULT
     }
 
@@ -153,22 +153,8 @@ export class Symbol extends Component {
             this.frameState == SymbolFrameState.WILD) {
             this.frame.enabled = true
 
-            // Debug frame details
-            const currentAnim = this.frame.animation;
-            const framePos = this.frame.node.getWorldPosition();
-            const frameScale = this.frame.node.scale;
-            const iconPos = this.icon.node.getWorldPosition();
-
-            console.log(`[Symbol] Frame ENABLED - frameState: ${this.frameState}, face: ${this.face}, col: ${this.col}, row: ${this.row}`);
-            console.log(`  Frame Position: (${framePos.x.toFixed(1)}, ${framePos.y.toFixed(1)})`);
-            console.log(`  Icon Position: (${iconPos.x.toFixed(1)}, ${iconPos.y.toFixed(1)})`);
-            console.log(`  Frame Scale: (${frameScale.x}, ${frameScale.y})`);
-            console.log(`  Frame Animation: ${currentAnim ?? 'none'}`);
-            console.log(`  Frame enabled: ${this.frame.enabled}, node active: ${this.frame.node.active}`);
-
             // Force set frame to a known good animation
             if (this.frameState == SymbolFrameState.SILVER) {
-                console.log(`  [DEBUG] Trying to set frame animation to idle...`);
                 this.playFrameAnimation('icon_size1_idle', true);
             }
         }
@@ -182,8 +168,8 @@ export class Symbol extends Component {
         this.UpdateFrame();
         this.playiconAnimation(this.getNameIdle(), true);
         this.playFrameAnimation(this.getNameIdle(), true)
-        this.icon.node.setPosition(0, -84 * this.stackSize / 2 + 84 / 2, 0)
-        this.frame.node.setPosition(0, -84 * this.stackSize / 2 + 84 / 2, 0)
+        this.icon.node.setPosition(0, -102 * this.stackSize / 2 + 100 / 2, 0)
+        this.frame.node.setPosition(0, -102 * this.stackSize / 2 + 100 / 2, 0)
 
 
 
@@ -280,11 +266,7 @@ export class Symbol extends Component {
 
 
 
-    exploAnim(bounce = 10, onComplete?: () => void) {
-        if (!this.isRoot || !this.reel) {
-            onComplete && onComplete();
-            return;
-        }
+    exploAnim(bounce = 2) {
         const basePos = this.reel.getSymbolPosition(this.reelIndex);
         const isHorizontal = this.reel.isHorizontal();
 
@@ -299,8 +281,11 @@ export class Symbol extends Component {
             .call(() => {
                 if (this.isInit == true) {
                     if (this.face == ESymbolFace.WILD || this.face == ESymbolFace.GOLDEN_IDOL) {
-                        if (GameManager.instance.CheckScratch() == false)
+                        if (GameManager.instance.CheckScratch() == false) {
                             this.icon.node.layer = this.layer
+                            this.frame.node.layer = this.layer
+                        }
+
                     }
                 }
                 else {
@@ -308,6 +293,7 @@ export class Symbol extends Component {
                 }
                 if (this.face == ESymbolFace.SCRATCH) {
                     this.icon.node.layer = this.layer
+                    this.frame.node.layer = this.layer
 
                 }
                 if (this.face == ESymbolFace.SCRATCH || this.face == ESymbolFace.WILD) {
@@ -331,10 +317,6 @@ export class Symbol extends Component {
                     });
                     this.playiconAnimation(animNameIdle, true)
                 }
-
-                onComplete && onComplete();
-
-
             })
             .start();
     }
