@@ -139,30 +139,34 @@ export class Symbol extends Component {
     }
 
     playFrameAnimation(name: string, loop: boolean) {
+
+        if (this.frameState == SymbolFrameState.SILVER) {
+            this.frame.setSkin("Border_Silver")
+        }
+
+        if (this.frameState == SymbolFrameState.GOLD) {
+            this.frame.setSkin("Border_Gold")
+        }
         this.frame?.setAnimation(0, name, loop);
     }
 
-    UpdateFrame() {
-        if (this.stackIndex > 0) {
-            this.frame.enabled = false
-            return
-        }
-
-        if (this.frameState == SymbolFrameState.FRAME ||
-            this.frameState == SymbolFrameState.SILVER ||
-            this.frameState == SymbolFrameState.WILD) {
-            this.frame.enabled = true
-
-            // Force set frame to a known good animation
-            if (this.frameState == SymbolFrameState.SILVER) {
-                this.playFrameAnimation('icon_size1_idle', true);
+        UpdateFrame() {
+            if (this.stackIndex > 0) {
+                this.frame.enabled = false
+                return
             }
-        }
-        else {
-            this.frame.enabled = false
-        }
 
-    }
+            if (this.frameState == SymbolFrameState.GOLD ||
+                this.frameState == SymbolFrameState.SILVER) {
+                this.frame.enabled = true
+                this.playFrameAnimation(this.getNameIdle(), true);
+
+            }
+            else {
+                this.frame.enabled = false
+            }
+
+        }
 
     SetUISymbolNormal() {
         this.UpdateFrame();

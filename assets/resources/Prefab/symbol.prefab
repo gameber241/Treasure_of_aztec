@@ -495,7 +495,7 @@
       "__expectedType__": "sp.SkeletonData"
     },
     "defaultSkin": "Border_Gold",
-    "defaultAnimation": "<None>",
+    "defaultAnimation": "icon_size1_idle",
     "_premultipliedAlpha": true,
     "_timeScale": 1,
     "_preCacheMode": 0,

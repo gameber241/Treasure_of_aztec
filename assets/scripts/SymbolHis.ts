@@ -148,7 +148,7 @@ export class SymbolHis extends Component {
             return
         }
 
-        if (this.frameState == SymbolFrameState.FRAME ||
+        if (this.frameState == SymbolFrameState.GOLD ||
             this.frameState == SymbolFrameState.SILVER ||
             this.frameState == SymbolFrameState.WILD) {
             this.frame.enabled = true
@@ -175,11 +175,6 @@ export class SymbolHis extends Component {
 
     }
 
-    SetUiMove() {
-        const name = this.getNameMove();
-        this.playiconAnimation(name, true);
-        this.playFrameAnimation(name, true);
-    }
 
     InitSymbol(data: SymbolCell) {
 
@@ -193,40 +188,8 @@ export class SymbolHis extends Component {
         this.SetUISymbolNormal();
     }
 
-    ResetSymbol() {
-        this.stackId = -1;
-        this.stackSize = 1;
-        this.stackIndex = 0;
-        this.setRandomFace();
-        this.SetUISymbolNormal();
-    }
-
-    setRandomFace() {
-        const faces = [
-            ESymbolFace.MASK_RED,
-            ESymbolFace.STONE_WHEEL,
-            ESymbolFace.GREEN_IDOL,
-            ESymbolFace.PURPLE_SERPENT,
-            // ESymbolFace.GOLDEN_IDOL,
-            ESymbolFace.JAGUAR_PINK,
-            ESymbolFace.TEN,
-            ESymbolFace.ACE,
-            ESymbolFace.JACK,
-            ESymbolFace.QUEEN,
-            ESymbolFace.KING
-        ];
-        this.face = faces[Math.floor(Math.random() * faces.length)];
-        this.frameState = SymbolFrameState.NORMAL;
-    }
 
 
-    PlayIdleScratch() {
 
-        const name = this.stackSize === 1
-            ? "Icon_Scatter_small_action_idle"
-            : "Icon_Scatter_big_action_idle";
-
-        this.playiconAnimation(name, true);
-    }
 
 }
