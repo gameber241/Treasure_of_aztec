@@ -14,6 +14,7 @@ import { EventBus } from '../EventBus';
 import { UserInfo } from '../UserInfo';
 import { WebSocketService } from '../WebSocketService';
 import { Waymanager } from '../Waymanager';
+import { TextBoxCombo } from './TextBoxCombo';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameManager')
@@ -282,10 +283,10 @@ export class GameManager extends Component {
         this.SpinGame()
     }
 
-
+    stepOld = 1
     SpinGame() {
-
-
+        TextBoxCombo.instant.playRandomText()
+        this.stepOld = 1
         Spin.instance.isSpin = true
         // Total.instance.SetTextNormal()
         Waymanager.instance.resetWay()
@@ -434,6 +435,7 @@ export class GameManager extends Component {
         Waymanager.instance.animWay(r.win.ways)
 
         if (r.win.positions.length > 0) {
+            TextBoxCombo.instant.PlayStepWin(r.win.stepWin, this.stepOld)
             this.removeWinDuplicateFlip(r)
             // dispose sau khi animation xong
             const flipPos = new Set(
@@ -453,12 +455,13 @@ export class GameManager extends Component {
             }
 
             SoundToggle.instance.PlaySymbolWin()
+            this.stepOld = this.sampleJson.rounds[this.indexCurrentReel].multiplier
             ComboManager.instance.ScrollToCombo(this.sampleJson.rounds[this.indexCurrentReel].multiplier)
             await GameManager.waitForSeconds(1.1);
 
             if (r.flips.length > 0) {
                 this.FlipData();
-                await GameManager.waitForSeconds(1.1);
+                await GameManager.waitForSeconds(2);
             }
             this.reels.forEach(e => {
                 e.symbols.forEach(e => {

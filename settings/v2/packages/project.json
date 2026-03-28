@@ -11,6 +11,14 @@
     {
       "name": "spines",
       "value": 64
+    },
+    {
+      "name": "popup",
+      "value": 128
+    },
+    {
+      "name": "camerasymbolHis",
+      "value": 256
     }
   ]
 }

@@ -1,9 +1,17 @@
-import { _decorator, Component } from 'cc';
+import { _decorator, Component, instantiate, Label, Prefab, ScrollView } from 'cc';
 import { WebSocketService } from './WebSocketService';
-const { ccclass } = _decorator;
+import { ItemHistory } from './ItemHistory';
+const { ccclass, property } = _decorator;
 
 @ccclass('H_story')
 export class H_story extends Component {
+
+    @property(Prefab)
+    itemHis: Prefab = null
+
+    @property(ScrollView)
+    scrollHis: ScrollView = null
+
 
     btnClose() {
         this.node.active = false
@@ -39,19 +47,20 @@ export class H_story extends Component {
                 return;
             }
 
-            const firstLog = logs[0];
-            const logId = firstLog?.id;
-            if (logId === undefined || logId === null) {
-                console.warn('[History] First log has no id:', firstLog);
-                return;
-            }
+            logs.forEach(e => {
+                let item = instantiate(this.itemHis)
+                this.scrollHis.content.addChild(item)
+                item.getComponent(ItemHistory).SetUp(e)
+                console.log(e)
+            })
 
-            console.log('[History] Requesting getLogDetail for id:', logId);
-            const detailResult = await wsService.getLogDetail(logId);
-            console.log('[History] getLogDetailResult:', detailResult);
+
         } catch (error) {
             console.error('[History] Failed to load history demo:', error);
         }
     }
+
+
+
 }
 

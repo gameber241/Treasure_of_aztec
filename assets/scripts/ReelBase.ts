@@ -50,6 +50,7 @@ export abstract class ReelBase extends Component {
 
     protected collectSymbols() {
         this.symbols = [];
+        console.log(this.node.children.length, "checkkkkkkk")
         for (let n of this.node.children) {
             const s = n.getComponent(Symbol);
             if (s) {
@@ -74,6 +75,7 @@ export abstract class ReelBase extends Component {
 
 
     startRoll() {
+        this._isStopping = false;
         this.isRolling = true;
         this.collectSymbols();
         this.rearrangeSymbols();
@@ -115,7 +117,9 @@ export abstract class ReelBase extends Component {
         this._isStopping = true;
 
         Tween.stopAllByTarget(this.node);
-
+        const total = this.symbols.length;     // 15
+        const visible = this.VISIBLE_COUNT;   // 5
+        const firstVisible = this.FIRST_VISIBLE;
         if (!result) {
             this.symbols.forEach(s => {
                 s.reelIndex += visible;
@@ -126,9 +130,7 @@ export abstract class ReelBase extends Component {
 
         }
 
-        const total = this.symbols.length;     // 15
-        const visible = this.VISIBLE_COUNT;   // 5
-        const firstVisible = this.FIRST_VISIBLE;
+
         // 1️⃣ Set result vào 5 symbol phía trên (không đụng visible hiện tại)
         for (let i = 0; i < visible; i++) {
             const targetIndex = (firstVisible + i) % total;
