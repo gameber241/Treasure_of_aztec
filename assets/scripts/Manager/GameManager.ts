@@ -15,6 +15,8 @@ import { UserInfo } from '../UserInfo';
 import { WebSocketService } from '../WebSocketService';
 import { Waymanager } from '../Waymanager';
 import { TextBoxCombo } from './TextBoxCombo';
+import { GameConfig } from '../GameConfig';
+
 const { ccclass, property } = _decorator;
 
 @ccclass('GameManager')
@@ -189,8 +191,8 @@ export class GameManager extends Component {
         console.log("[GameManager] PlaySpin called - round " + this.indexCurrentReel);
         // If this is the first round, fetch spin result from server
         if (this.indexCurrentReel === 0) {
-            const testMode = false; // Set to false to use real server data
-            if (testMode) {
+            const useServerSpin = GameConfig.useServerSpin; // Read from config
+            if (useServerSpin === false) {
                 // ===== TEST MODE: Using static JSON data =====
                 // TODO: Switch back to server data after testing
                 console.log("[GameManager] Loading TEST data from JSON file");
@@ -285,20 +287,21 @@ export class GameManager extends Component {
 
     stepOld = 1
     SpinGame() {
-        TextBoxCombo.instant.playRandomText()
+        // TextBoxCombo.instant.playRandomText()
         this.stepOld = 1
         Spin.instance.isSpin = true
         // Total.instance.SetTextNormal()
         Waymanager.instance.resetWay()
         // this.Disabledbtns()
         const round = this.sampleJson.rounds[this.indexCurrentReel];
-        console.log("round", round)
+        // console.log("round", round)
         round.isScratch
             ? (this.SetFreeSpines(), this.PlayFreeSpin(round.freeSpin))
             : this.SetNormal();
-        // console.log(round.grid[0][0])
-        round.grid[0].reverse()
-        this.GenerateMap(round.grid);
+        const grid = round.grid.map((reel, index) =>
+            index === 0 ? [...reel].reverse() : reel
+        );
+        this.GenerateMap(grid);
         if (round.isScratch == true && round.freeSpinCurrent > 0) {
             // this.currentFree.string = round.freeSpinCurrent
             // this.totalFree.string = round.freeSpinTotal
@@ -435,24 +438,33 @@ export class GameManager extends Component {
         Waymanager.instance.animWay(r.win.ways)
 
         if (r.win.positions.length > 0) {
+            console.log('[ClearData] win.positions BEFORE removeWinDuplicateFlip:', r.win.positions.length);
             TextBoxCombo.instant.PlayStepWin(r.win.stepWin, this.stepOld)
             this.removeWinDuplicateFlip(r)
-            // dispose sau khi animation xong
+            console.log('[ClearData] win.positions AFTER removeWinDuplicateFlip:', r.win.positions.length);
             const flipPos = new Set(
                 r.flips.map(f => `${f.from.c}_${f.from.r}`)
             );
+            console.log('[ClearData] Flip positions:', Array.from(flipPos));
 
+            // dispose all win symbols except flip positions
+            let disposeCount = 0;
             for (const e of r.win.positions) {
-
                 const key = `${e.c}_${e.r}`;
-
-                // ⭐ nếu viên này sẽ flip → KHÔNG dispose
-                if (flipPos.has(key)) continue;
-
+                if (flipPos.has(key)) {
+                    console.log(`[ClearData] Skip dispose for flip position: ${key}`);
+                    continue;
+                }
                 const symbol = this.symBolArray[e.c][e.r];
-                if (!symbol) continue;
+                if (!symbol) {
+                    console.log(`[ClearData] Symbol not found at ${key}`);
+                    continue;
+                }
+                console.log(`[ClearData] Disposing symbol at ${key}`);
                 symbol.Dispose();
+                disposeCount++;
             }
+            console.log(`[ClearData] Total disposed: ${disposeCount} out of ${r.win.positions.length}`);
 
             SoundToggle.instance.PlaySymbolWin()
             this.stepOld = this.sampleJson.rounds[this.indexCurrentReel].multiplier
@@ -463,14 +475,17 @@ export class GameManager extends Component {
                 this.FlipData();
                 await GameManager.waitForSeconds(2);
             }
-            this.reels.forEach(e => {
-                e.symbols.forEach(e => {
-                    e.AnimationWin()
-                })
-            })
+            // Chỉ gọi AnimationWin cho các symbol thực sự win
+            r.win.positions.forEach(pos => {
+                const symbol = this.symBolArray[pos.c][pos.r];
+                if (symbol) {
+                    symbol.AnimationWin();
+                }
+            });
             this.reels.forEach((reel, i) => {
                 if (r.above[i] && r.above[i].length > 0) {
-                    reel.cascadeDrop(r.above[i]);
+                    const above = i === 0 ? [...r.above[i]].reverse() : r.above[i];
+                    reel.cascadeDrop(above);
                 }
             });
 
@@ -760,17 +775,15 @@ export class GameManager extends Component {
 
 
     removeWinDuplicateFlip(round: any) {
-        if (!round?.flip || !round?.win?.positions) return;
+        if (!round?.win?.positions) return;
 
-        // tạo list vị trí flip
-        const flipPos = new Set(
-            round.flip.map(f => `${f.from.c}_${f.from.r}`)
-        );
-
-        // lọc win
+        // chỉ loại trùng lặp trong chính win.positions (không loại theo flip)
+        const seen = new Set<string>();
         round.win.positions = round.win.positions.filter(p => {
             const key = `${p.c}_${p.r}`;
-            return !flipPos.has(key);
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
         });
     }
 }

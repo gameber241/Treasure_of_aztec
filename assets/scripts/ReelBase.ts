@@ -138,17 +138,8 @@ export abstract class ReelBase extends Component {
             const s = this.symbols.find(sym => sym.reelIndex === placeIndex);
             if (!s) continue;
             s.InitSymbol(result[i]);
-            if (this.possitionReel == 0) {
-                const row = 3 - i;
-                s.col = this.possitionReel
-                s.row = row
-
-            }
-            else {
-                s.col = this.possitionReel
-                s.row = i
-
-            }
+            s.col = this.possitionReel
+            s.row = i
             GameManager.instance.symBolArray[s.col][s.row] = s
 
         }
@@ -168,7 +159,7 @@ export abstract class ReelBase extends Component {
         this.startRoll();
     }
     public cascadeDrop(dataAbove: any[]) {
-        dataAbove.reverse()
+        const reversedAbove = [...dataAbove].reverse();
 
         let space = 0
         let max = 9
@@ -211,15 +202,10 @@ export abstract class ReelBase extends Component {
 
             Symbol.node.setPosition(this.getSymbolPosition(Symbol.reelIndex - space))
             Symbol.reel = this
-            Symbol.InitSymbol(dataAbove[i]);
+            Symbol.InitSymbol(reversedAbove[i]);
             listSymbok.push(Symbol)
-            if (this.isHorizontal() == true) {
-                Symbol.row = 3 - i
-            }
-            else {
-                Symbol.row = i
-            }
             Symbol.col = this.possitionReel
+            Symbol.row = i
             GameManager.instance.symBolArray[Symbol.col][Symbol.row] = Symbol
 
         }

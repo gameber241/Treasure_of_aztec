@@ -30,7 +30,7 @@ export class TextBoxCombo extends Component {
 
     protected start(): void {
         TextBoxCombo.instant = this
-        this.playRandomText()
+        // this.playRandomText()
     }
 
     playRandomText() {
