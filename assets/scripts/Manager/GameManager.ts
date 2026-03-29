@@ -418,8 +418,20 @@ export class GameManager extends Component {
     }
 
 
-    private mapRowForReel(_col: number, row: number): number {
-        return row;
+    private resolveSymbolByPosition(c: number, r: number, expectedFace?: number) {
+        const byGrid = this.symBolArray[c][r] as Symbol;
+        if (byGrid && (expectedFace === undefined || byGrid.face === expectedFace)) {
+            return byGrid;
+        }
+
+        const reel = this.reels[c];
+        const byRow = reel?.symbols?.find(s => s?.node?.isValid && s.row === r) as Symbol;
+        if (byRow && (expectedFace === undefined || byRow.face === expectedFace)) {
+            this.symBolArray[c][r] = byRow;
+            return byRow;
+        }
+
+        return null;
     }
 
     FlipData() {
@@ -429,8 +441,7 @@ export class GameManager extends Component {
 
         }, 0.7)
         dataRound.forEach(e => {
-            const mappedRow = this.mapRowForReel(e.from.c, e.from.r);
-            const symbol = this.symBolArray[e.from.c][mappedRow];
+            const symbol = this.resolveSymbolByPosition(e.from.c, e.from.r);
             if (!symbol) return;
             symbol.FlipSymbol(e.to);
         });
@@ -459,8 +470,7 @@ export class GameManager extends Component {
                     console.log(`[ClearData] Skip dispose for flip position: ${key}`);
                     continue;
                 }
-                const mappedRow = this.mapRowForReel(e.c, e.r);
-                const symbol = this.symBolArray[e.c][mappedRow];
+                const symbol = this.resolveSymbolByPosition(e.c, e.r, e.i);
                 if (!symbol) {
                     console.log(`[ClearData] Symbol not found at ${key}`);
                     continue;
@@ -482,8 +492,7 @@ export class GameManager extends Component {
             }
             // Chỉ gọi AnimationWin cho các symbol thực sự win
             r.win.positions.forEach(pos => {
-                const mappedRow = this.mapRowForReel(pos.c, pos.r);
-                const symbol = this.symBolArray[pos.c][mappedRow];
+                const symbol = this.resolveSymbolByPosition(pos.c, pos.r, pos.i);
                 if (symbol) {
                     symbol.AnimationWin();
                 }
