@@ -23,6 +23,8 @@ export class ItemHistory extends Component {
         this.data = data
         this.timeStem.string = this.formatFull(data.timestamp)
         this.bet.string = data.bet
+        this.transaction.string = data.balanceAfter + "\n" + data.balanceBefore
+        this.profit.string = data.win
     }
 
     pad2(n: number): string {
@@ -47,7 +49,7 @@ export class ItemHistory extends Component {
         const wsService = WebSocketService.getInstance();
         const detailResult = await wsService.getLogDetail(this.data.id);
         console.log('[History] getLogDetailResult:', detailResult);
-        GameManager.instance.history.getComponent(H_story)
+        GameManager.instance.history.getComponent(H_story).ShowDetail(detailResult.log)
     }
 }
 

@@ -96,8 +96,7 @@ export class SymbolHis extends Component {
 
 
     protected start() {
-        this.layer = 64
-
+        this.layer = this.icon.node.layer
         this.icon.node.layer = Layers.Enum.DEFAULT
     }
 

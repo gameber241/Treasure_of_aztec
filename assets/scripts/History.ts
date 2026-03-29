@@ -1,6 +1,7 @@
 import { _decorator, Component, instantiate, Label, Prefab, ScrollView } from 'cc';
 import { WebSocketService } from './WebSocketService';
 import { ItemHistory } from './ItemHistory';
+import { DetailHistory } from './DetailHistory';
 const { ccclass, property } = _decorator;
 
 @ccclass('H_story')
@@ -12,6 +13,8 @@ export class H_story extends Component {
     @property(ScrollView)
     scrollHis: ScrollView = null
 
+    @property(DetailHistory)
+    detailHistory: DetailHistory = null
 
     btnClose() {
         this.node.active = false
@@ -60,7 +63,9 @@ export class H_story extends Component {
         }
     }
 
-
+    ShowDetail(data) {
+        this.detailHistory.show(data)
+    }
 
 }
 
