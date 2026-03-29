@@ -137,9 +137,10 @@ export abstract class ReelBase extends Component {
             const placeIndex = (targetIndex - visible + total) % total;
             const s = this.symbols.find(sym => sym.reelIndex === placeIndex);
             if (!s) continue;
-            s.InitSymbol(result[i]);
+            const dataIndex = this.isHorizontal() ? (visible - 1 - i) : i;
+            s.InitSymbol(result[dataIndex]);
             s.col = this.possitionReel
-            s.row = i
+            s.row = dataIndex;
             GameManager.instance.symBolArray[s.col][s.row] = s
 
         }
@@ -159,7 +160,8 @@ export abstract class ReelBase extends Component {
         this.startRoll();
     }
     public cascadeDrop(dataAbove: any[]) {
-        const reversedAbove = [...dataAbove].reverse();
+        const aboveData = [...dataAbove].reverse();
+        console.log(`[cascadeDrop] col=${this.possitionReel}, space will be calculated, aboveData:`, aboveData.map(d => `i:${d.i}`));
 
         let space = 0
         let max = 9
@@ -178,6 +180,7 @@ export abstract class ReelBase extends Component {
             }
             else {
                 if (space > 0) {
+                    const oldRow = s.row;
                     if (this.isHorizontal() == true) {
                         s.reelIndex += space
                         s.row -= space
@@ -188,6 +191,9 @@ export abstract class ReelBase extends Component {
                         s.reelIndex += space
 
                     }
+                    if (oldRow >= 0 && GameManager.instance.symBolArray[s.col][oldRow] === s) {
+                        GameManager.instance.symBolArray[s.col][oldRow] = null;
+                    }
                     listSymbok.push(s)
 
                     GameManager.instance.symBolArray[s.col][s.row] = s
@@ -195,17 +201,19 @@ export abstract class ReelBase extends Component {
 
             }
         }
-        for (let i = space - 1; i >= 0; i--) {
+        const createCount = Math.min(space, aboveData.length)
+        console.log(`[cascadeDrop] col=${this.possitionReel}, calculated space=${space}, will create ${createCount} new symbols`);
+        for (let i = createCount - 1; i >= 0; i--) {
             let Symbol = this.createNewSymbol()
             this.symbols.push(Symbol)
             Symbol.reelIndex = min + i
 
-            Symbol.node.setPosition(this.getSymbolPosition(Symbol.reelIndex - space))
+            Symbol.node.setPosition(this.getSymbolPosition(Symbol.reelIndex - createCount))
             Symbol.reel = this
-            Symbol.InitSymbol(reversedAbove[i]);
+            Symbol.InitSymbol(aboveData[i]);
             listSymbok.push(Symbol)
             Symbol.col = this.possitionReel
-            Symbol.row = i
+            Symbol.row = this.isHorizontal() ? (this.VISIBLE_COUNT - createCount + i) : i
             GameManager.instance.symBolArray[Symbol.col][Symbol.row] = Symbol
 
         }

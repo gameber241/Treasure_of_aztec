@@ -298,9 +298,7 @@ export class GameManager extends Component {
         round.isScratch
             ? (this.SetFreeSpines(), this.PlayFreeSpin(round.freeSpin))
             : this.SetNormal();
-        const grid = round.grid.map((reel, index) =>
-            index === 0 ? [...reel].reverse() : reel
-        );
+        const grid = round.grid;
         this.GenerateMap(grid);
         if (round.isScratch == true && round.freeSpinCurrent > 0) {
             // this.currentFree.string = round.freeSpinCurrent
@@ -420,6 +418,10 @@ export class GameManager extends Component {
     }
 
 
+    private mapRowForReel(_col: number, row: number): number {
+        return row;
+    }
+
     FlipData() {
         let dataRound = this.sampleJson.rounds[this.indexCurrentReel].flips;
         this.scheduleOnce(() => {
@@ -427,7 +429,9 @@ export class GameManager extends Component {
 
         }, 0.7)
         dataRound.forEach(e => {
-            const symbol = this.symBolArray[e.from.c][e.from.r];
+            const mappedRow = this.mapRowForReel(e.from.c, e.from.r);
+            const symbol = this.symBolArray[e.from.c][mappedRow];
+            if (!symbol) return;
             symbol.FlipSymbol(e.to);
         });
     }
@@ -455,7 +459,8 @@ export class GameManager extends Component {
                     console.log(`[ClearData] Skip dispose for flip position: ${key}`);
                     continue;
                 }
-                const symbol = this.symBolArray[e.c][e.r];
+                const mappedRow = this.mapRowForReel(e.c, e.r);
+                const symbol = this.symBolArray[e.c][mappedRow];
                 if (!symbol) {
                     console.log(`[ClearData] Symbol not found at ${key}`);
                     continue;
@@ -477,15 +482,15 @@ export class GameManager extends Component {
             }
             // Chỉ gọi AnimationWin cho các symbol thực sự win
             r.win.positions.forEach(pos => {
-                const symbol = this.symBolArray[pos.c][pos.r];
+                const mappedRow = this.mapRowForReel(pos.c, pos.r);
+                const symbol = this.symBolArray[pos.c][mappedRow];
                 if (symbol) {
                     symbol.AnimationWin();
                 }
             });
             this.reels.forEach((reel, i) => {
                 if (r.above[i] && r.above[i].length > 0) {
-                    const above = i === 0 ? [...r.above[i]].reverse() : r.above[i];
-                    reel.cascadeDrop(above);
+                    reel.cascadeDrop(r.above[i]);
                 }
             });
 
