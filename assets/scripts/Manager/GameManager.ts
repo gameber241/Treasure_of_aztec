@@ -29,9 +29,8 @@ export class GameManager extends Component {
 
     @property(Label)
     walet: Label = null
-
     @property(Label)
-    priceTienCuoc: Label = null
+    ballanceAuto: Label = null
 
     @property(Label)
     priceWin: Label = null
@@ -161,6 +160,11 @@ export class GameManager extends Component {
             });
             console.log('[GameManager] Setting walet.string to:', formatted);
             this.walet.string = formatted;
+            this.ballanTitle.string = formatted;
+            this.ballanceAuto.string = formatted;
+
+
+
         } else {
             console.warn('[GameManager] walet Label is null!');
         }
@@ -799,6 +803,21 @@ export class GameManager extends Component {
             seen.add(key);
             return true;
         });
+    }
+
+    @property(Node)
+    ballanNode: Node = null
+
+    @property(Label)
+    ballanTitle: Label = null
+
+
+    BtnBallan() {
+        this.ballanNode.active = true
+    }
+    btnCloseBallan() {
+        this.ballanNode.active = false
+
     }
 }
 

@@ -40,7 +40,8 @@ export class ItemHistory extends Component {
     }
 
     TouchMove(event: EventTouch) {
-        if (event.getDeltaY() > 5) {
+        console.log(event.getDeltaY())
+        if (Math.abs(event.getDeltaY()) > 2) {
             event.propagationStopped = true
         }
     }

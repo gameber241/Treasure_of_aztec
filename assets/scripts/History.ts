@@ -1,9 +1,9 @@
-import { _decorator, Component, instantiate, Prefab, ScrollView, Node } from 'cc';
+import { _decorator, Component, instantiate, Prefab, ScrollView, Node, Label } from 'cc';
 import { WebSocketService } from './WebSocketService';
 import { ItemHistory } from './ItemHistory';
 import { DetailHistory } from './DetailHistory';
 const { ccclass, property } = _decorator;
-
+const pad = (n: number) => (n < 10 ? '0' + n : '' + n);
 @ccclass('H_story')
 export class H_story extends Component {
 
@@ -19,6 +19,12 @@ export class H_story extends Component {
     @property(Node)
     selectTime: Node = null
 
+    @property(Node)
+    selectTimeCustom: Node = null
+
+
+    @property(Label)
+    title: Label = null
 
     btnClose() {
         this.node.active = false
@@ -27,10 +33,45 @@ export class H_story extends Component {
     async show() {
         console.log('[History] show() called');
         this.node.active = true;
-        await this.loadHistoryDemo();
+        await this.UpdateLogDay();
     }
 
-    private async loadHistoryDemo() {
+
+
+    UpdateLogDay() {
+        this.title.string = "Today"
+        const logsPayload = {
+            limit: 15,
+            offset: 0,
+            sort: 't.desc',
+            datePreset: 'today'
+        };
+        this.loadHistoryDemo(logsPayload)
+    }
+
+
+    UpdateLog7dayCustom() {
+        this.title.string = "Last 7 days"
+
+        const today = new Date();
+        const from = new Date();
+        from.setDate(today.getDate() - 6);
+
+        const format = (d: Date) =>
+            `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+        const pad = (n: number) => (n < 10 ? '0' + n : '' + n);
+
+        this.loadHistoryDemo({
+            limit: 15,
+            offset: 0,
+            sort: 't.desc',
+            dateFrom: format(from),
+            dateTo: format(today)
+        });
+    }
+
+    public async loadHistoryDemo(data) {
         const wsService = WebSocketService.getInstance();
         if (!wsService) {
             console.warn('[History] WebSocketService not found');
@@ -56,12 +97,8 @@ export class H_story extends Component {
             console.log('[History] Clearing old history items');
             this.scrollHis.content.removeAllChildren();
 
-            const logsPayload = {
-                limit: 10,
-                offset: 0,
-                sort: 't.desc',
-                datePreset: 'today'
-            };
+            const logsPayload = data
+
 
             console.log('[History] Requesting getLogs with payload:', logsPayload);
             const logsResult = await wsService.getLogs(logsPayload);
@@ -103,19 +140,14 @@ export class H_story extends Component {
                 }
             }
 
-            console.log('[History] Rendering history entries:', detailResults.length);
+            console.log('[History] Rendering history entries:', detailResults.length, detailResults);
 
             detailResults.forEach((entry, index) => {
                 try {
-                    this.scrollHis.content.destroyAllChildren()
                     const item = instantiate(this.itemHis);
                     this.scrollHis.content.addChild(item);
 
                     const itemHistory = item.getComponent(ItemHistory);
-                    if (!itemHistory) {
-                        console.error('[History] Item prefab missing ItemHistory component at index:', index);
-                        return;
-                    }
 
                     itemHistory.SetUp(entry);
                     console.log('[History] Rendered entry:', index, entry?.id, {
@@ -136,7 +168,7 @@ export class H_story extends Component {
     }
 
 
-    BtnSelectTime(){
+    BtnSelectTime() {
         this.selectTime.active = true
     }
 }

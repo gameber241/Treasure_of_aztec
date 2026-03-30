@@ -1,4 +1,6 @@
-import { _decorator, Component, Label, Node, Prefab, instantiate, Button } from 'cc';
+import { _decorator, Component, Label, Node, Prefab, instantiate } from 'cc';
+import { GameManager } from './Manager/GameManager';
+import { H_story } from './History';
 const { ccclass, property } = _decorator;
 
 enum ESelectType {
@@ -19,12 +21,10 @@ export class SelectDate extends Component {
     @property(Label) DayStart: Label = null;
     @property(Label) DayEnd: Label = null;
 
-    // START
     @property(Node) containtYearStart: Node = null;
     @property(Node) containtMonthStart: Node = null;
     @property(Node) containtDayStart: Node = null;
 
-    // END
     @property(Node) containtYearEnd: Node = null;
     @property(Node) containtMonthEnd: Node = null;
     @property(Node) containtDayEnd: Node = null;
@@ -35,7 +35,6 @@ export class SelectDate extends Component {
         this.init();
     }
 
-    // ===== INIT =====
     init() {
         const now = new Date();
 
@@ -47,36 +46,72 @@ export class SelectDate extends Component {
 
         const year = now.getFullYear();
 
-        // Year chỉ 2 giá trị
         this.genYears(this.containtYearStart, year, true);
         this.genYears(this.containtYearEnd, year, false);
 
-        // Month full 12
         this.genMonths(this.containtMonthStart, true);
         this.genMonths(this.containtMonthEnd, false);
 
-        // Day full 31
         this.genDays(this.containtDayStart, true);
         this.genDays(this.containtDayEnd, false);
     }
 
-    // ===== GENERATE =====
+    // ===== YEARS =====
     genYears(parent: Node, currentYear: number, isStart: boolean) {
+        parent.removeAllChildren();
         const years = [currentYear, currentYear - 1];
-
         for (let y of years) {
             this.createItem(parent, `${y}`, ESelectType.YEAR, isStart);
         }
     }
 
+    // ===== MONTHS (NO FUTURE) =====
     genMonths(parent: Node, isStart: boolean) {
-        for (let m = 12; m >= 1; m--) {
+        parent.removeAllChildren();
+
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1;
+
+        const selectedYear = isStart
+            ? Number(this.yearStart.string)
+            : Number(this.yearEnd.string);
+
+        let maxMonth = 12;
+
+        if (selectedYear === currentYear) {
+            maxMonth = currentMonth;
+        }
+
+        for (let m = maxMonth; m >= 1; m--) {
             this.createItem(parent, this.format(m), ESelectType.MONTH, isStart);
         }
     }
 
+    // ===== DAYS (NO FUTURE) =====
     genDays(parent: Node, isStart: boolean) {
-        for (let d = 31; d >= 1; d--) {
+        parent.removeAllChildren();
+
+        const now = new Date();
+
+        const year = isStart
+            ? Number(this.yearStart.string)
+            : Number(this.yearEnd.string);
+
+        const month = isStart
+            ? Number(this.MonthStart.string)
+            : Number(this.MonthEnd.string);
+
+        let maxDay = new Date(year, month, 0).getDate();
+
+        if (
+            year === now.getFullYear() &&
+            month === (now.getMonth() + 1)
+        ) {
+            maxDay = now.getDate();
+        }
+
+        for (let d = maxDay; d >= 1; d--) {
             this.createItem(parent, this.format(d), ESelectType.DAY, isStart);
         }
     }
@@ -89,28 +124,82 @@ export class SelectDate extends Component {
         const label = item.getComponentInChildren(Label);
         if (label) label.string = value;
 
-        const btn = item.getComponent(Button);
-        if (btn) {
-            btn.node.on(Button.EventType.CLICK, () => {
-                this.onSelect(value, type, isStart);
-            });
-        }
+        item.on(Node.EventType.TOUCH_END, () => {
+            this.onSelect(value, type, isStart);
+        });
     }
 
     // ===== SELECT =====
     onSelect(value: string, type: ESelectType, isStart: boolean) {
+
         if (isStart) {
-            if (type === ESelectType.YEAR) this.yearStart.string = value;
-            if (type === ESelectType.MONTH) this.MonthStart.string = value;
-            if (type === ESelectType.DAY) this.DayStart.string = value;
+
+            if (type === ESelectType.YEAR) {
+                this.yearStart.string = value;
+                this.genMonths(this.containtMonthStart, true);
+                this.updateDayToEndOfMonth(true);
+            }
+
+            if (type === ESelectType.MONTH) {
+                this.MonthStart.string = value;
+                this.updateDayToEndOfMonth(true);
+            }
+
+            if (type === ESelectType.DAY) {
+                this.DayStart.string = value;
+            }
+
         } else {
-            if (type === ESelectType.YEAR) this.yearEnd.string = value;
-            if (type === ESelectType.MONTH) this.MonthEnd.string = value;
-            if (type === ESelectType.DAY) this.DayEnd.string = value;
+
+            if (type === ESelectType.YEAR) {
+                this.yearEnd.string = value;
+                this.genMonths(this.containtMonthEnd, false);
+                this.updateDayToEndOfMonth(false);
+            }
+
+            if (type === ESelectType.MONTH) {
+                this.MonthEnd.string = value;
+                this.updateDayToEndOfMonth(false);
+            }
+
+            if (type === ESelectType.DAY) {
+                this.DayEnd.string = value;
+            }
+        }
+
+        // 🔥 regen days
+        if (type === ESelectType.YEAR || type === ESelectType.MONTH) {
+            if (isStart) this.genDays(this.containtDayStart, true);
+            else this.genDays(this.containtDayEnd, false);
         }
 
         this.validateRange(isStart);
         this.hideAll();
+    }
+
+    // ===== SET DAY = END OF MONTH =====
+    updateDayToEndOfMonth(isStart: boolean) {
+        const year = isStart
+            ? Number(this.yearStart.string)
+            : Number(this.yearEnd.string);
+
+        const month = isStart
+            ? Number(this.MonthStart.string)
+            : Number(this.MonthEnd.string);
+
+        let maxDay = new Date(year, month, 0).getDate();
+
+        const now = new Date();
+
+        if (
+            year === now.getFullYear() &&
+            month === (now.getMonth() + 1)
+        ) {
+            maxDay = now.getDate();
+        }
+
+        if (isStart) this.DayStart.string = this.format(maxDay);
+        else this.DayEnd.string = this.format(maxDay);
     }
 
     // ===== VALIDATE =====
@@ -126,10 +215,7 @@ export class SelectDate extends Component {
         }
     }
 
-    // ===== DATE =====
-    getStartDate(): Date | null {
-        if (!this.yearStart.string || !this.MonthStart.string || !this.DayStart.string) return null;
-
+    getStartDate(): Date {
         return new Date(
             Number(this.yearStart.string),
             Number(this.MonthStart.string) - 1,
@@ -137,9 +223,7 @@ export class SelectDate extends Component {
         );
     }
 
-    getEndDate(): Date | null {
-        if (!this.yearEnd.string || !this.MonthEnd.string || !this.DayEnd.string) return null;
-
+    getEndDate(): Date {
         return new Date(
             Number(this.yearEnd.string),
             Number(this.MonthEnd.string) - 1,
@@ -159,7 +243,7 @@ export class SelectDate extends Component {
         this.DayEnd.string = this.format(date.getDate());
     }
 
-    // ===== CLICK =====
+    // ===== UI =====
     onClickYearStart() { this.open(ESelectType.YEAR, true); }
     onClickMonthStart() { this.open(ESelectType.MONTH, true); }
     onClickDayStart() { this.open(ESelectType.DAY, true); }
@@ -170,10 +254,8 @@ export class SelectDate extends Component {
 
     open(type: ESelectType, isStart: boolean) {
         this.showOnly(type, isStart);
-        // ✅ KHÔNG reset label nữa
     }
 
-    // ===== SHOW/HIDE =====
     showOnly(type: ESelectType, isStart: boolean) {
         const year = isStart ? this.containtYearStart : this.containtYearEnd;
         const month = isStart ? this.containtMonthStart : this.containtMonthEnd;
@@ -194,7 +276,6 @@ export class SelectDate extends Component {
         this.containtDayEnd.active = false;
     }
 
-    // ===== CLEAR =====
     clearAll() {
         this.containtYearStart.removeAllChildren();
         this.containtMonthStart.removeAllChildren();
@@ -205,8 +286,33 @@ export class SelectDate extends Component {
         this.containtDayEnd.removeAllChildren();
     }
 
-    // ===== FORMAT =====
     format(n: number): string {
         return n < 10 ? `0${n}` : `${n}`;
+    }
+
+    // ===== CONFIRM =====
+    BtnConfirm() {
+        const start = this.getStartDate();
+        const end = this.getEndDate();
+
+        const format = (d: Date) =>
+            `${d.getFullYear()}-${this.format(d.getMonth() + 1)}-${this.format(d.getDate())}`;
+
+        GameManager.instance.history.getComponent(H_story).loadHistoryDemo({
+            limit: 25,
+            offset: 0,
+            sort: 't.desc',
+            dateFrom: format(start),
+            dateTo: format(end),
+        });
+        const format1 = (d: Date) =>
+            `${d.getFullYear()}/${this.format(d.getMonth() + 1)}/${this.format(d.getDate())}`;
+        this.node.active = false;
+        GameManager.instance.history.getComponent(H_story).title.string = format1(start) + "-" + format1(end),
+            GameManager.instance.history.getComponent(H_story).selectTime.active = false;
+    }
+
+    BtnClose() {
+        this.node.active = false;
     }
 }
