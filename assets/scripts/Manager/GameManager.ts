@@ -34,7 +34,8 @@ export class GameManager extends Component {
 
     @property(Label)
     priceWin: Label = null
-
+    @property(Label)
+    priceWinAuto: Label = null
     @property(Label)
     totalPrice: Label = null
     @property(Label)
@@ -817,6 +818,14 @@ export class GameManager extends Component {
     }
     btnCloseBallan() {
         this.ballanNode.active = false
+
+    }
+
+    @property(Node)
+    DatCuocNode: Node = null
+
+    BtnCuoc() {
+        this.DatCuocNode.active = true
 
     }
 }
