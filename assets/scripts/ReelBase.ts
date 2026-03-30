@@ -44,7 +44,6 @@ export abstract class ReelBase extends Component {
         for (let i = 0; i < this.numberSymbols; i++) {
             let symbol = instantiate(PrefabManager.instance.symbolPrefab);
             this.node.addChild(symbol);
-
         }
     }
 

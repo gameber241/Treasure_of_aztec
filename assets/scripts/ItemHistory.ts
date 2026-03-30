@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node } from 'cc';
+import { _decorator, Component, EventTouch, Input, Label, Node } from 'cc';
 import { WebSocketService } from './WebSocketService';
 import { GameManager } from './Manager/GameManager';
 import { H_story } from './History';
@@ -18,6 +18,8 @@ export class ItemHistory extends Component {
     @property(Label)
     profit: Label = null
 
+
+
     data = null
     SetUp(data) {
         this.data = data
@@ -25,6 +27,26 @@ export class ItemHistory extends Component {
         this.bet.string = data.bet
         this.transaction.string = data.id
         this.profit.string = (data.balanceBefore - data.balanceAfter).toString()
+
+        this.node.on(Input.EventType.TOUCH_START, this.TouchStart, this)
+        this.node.on(Input.EventType.TOUCH_MOVE, this.TouchMove, this)
+        this.node.on(Input.EventType.TOUCH_END, this.TouchEnd, this)
+
+
+    }
+
+    TouchStart(event: EventTouch) {
+
+    }
+
+    TouchMove(event: EventTouch) {
+        if (event.getDeltaY() > 5) {
+            event.propagationStopped = true
+        }
+    }
+
+    TouchEnd(event: EventTouch) {
+        this.Btn()
     }
 
     pad2(n: number): string {

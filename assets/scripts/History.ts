@@ -1,4 +1,4 @@
-import { _decorator, Component, instantiate, Prefab, ScrollView } from 'cc';
+import { _decorator, Component, instantiate, Prefab, ScrollView, Node } from 'cc';
 import { WebSocketService } from './WebSocketService';
 import { ItemHistory } from './ItemHistory';
 import { DetailHistory } from './DetailHistory';
@@ -15,6 +15,10 @@ export class H_story extends Component {
 
     @property(DetailHistory)
     detailHistory: DetailHistory = null
+
+    @property(Node)
+    selectTime: Node = null
+
 
     btnClose() {
         this.node.active = false
@@ -100,8 +104,10 @@ export class H_story extends Component {
             }
 
             console.log('[History] Rendering history entries:', detailResults.length);
+
             detailResults.forEach((entry, index) => {
                 try {
+                    this.scrollHis.content.destroyAllChildren()
                     const item = instantiate(this.itemHis);
                     this.scrollHis.content.addChild(item);
 
@@ -129,5 +135,9 @@ export class H_story extends Component {
         this.detailHistory.show(data)
     }
 
+
+    BtnSelectTime(){
+        this.selectTime.active = true
+    }
 }
 

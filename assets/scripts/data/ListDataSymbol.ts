@@ -11,7 +11,8 @@ export class ListDataSymbol extends Component {
 
 
     public getDataByType(type: ESymbolFace) {
-        const x = this.listData.find(e => e.face === type);
+        console.log(type)
+        const x = this.listData.find(e => e.face == type);
         return x;
     }
 

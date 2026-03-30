@@ -16,7 +16,6 @@ export class ComboManager extends Component {
         ComboManager.instance = this
     }
     protected start(): void {
-
         this.setUp()
     }
 
