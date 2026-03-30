@@ -26,8 +26,8 @@ export class ItemDetailHistory extends Component {
     SetUp(data) {
         console.log(data, "check")
         data.grid.forEach((e, index) => {
-            e.grid.forEach(s => {
-                console.log(s, "check")
+            e.forEach((s) => {
+                console.log(s, index)
                 let item = instantiate(this.symbolHis)
                 this.reels[index].addChild(item)
                 item.getComponent(SymbolHis).InitSymbol(s)

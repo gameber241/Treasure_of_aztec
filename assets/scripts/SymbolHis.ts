@@ -96,8 +96,7 @@ export class SymbolHis extends Component {
 
 
     protected start() {
-        this.layer = this.icon.node.layer
-        this.icon.node.layer = Layers.Enum.DEFAULT
+        this.layer = 256
     }
 
     private getAnim(type: "idle" | "move" | "action" | "win"): string {
@@ -167,8 +166,8 @@ export class SymbolHis extends Component {
         this.UpdateFrame();
         this.playiconAnimation(this.getNameIdle(), true);
         this.playFrameAnimation(this.getNameIdle(), true)
-        this.icon.node.setPosition(0, -102 * this.stackSize / 2 + 100 / 2, 0)
-        this.frame.node.setPosition(0, -102 * this.stackSize / 2 + 100 / 2, 0)
+        this.icon.node.setPosition(0, -93 * this.stackSize / 2 + 93 / 2, 0)
+        this.frame.node.setPosition(0, -93 * this.stackSize / 2 + 93 / 2, 0)
 
 
 

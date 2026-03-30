@@ -23,8 +23,8 @@ export class ItemHistory extends Component {
         this.data = data
         this.timeStem.string = this.formatFull(data.timestamp)
         this.bet.string = data.bet
-        this.transaction.string = data.balanceAfter + "\n" + data.balanceBefore
-        this.profit.string = data.win
+        this.transaction.string = data.id
+        this.profit.string = (data.balanceBefore - data.balanceAfter).toString()
     }
 
     pad2(n: number): string {
