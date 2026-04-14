@@ -19,6 +19,10 @@
     {
       "name": "camerasymbolHis",
       "value": 256
+    },
+    {
+      "name": "inf",
+      "value": 512
     }
   ]
 }

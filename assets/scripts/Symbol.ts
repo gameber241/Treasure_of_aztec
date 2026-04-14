@@ -1,13 +1,14 @@
-import { _decorator, Component, Tween, tween, UITransform, Sprite, Enum, Node, Vec2, SpriteFrame, Vec3, randomRangeInt, sp, size, Layers, Widget, Color, Game } from 'cc';
+import { _decorator, Component, Tween, tween, UITransform, Sprite, Enum, Node, Vec2, SpriteFrame, Vec3, randomRangeInt, sp, size, Layers, Widget, Color, Game, Label, Input, director, Layout, Size } from 'cc';
 import { ReelBase } from './ReelBase';
 import { PrefabManager } from './Manager/PrefabManager';
 import { ListDataSymbol } from './data/ListDataSymbol';
 import { dataSymbol } from './data/dataSymbol';
-import { ESymbolFace } from './ESymbolFace';
+import { ESymbolFace, SymbolPayoutConfig } from './ESymbolFace';
 import { GameManager } from './Manager/GameManager';
 import { SymbolCell } from './SymbolCell';
 import { SoundToggle } from './Sound';
 import { SymbolFrameState } from './Enum/SymbolFrameState';
+import { Spin } from './Spin';
 
 const { ccclass, property, executeInEditMode } = _decorator;
 
@@ -99,6 +100,11 @@ export class Symbol extends Component {
         this.layer = 64
 
         this.icon.node.layer = Layers.Enum.DEFAULT
+        director.on("HIDE_INF", this.hideInf, this)
+    }
+
+    hideInf() {
+        this.infNode.active = false
     }
 
     private getAnim(type: "idle" | "move" | "action" | "win"): string {
@@ -119,6 +125,7 @@ export class Symbol extends Component {
 
     SetSkin() {
         this.icon.setSkin(this.SkinMap[this.face] ?? "default");
+
     }
 
     EnabledAniamtion(enable: boolean) {
@@ -126,12 +133,10 @@ export class Symbol extends Component {
     }
 
     playiconAnimation(name: string, loop: boolean) {
-
-        if (!name) { this.EnabledAniamtion(false); return; }
-
         this.SetSkin();
         this.EnabledAniamtion(true);
         this.icon.setAnimation(0, name, loop);
+
     }
 
     addAnimation(name: string, loop: boolean) {
@@ -142,31 +147,37 @@ export class Symbol extends Component {
 
         if (this.frameState == SymbolFrameState.SILVER) {
             this.frame.setSkin("Border_Silver")
+
         }
 
         if (this.frameState == SymbolFrameState.GOLD) {
             this.frame.setSkin("Border_Gold")
+
         }
         this.frame?.setAnimation(0, name, loop);
+
     }
 
-        UpdateFrame() {
-            if (this.stackIndex > 0) {
-                this.frame.enabled = false
-                return
-            }
+    UpdateFrame() {
+        if (this.stackIndex > 0) {
+            this.frame.enabled = false
+            return
+        }
 
-            if (this.frameState == SymbolFrameState.GOLD ||
-                this.frameState == SymbolFrameState.SILVER) {
-                this.frame.enabled = true
-                this.playFrameAnimation(this.getNameIdle(), true);
-
-            }
-            else {
-                this.frame.enabled = false
-            }
+        if (this.frameState == SymbolFrameState.GOLD ||
+            this.frameState == SymbolFrameState.SILVER) {
+            this.frame.enabled = true
+            this.frameInf.enabled = true
+            this.playFrameAnimation(this.getNameIdle(), true);
 
         }
+        else {
+            this.frame.enabled = false
+            this.frameInf.enabled = false
+
+        }
+
+    }
 
     SetUISymbolNormal() {
         this.UpdateFrame();
@@ -174,8 +185,8 @@ export class Symbol extends Component {
         this.playFrameAnimation(this.getNameIdle(), true)
         this.icon.node.setPosition(0, -102 * this.stackSize / 2 + 100 / 2, 0)
         this.frame.node.setPosition(0, -102 * this.stackSize / 2 + 100 / 2, 0)
-
-
+        this.infNode.setPosition(0, -102 * this.stackSize / 2 + 100 / 2, 0)
+        this.icon.getComponent(UITransform).setContentSize(100, 100 * this.stackSize)
 
     }
 
@@ -195,6 +206,11 @@ export class Symbol extends Component {
         this.stackId = data.sid;
 
         this.SetUISymbolNormal();
+        this.icon.node.off(Input.EventType.TOUCH_END, this.ShowInf, this)
+        if (this.stackIndex == 0) {
+            this.icon.node.on(Input.EventType.TOUCH_END, this.ShowInf, this)
+
+        }
     }
 
     ResetSymbol() {
@@ -203,6 +219,7 @@ export class Symbol extends Component {
         this.stackIndex = 0;
         this.setRandomFace();
         this.SetUISymbolNormal();
+
     }
 
     setRandomFace() {
@@ -221,6 +238,12 @@ export class Symbol extends Component {
         ];
         this.face = faces[Math.floor(Math.random() * faces.length)];
         this.frameState = SymbolFrameState.NORMAL;
+        this.icon.node.off(Input.EventType.TOUCH_END, this.ShowInf, this)
+        if (this.stackIndex == 0) {
+            this.icon.node.on(Input.EventType.TOUCH_END, this.ShowInf, this)
+
+        }
+
     }
 
     rollToIndex(time: number = 0.2, type: string = Symbol.MoveType.MOVING) {
@@ -361,6 +384,8 @@ export class Symbol extends Component {
     Dispose() {
         this.playiconAnimation(this.getNameWin(), false);
         this.scheduleOnce(() => {
+            director.off("HIDE_INF", this.hideInf, this)
+
             this.node.destroy();
             GameManager.instance.symBolArray[this.col][this.row] = null
         }, 1);
@@ -393,5 +418,108 @@ export class Symbol extends Component {
     }
 
 
+    @property(Label)
+    titleInf1: Label = null
 
+
+    @property(Label)
+    titleInf2: Label = null
+
+    @property(sp.Skeleton) iconInf: sp.Skeleton = null!;
+    @property(sp.Skeleton) frameInf: sp.Skeleton = null!;
+
+    @property(Node)
+    infNode: Node = null
+
+    @property(Node)
+    bg: Node = null
+
+    @property(Node)
+    frane: Node = null
+
+    @property(Layout)
+    containtNode: Layout = null
+
+    @property(Node)
+    numberNode: Node = null
+
+    @property(Node)
+    textWild: Node = null;
+
+    @property(Node)
+    textScratch: Node = null
+
+    ShowInf() {
+        if (Spin.instance.isAuto == true) return
+        if (Spin.instance.isSpin == true) return
+        GameManager.instance.maskInf.active = true
+        this.infNode.active = true
+        this.titleInf1.string = SymbolPayoutConfig[this.face].count
+        this.titleInf2.string = SymbolPayoutConfig[this.face].value
+
+        this.iconInf.setSkin(this.SkinMap[this.face] ?? "default");
+        this.iconInf.setAnimation(0, this.getNameIdle(), true)
+
+
+
+        if (this.face != ESymbolFace.WILD && this.face != ESymbolFace.SCRATCH) {
+            this.textWild.active = false
+            this.numberNode.active = true
+            this.textScratch.active = false
+            this.bg.getComponent(UITransform).setContentSize(300, 100 * this.stackSize + 30)
+            this.frane.getComponent(UITransform).setContentSize(300, 100 * this.stackSize + 30)
+
+            if (this.node.worldPosition.x > 400) {
+                this.containtNode.horizontalDirection = Layout.HorizontalDirection.RIGHT_TO_LEFT;
+                this.containtNode.node.parent.setPosition(-70, 0, 0)
+            }
+            else {
+                this.containtNode.horizontalDirection = Layout.HorizontalDirection.LEFT_TO_RIGHT;
+                this.containtNode.node.parent.setPosition(70, 0, 0)
+            }
+
+        }
+        if (this.face == ESymbolFace.WILD) {
+            this.textWild.active = true
+            this.numberNode.active = false
+            this.textScratch.active = false
+            this.bg.getComponent(UITransform).setContentSize(500, 100 * this.stackSize + 30)
+            this.frane.getComponent(UITransform).setContentSize(500, 100 * this.stackSize + 30)
+            if (this.node.worldPosition.x > 400) {
+                this.containtNode.horizontalDirection = Layout.HorizontalDirection.RIGHT_TO_LEFT;
+                this.containtNode.node.parent.setPosition(-170, 0, 0)
+            }
+            else {
+                this.containtNode.horizontalDirection = Layout.HorizontalDirection.LEFT_TO_RIGHT;
+                this.containtNode.node.parent.setPosition(172, 0, 0)
+            }
+        }
+        if (this.face == ESymbolFace.SCRATCH) {
+            this.textWild.active = false
+            this.numberNode.active = false
+            this.textScratch.active = true
+            this.bg.getComponent(UITransform).setContentSize(600, 100 * this.stackSize + 30)
+            this.frane.getComponent(UITransform).setContentSize(600, 100 * this.stackSize + 30)
+            if (this.node.worldPosition.x > 400) {
+                this.containtNode.horizontalDirection = Layout.HorizontalDirection.RIGHT_TO_LEFT;
+                this.containtNode.node.parent.setPosition(-225, 0, 0)
+            }
+            else {
+                this.containtNode.horizontalDirection = Layout.HorizontalDirection.LEFT_TO_RIGHT;
+                this.containtNode.node.parent.setPosition(225, 0, 0)
+            }
+        }
+
+        if (this.frameState == SymbolFrameState.SILVER) {
+            this.frameInf.setSkin("Border_Silver")
+
+        }
+
+        if (this.frameState == SymbolFrameState.GOLD) {
+            this.frameInf.setSkin("Border_Gold")
+        }
+
+        this.frameInf.setAnimation(0, this.getNameIdle(), true)
+
+    }
 }

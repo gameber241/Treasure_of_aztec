@@ -22,7 +22,8 @@ export class H_story extends Component {
     @property(Node)
     selectTimeCustom: Node = null
 
-
+    @property(Node)
+    uiHis: Node = null
     @property(Label)
     title: Label = null
 
@@ -72,45 +73,44 @@ export class H_story extends Component {
     }
 
     public async loadHistoryDemo(data) {
+        this.uiHis.active = true
         const wsService = WebSocketService.getInstance();
         if (!wsService) {
             console.warn('[History] WebSocketService not found');
+            this.uiHis.active = false
             return;
         }
 
         if (!this.scrollHis) {
             console.error('[History] scrollHis is null. Please bind ScrollView in Inspector.');
+            this.uiHis.active = false
             return;
         }
 
         if (!this.scrollHis.content) {
             console.error('[History] scrollHis.content is null. Please set ScrollView content node.');
+            this.uiHis.active = false
+
             return;
         }
 
         if (!this.itemHis) {
             console.error('[History] itemHis prefab is null. Please bind item prefab in Inspector.');
+            this.uiHis.active = false
             return;
         }
 
         try {
-            console.log('[History] Clearing old history items');
             this.scrollHis.content.removeAllChildren();
-
             const logsPayload = data
-
-
-            console.log('[History] Requesting getLogs with payload:', logsPayload);
             const logsResult = await wsService.getLogs(logsPayload);
-            console.log('[History] getLogsResult:', logsResult);
 
             const logs = logsResult?.logs || logsResult?.data || logsResult?.items || [];
             if (!Array.isArray(logs) || logs.length === 0) {
-                console.log('[History] No logs found');
+                this.uiHis.active = false
                 return;
             }
 
-            console.log(`[History] Found ${logs.length} logs. Loading getLogDetail sequentially...`);
 
             const detailResults: any[] = [];
             for (const logItem of logs) {
@@ -123,6 +123,7 @@ export class H_story extends Component {
 
                     console.log('[History] Requesting getLogDetail for id:', logItem.id);
                     const detailResult = await wsService.getLogDetail(logItem.id);
+
                     console.log('[History] getLogDetailResult:', logItem.id, detailResult);
 
                     const detailLog = detailResult?.log || detailResult?.data || detailResult;
@@ -137,6 +138,8 @@ export class H_story extends Component {
                 } catch (detailError) {
                     console.error('[History] Failed to get log detail:', logItem?.id, detailError);
                     detailResults.push(logItem);
+                    this.uiHis.active = false
+
                 }
             }
 
@@ -146,19 +149,24 @@ export class H_story extends Component {
                 try {
                     const item = instantiate(this.itemHis);
                     this.scrollHis.content.addChild(item);
-
                     const itemHistory = item.getComponent(ItemHistory);
-
                     itemHistory.SetUp(entry);
                     console.log('[History] Rendered entry:', index, entry?.id, {
                         hasDetail: Boolean(entry?.detail),
                         replayRounds: entry?.replayRounds?.length ?? 0,
                     });
+
+                    this.uiHis.active = false
+
                 } catch (renderError) {
+                    this.uiHis.active = false
+
                     console.error('[History] Failed to render entry at index:', index, renderError);
                 }
             });
         } catch (error) {
+            this.uiHis.active = false
+
             console.error('[History] Failed to load history demo:', error);
         }
     }

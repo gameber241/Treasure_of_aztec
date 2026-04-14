@@ -17,6 +17,25 @@ import { Waymanager } from '../Waymanager';
 import { TextBoxCombo } from './TextBoxCombo';
 import { GameConfig } from '../GameConfig';
 
+
+
+
+export const currencyFormatSimple = new Intl.NumberFormat('en-US', {
+    style: 'decimal',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+});
+
+export const waitForSeconds = (s: number): Promise<void> => {
+    // Dùng tween thay vì setTimeout để đồng bộ với engine game loop
+    const tempObj = { v: 0 };
+    return new Promise(resolve => {
+        tween(tempObj)
+            .delay(s)
+            .call(() => resolve())
+            .start();
+    });
+}
 const { ccclass, property } = _decorator;
 
 @ccclass('GameManager')
@@ -30,16 +49,16 @@ export class GameManager extends Component {
     @property(Label)
     walet: Label = null
     @property(Label)
-    ballanceAuto: Label = null
+    walletAuto: Label = null
 
     @property(Label)
-    priceWin: Label = null
+    winLb: Label = null
     @property(Label)
-    priceWinAuto: Label = null
+    winLbAuto: Label = null
     @property(Label)
-    totalPrice: Label = null
+    betLb: Label = null
     @property(Label)
-    totalPriceBot: Label = null
+    betLbAuto: Label = null
 
     @property(Node)
     headerNormal: Node = null
@@ -74,6 +93,8 @@ export class GameManager extends Component {
     @property(AutoCtrl)
     UiAuto: AutoCtrl = null
     isTurbo = false
+    @property(Node)
+    maskInf: Node = null
 
     turboMode = 0
     onLoad() {
@@ -83,12 +104,11 @@ export class GameManager extends Component {
     }
     protected start(): void {
         this.UpdatePrice()
+        this.UpdatePriceWin
         this.SetNormal()
         this.initGrid()
-        // Update balance from UserInfo
         this.updateBalanceDisplay();
 
-        // Request profile update after listener is registered
         this.scheduleOnce(() => {
             const wsService = WebSocketService.getInstance();
             if (wsService) {
@@ -162,7 +182,7 @@ export class GameManager extends Component {
             console.log('[GameManager] Setting walet.string to:', formatted);
             this.walet.string = formatted;
             this.ballanTitle.string = formatted;
-            this.ballanceAuto.string = formatted;
+            this.walletAuto.string = formatted;
 
 
 
@@ -193,15 +213,10 @@ export class GameManager extends Component {
 
     indexCurrentReel = 0
     public async PlaySpin() {
-        console.log("[GameManager] PlaySpin called - round " + this.indexCurrentReel);
         // If this is the first round, fetch spin result from server
         if (this.indexCurrentReel === 0) {
             const useServerSpin = GameConfig.useServerSpin; // Read from config
             if (useServerSpin === false) {
-                // ===== TEST MODE: Using static JSON data =====
-                // TODO: Switch back to server data after testing
-                console.log("[GameManager] Loading TEST data from JSON file");
-
                 // Convert callback to Promise and await it
                 await new Promise<void>((resolve, reject) => {
                     resources.load('test-spin-data', JsonAsset, (err, jsonAsset) => {
@@ -292,6 +307,8 @@ export class GameManager extends Component {
 
     stepOld = 1
     SpinGame() {
+        this.stepWinCurrent = 0
+        this.UpdatePriceWin()
         TextBoxCombo.instant.playRandomText()
         this.stepOld = 1
         Spin.instance.isSpin = true
@@ -312,7 +329,11 @@ export class GameManager extends Component {
         }
     }
 
+    UpdatePriceWin() {
+        this.winLb.string = currencyFormatSimple.format(this.stepWinCurrent)
+        this.winLbAuto.string = currencyFormatSimple.format(this.stepWinCurrent)
 
+    }
     GenerateMap(grid: any[][]) {
         if (this.CheckScratch() == false)
             this.RollDataNormal(grid)
@@ -452,7 +473,7 @@ export class GameManager extends Component {
         });
     }
 
-
+    stepWinCurrent = 0
     async ClearData() {
         const r = this.sampleJson.rounds[this.indexCurrentReel];
         Waymanager.instance.animWay(r.win.ways)
@@ -460,6 +481,8 @@ export class GameManager extends Component {
         if (r.win.positions.length > 0) {
             console.log('[ClearData] win.positions BEFORE removeWinDuplicateFlip:', r.win.positions.length);
             TextBoxCombo.instant.PlayStepWin(r.win.stepWin, this.stepOld)
+            this.stepWinCurrent += r.win.stepWin
+            this.UpdatePriceWin()
             this.removeWinDuplicateFlip(r)
             console.log('[ClearData] win.positions AFTER removeWinDuplicateFlip:', r.win.positions.length);
             const flipPos = new Set(
@@ -739,8 +762,8 @@ export class GameManager extends Component {
     }
 
     UpdatePrice() {
-        this.totalPrice.string = this.priceCurrent.toString()
-        this.totalPriceBot.string = this.priceCurrent.toString()
+        // this.totalPrice.string = this.priceCurrent.toString()
+        // this.totalPriceBot.string = this.priceCurrent.toString()
     }
 
     @property(Node) history: Node = null
@@ -826,7 +849,13 @@ export class GameManager extends Component {
 
     BtnCuoc() {
         this.DatCuocNode.active = true
+        console.log("den day")
 
+    }
+
+    onClickMap() {
+        director.emit("HIDE_INF")
+        this.maskInf.active = false
     }
 }
 

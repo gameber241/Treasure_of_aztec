@@ -1,4 +1,5 @@
 import { _decorator, Component, Label, Node, randomRangeInt, Sprite, SpriteFrame, Tween, tween, UIOpacity, Vec3 } from 'cc';
+import { currencyFormatSimple } from './GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('TextBoxCombo')
@@ -76,13 +77,13 @@ export class TextBoxCombo extends Component {
         this.comboAnim.node.active = false
         if (multi == 1) {
             this.textWin.active = true
-            this.lbScore.string = step
+            this.lbScore.string = currencyFormatSimple.format(step)
 
         }
         else {
             let result = step * multi
             result = Number(result.toFixed(2))
-            this.lbScore.string = result.toString()
+            this.lbScore.string = currencyFormatSimple.format(result)
             this.scheduleOnce(() => {
                 this.comboAnim.node.active = true
                 this.comboAnim.node.getComponent(UIOpacity).opacity = 0
@@ -99,7 +100,7 @@ export class TextBoxCombo extends Component {
                     .start()
 
                 this.textWin.active = true
-                this.lbScore.string = step
+                this.lbScore.string = currencyFormatSimple.format(step)
             }, 1)
 
         }
@@ -115,7 +116,7 @@ export class TextBoxCombo extends Component {
         this.textTotalWin.active = false
 
         this.textTotalWin.active = true
-        this.lbScore.string = total
+        this.lbScore.string = currencyFormatSimple.format(total)
 
     }
 

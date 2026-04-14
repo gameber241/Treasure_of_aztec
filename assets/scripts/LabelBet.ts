@@ -2,7 +2,7 @@ import { _decorator, CCFloat, Component, Label, Node } from 'cc';
 import { MessageBox } from './MessageBox';
 import { PopEffect } from './PopEffect';
 import { PanelBet } from './PanelBet';
-import { currencyFormat } from './Helper';
+import { currencyFormatSimple } from './Manager/GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('LabelBet')
@@ -35,7 +35,7 @@ export class LabelBet extends Component {
             this.betAmount = this.maxBet;
             this.messageBox.showMessage("Mức cược tối đa");
         }
-        this.node.getComponent(Label).string = currencyFormat.format(this.betAmount);
+        this.node.getComponent(Label).string = currencyFormatSimple.format(this.betAmount);
     }
 
     decreaseBet() {
@@ -46,7 +46,7 @@ export class LabelBet extends Component {
             this.betAmount = this.minBet;
             this.messageBox.showMessage("Mức cược tối thiểu");
         }
-        this.node.getComponent(Label).string = currencyFormat.format(this.betAmount);
+        this.node.getComponent(Label).string = currencyFormatSimple.format(this.betAmount);
     }
 
     updateFromPanelBet() {
@@ -54,7 +54,7 @@ export class LabelBet extends Component {
         this.maxBet = PanelBet.instance.maxBet;
         this.betAmount = PanelBet.instance.betAmount;
         this.stepBet = PanelBet.instance.betSize;
-        this.node.getComponent(Label).string = currencyFormat.format(this.betAmount);
+        this.node.getComponent(Label).string = currencyFormatSimple.format(this.betAmount);
         console.log(this.betAmount, this.stepBet)
     }
 }

@@ -35,6 +35,8 @@ export class PanelBet extends Component {
     labelWin: Label = null;
 
     @property(Label)
+    labelBet: Label = null;
+    @property(Label)
     labelBet2: Label = null;
 
     @property(Label)
@@ -118,12 +120,11 @@ export class PanelBet extends Component {
 
         this.commitToLabelBet();
 
-        this.close();
     }
 
     protected onEnable(): void {
 
-        this.labelBet2.string = this.labelWallet.string;
+        this.labelBet2.string = this.labelBet.string;
         this.labelWallet2.string = this.labelWallet.string;
         this.labelWin2.string = this.labelWin.string;
     }
