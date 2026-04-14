@@ -292,7 +292,7 @@ export class GameManager extends Component {
 
     stepOld = 1
     SpinGame() {
-        // TextBoxCombo.instant.playRandomText()
+        TextBoxCombo.instant.playRandomText()
         this.stepOld = 1
         Spin.instance.isSpin = true
         // Total.instance.SetTextNormal()

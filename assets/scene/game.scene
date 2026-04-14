@@ -24225,7 +24225,12 @@
     "ballanceAuto": {
       "__id__": 678
     },
-    "priceWin": null,
+    "priceWin": {
+      "__id__": 664
+    },
+    "priceWinAuto": {
+      "__id__": 779
+    },
     "totalPrice": {
       "__id__": 644
     },
