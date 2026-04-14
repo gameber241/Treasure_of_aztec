@@ -33,9 +33,9 @@ export class FreeSpines extends Component {
     playAnimation(callback) {
         this.fx.node.active = true
         this.fx.setAnimation(0, "_FreeWin_Appear", false)
-        this.fx.addAnimation(0, "_FreeWin_Idle", false)
-        this.fx.addAnimation(0, "_FreeWin_Action", false)
-        this.fx.addAnimation(0, "_FreeWin_Action_Idle", false)
+        this.fx.addAnimation(0, "_FreeWin_Idle", true)
+        // this.fx.addAnimation(0, "_FreeWin_Action", false)
+        // this.fx.addAnimation(0, "_FreeWin_Action_Idle", false)
 
         this.fx.setCompleteListener((tracking) => {
             if (tracking.animation.name != "_FreeWin_Action_Idle") return

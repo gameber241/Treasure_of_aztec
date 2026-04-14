@@ -318,16 +318,9 @@ export class GameManager extends Component {
         // this.Disabledbtns()
         const round = this.sampleJson.rounds[this.indexCurrentReel];
         // console.log("round", round)
-        round.isScratch
-            ? (this.SetFreeSpines(), this.PlayFreeSpin(round.freeSpin))
-            : this.SetNormal();
+        this.SetNormal();
         const grid = round.grid;
         this.GenerateMap(grid);
-        if (round.isScratch == true && round.freeSpinCurrent > 0) {
-            // this.currentFree.string = round.freeSpinCurrent
-            // this.totalFree.string = round.freeSpinTotal
-
-        }
     }
 
     UpdatePriceWin() {
@@ -407,21 +400,22 @@ export class GameManager extends Component {
         this.scheduleOnce(() => {
             this.ShowAllReef(true)
             this.scheduleOnce(() => {
-                if (this.sampleJson.rounds[this.indexCurrentReel].freeSpin > 0) {
-                    SoundToggle.instance.playFreewin()
-                    FreeSpines.instance.playAnimation(() => {
+                this.ClearData()
+                // if (this.sampleJson.rounds[this.indexCurrentReel].freeSpin > 0) {
+                //     SoundToggle.instance.playFreewin()
+                //     FreeSpines.instance.playAnimation(() => {
 
-                        this.SetFreeSpines()
-                        this.PlayFreeSpin(this.sampleJson.rounds[this.indexCurrentReel].freeSpin)
-                        this.scheduleOnce(() => {
-                            this.ClearData()
-                        }, 2)
-                    })
-                }
-                else {
-                    this.ClearData()
+                //         this.SetFreeSpines()
+                //         this.PlayFreeSpin(this.sampleJson.rounds[this.indexCurrentReel].freeSpin)
+                //         this.scheduleOnce(() => {
+                //             this.ClearData()
+                //         }, 2)
+                //     })
+                // }
+                // else {
+                //     this.ClearData()
 
-                }
+                // }
             }, 1)
 
         }, 0.4)
@@ -544,11 +538,12 @@ export class GameManager extends Component {
             }
             else {
                 TextBoxCombo.instant.box.setAnimation(0, "textBox1_idle", true)
-
             }
-            // ComboManager.instantiate.total.node.active = false
 
             this.ShowBigWin();
+
+            // ComboManager.instantiate.total.node.active = false
+
         }
     }
 
@@ -556,22 +551,28 @@ export class GameManager extends Component {
     ShowBigWin() {
         const r = this.sampleJson.rounds[this.indexCurrentReel];
         const next = () => {
-            this.indexCurrentReel = 0;
-            if (r.isScratch === true && r.freeSpinCurrent > 1) {
-                this.SetFreeSpines()
-                this.PlaySpin();
+            if (this.CheckScratch4() == true) {
+                FreeSpines.instance.playAnimation(() => { });
             }
             else {
-                Spin.instance.ActiveSpin()
-                this.SetNormal();
-                SoundToggle.instance.playNormal()
-                if (Spin.instance.isAuto == true) {
-                    Spin.instance.AutoSpinNext()
+                this.indexCurrentReel = 0;
+                if (r.isScratch === true && r.freeSpinCurrent > 1) {
+                    this.SetFreeSpines()
+                    this.PlaySpin();
                 }
                 else {
-                    Spin.instance.isSpin = false;
+                    Spin.instance.ActiveSpin()
+                    this.SetNormal();
+                    SoundToggle.instance.playNormal()
+                    if (Spin.instance.isAuto == true) {
+                        Spin.instance.AutoSpinNext()
+                    }
+                    else {
+                        Spin.instance.isSpin = false;
+                    }
                 }
             }
+
 
         };
         // danh sách animation cần chạy
@@ -659,6 +660,18 @@ export class GameManager extends Component {
             }
             if (indexScratch >= 3) return i
         }
+    }
+
+    public CheckScratch4() {
+        let indexScratch = 0
+        this.reels.forEach(e => {
+            e.symbols.forEach(s => {
+                if (s.face == ESymbolFace.SCRATCH) {
+                    indexScratch++;
+                }
+            })
+        })
+        if (indexScratch >= 4) return true;
     }
 
     public playAnimReelScratch(index) {
