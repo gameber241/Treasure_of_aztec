@@ -28,25 +28,41 @@ export class LabelBet extends Component {
     }
 
     increaseBet() {
-        this.betAmount += this.stepBet;
-        this.node.getComponent(PopEffect).play();
-        this.messageBox.hideMessage();
-        if (this.betAmount > this.maxBet) {
-            this.betAmount = this.maxBet;
+        const panel = PanelBet.instance;
+        if (!panel) return;
+
+        const list = panel.betAmounts;
+        let index = list.indexOf(this.betAmount);
+
+        if (index < list.length - 1) {
+            index++;
+            this.betAmount = list[index];
+            this.messageBox.hideMessage();
+        } else {
             this.messageBox.showMessage("Mức cược tối đa");
         }
-        this.node.getComponent(Label).string = currencyFormatSimple.format(this.betAmount);
+
+        this.node.getComponent(PopEffect)?.play();
+        this.updateLabel();
     }
 
     decreaseBet() {
-        this.betAmount -= this.stepBet;
-        this.node.getComponent(PopEffect).play();
-        this.messageBox.hideMessage();
-        if (this.betAmount < this.minBet) {
-            this.betAmount = this.minBet;
+        const panel = PanelBet.instance;
+        if (!panel) return;
+
+        const list = panel.betAmounts;
+        let index = list.indexOf(this.betAmount);
+
+        if (index > 0) {
+            index--;
+            this.betAmount = list[index];
+            this.messageBox.hideMessage();
+        } else {
             this.messageBox.showMessage("Mức cược tối thiểu");
         }
-        this.node.getComponent(Label).string = currencyFormatSimple.format(this.betAmount);
+
+        this.node.getComponent(PopEffect)?.play();
+        this.updateLabel();
     }
 
     updateFromPanelBet() {
@@ -56,6 +72,10 @@ export class LabelBet extends Component {
         this.stepBet = PanelBet.instance.betSize;
         this.node.getComponent(Label).string = currencyFormatSimple.format(this.betAmount);
         console.log(this.betAmount, this.stepBet)
+    }
+
+    updateLabel() {
+        this.node.getComponent(Label).string = currencyFormatSimple.format(this.betAmount);
     }
 }
 

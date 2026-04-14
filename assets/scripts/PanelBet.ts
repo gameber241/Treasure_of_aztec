@@ -1,6 +1,7 @@
 import { _decorator, CCFloat, Component, Label, labelAssembler, math } from 'cc';
 import { ScrollSelect } from './ScrollSelect';
 import { LabelBet } from './LabelBet';
+import { currencyFormatSimple, GameManager } from './Manager/GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PanelBet')
@@ -165,6 +166,12 @@ export class PanelBet extends Component {
 
     close() {
         this.node.active = false;
+    }
+
+    BtnXacNhan() {
+        console.log(this.betAmount)
+        this.labelBet2.string = currencyFormatSimple.format(this.betAmount)
+        GameManager.instance.UpdateBetCurrent(this.betAmount)
     }
 }
 

@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node, randomRangeInt, Sprite, SpriteFrame, Tween, tween, UIOpacity, Vec3 } from 'cc';
+import { _decorator, Component, Label, Node, randomRangeInt, sp, Sprite, SpriteFrame, Tween, tween, UIOpacity, Vec3 } from 'cc';
 import { currencyFormatSimple } from './GameManager';
 const { ccclass, property } = _decorator;
 
@@ -25,6 +25,9 @@ export class TextBoxCombo extends Component {
 
     @property(Label)
     comboAnim: Label = null
+
+    @property(sp.Skeleton)
+    box: sp.Skeleton = null
 
 
     public static instant: TextBoxCombo
@@ -76,11 +79,16 @@ export class TextBoxCombo extends Component {
         this.textTotalWin.active = false
         this.comboAnim.node.active = false
         if (multi == 1) {
+            this.box.setAnimation(0, "textBox1_action", false)
+            this.box.addAnimation(0, "textBox1_action_idle", true)
+
             this.textWin.active = true
             this.lbScore.string = currencyFormatSimple.format(step)
 
         }
         else {
+            this.box.setAnimation(0, "textBox2_appear", false)
+            this.box.addAnimation(0, "textBox2_idle", true)
             let result = step * multi
             result = Number(result.toFixed(2))
             this.lbScore.string = currencyFormatSimple.format(result)

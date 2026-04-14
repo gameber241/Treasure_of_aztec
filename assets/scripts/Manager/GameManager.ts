@@ -16,6 +16,7 @@ import { WebSocketService } from '../WebSocketService';
 import { Waymanager } from '../Waymanager';
 import { TextBoxCombo } from './TextBoxCombo';
 import { GameConfig } from '../GameConfig';
+import { LabelBet } from '../LabelBet';
 
 
 
@@ -213,6 +214,8 @@ export class GameManager extends Component {
 
     indexCurrentReel = 0
     public async PlaySpin() {
+        TextBoxCombo.instant.box.setAnimation(0, "textBox1_idle", true)
+
         // If this is the first round, fetch spin result from server
         if (this.indexCurrentReel === 0) {
             const useServerSpin = GameConfig.useServerSpin; // Read from config
@@ -234,7 +237,7 @@ export class GameManager extends Component {
                             console.log("[GameManager] Updated sampleJson with TEST data");
 
                             // Update balance
-                            UserInfo.getInstance().updateBalance(UserInfo.getInstance().balance - this.priceCurrent + spinResult.totalWin);
+                            UserInfo.getInstance().updateBalance(UserInfo.getInstance().balance - this.betCurrent + spinResult.totalWin);
                             this.updateBalanceDisplay();
                             resolve();
                         } else {
@@ -246,8 +249,6 @@ export class GameManager extends Component {
                 });
             } else {
                 try {
-                    console.log("[GameManager] Calling spin API with bet:", this.priceCurrent);
-
                     // Get WebSocketService instance, try to find it if null
                     let wsService = WebSocketService.getInstance();
                     if (!wsService) {
@@ -265,7 +266,7 @@ export class GameManager extends Component {
                         return;
                     }
 
-                    const spinResult = await wsService.spin(this.priceCurrent);
+                    const spinResult = await wsService.spin(this.betCurrent);
                     console.log("[GameManager] Spin result received:", spinResult);
 
                     if (spinResult.success) {
@@ -273,7 +274,7 @@ export class GameManager extends Component {
                         console.log("[GameManager] Updated sampleJson with server data");
 
                         // Update balance
-                        UserInfo.getInstance().updateBalance(UserInfo.getInstance().balance - this.priceCurrent + spinResult.totalWin);
+                        UserInfo.getInstance().updateBalance(UserInfo.getInstance().balance - this.betCurrent + spinResult.totalWin);
                         this.updateBalanceDisplay();
                     } else {
                         console.error("[GameManager] Spin failed:", spinResult.error);
@@ -538,7 +539,15 @@ export class GameManager extends Component {
             await this.ClearData(); // ⭐ cực quan trọng
         }
         else {
+            if (this.stepOld > 2) {
+                TextBoxCombo.instant.box.setAnimation(0, "textBox3_idle", true)
+            }
+            else {
+                TextBoxCombo.instant.box.setAnimation(0, "textBox1_idle", true)
+
+            }
             // ComboManager.instantiate.total.node.active = false
+
             this.ShowBigWin();
         }
     }
@@ -745,25 +754,20 @@ export class GameManager extends Component {
     }
 
     priceOffset = 2000
-    priceCurrent = 10000
     priceMax = 20000
     BtnMinus() {
-        if (this.priceCurrent > this.priceOffset) {
-            this.priceCurrent -= this.priceOffset
-            this.UpdatePrice()
-        }
+        this.betLb.node.getComponent(LabelBet).decreaseBet()
+
     }
 
     BtnPlus() {
-        if (this.priceCurrent < this.priceMax) {
-            this.priceCurrent += this.priceOffset
-            this.UpdatePrice()
-        }
+        this.betLb.node.getComponent(LabelBet).increaseBet()
+
     }
 
     UpdatePrice() {
-        // this.totalPrice.string = this.priceCurrent.toString()
-        // this.totalPriceBot.string = this.priceCurrent.toString()
+        // this.totalPrice.string = this.betCurrent.toString()
+        // this.totalPriceBot.string = this.betCurrent.toString()
     }
 
     @property(Node) history: Node = null
@@ -856,6 +860,15 @@ export class GameManager extends Component {
     onClickMap() {
         director.emit("HIDE_INF")
         this.maskInf.active = false
+    }
+
+
+    betCurrent = 0.6
+    UpdateBetCurrent(bet) {
+        this.betCurrent = bet
+        this.betLb.node.getComponent(LabelBet).updateFromPanelBet()
+        this.betLbAuto.node.getComponent(LabelBet).updateFromPanelBet()
+
     }
 }
 
