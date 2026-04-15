@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/triph/**)",
+      "Bash(grep -E \"\\\\.\\(ts|js\\)$\")",
+      "Bash(/tmp/plan.md:*)",
+      "Read(//tmp/**)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\triph\\.claude\\plans"
+    ]
+  }
+}

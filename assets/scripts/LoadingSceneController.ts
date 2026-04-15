@@ -72,16 +72,32 @@ export class LoadingController extends Component {
         }
     }
 
+    private getQueryParam(key: string): string | null {
+        if (typeof window === 'undefined' || !window.location) {
+            return null;
+        }
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(key);
+    }
+
     async performAutoLogin() {
         if (this.statusLabel) {
             this.statusLabel.string = 'Đang đăng nhập...';
         }
 
         try {
-            const loginResult = await this.authService.autoLogin();
+            const tokenFromUrl = this.getQueryParam('token');
+            const gameIdFromUrl = this.getQueryParam('gameID') || GameConfig.gameId;
+
+            if (gameIdFromUrl) {
+                GameConfig.gameId = gameIdFromUrl;
+            }
+
+            const loginResult = tokenFromUrl
+                ? await this.authService.loginWithUrlToken(tokenFromUrl)
+                : await this.authService.autoLogin();
 
             if (loginResult.success && loginResult.token) {
-                // console.log('[Loading] Auto login successful');
                 if (this.statusLabel) {
                     this.statusLabel.string = 'Đang kết nối...';
                 }
@@ -90,18 +106,14 @@ export class LoadingController extends Component {
                 this.wsService = WebSocketService.getInstance();
                 if (this.wsService) {
                     await this.wsService.connect(GameConfig.url_ws, loginResult.token);
-                    // console.log('[Loading] WebSocket connected, waiting 500ms for server to be ready...');
 
                     // Wait a bit for server to finish connection setup
                     await new Promise(resolve => setTimeout(resolve, 500));
 
                     // Fetch user profile
                     try {
-                        // console.log('[Loading] Calling getProfile()...');
                         const profile = await this.wsService.getProfile();
-                        // console.log('[Loading] Profile loaded:', JSON.stringify(profile, null, 2));
                         UserInfo.getInstance().updateProfile(profile);
-                        // console.log('[Loading] UserInfo updated, balance:', UserInfo.getInstance().balance);
                     } catch (error) {
                         console.warn('[Loading] Failed to load profile:', error);
                     }
@@ -117,13 +129,13 @@ export class LoadingController extends Component {
                 this.currentProgress = 1;
                 this.isLoaded = true;
             } else {
-                console.error('[Loading] Auto login failed:', loginResult.error);
+                console.error('[Loading] Login failed:', loginResult.error);
                 if (this.statusLabel) {
                     this.statusLabel.string = 'Đăng nhập thất bại: ' + (loginResult.error || 'Unknown error');
                 }
             }
         } catch (error) {
-            console.error('[Loading] Auto login error:', error);
+            console.error('[Loading] Login error:', error);
             if (this.statusLabel) {
                 this.statusLabel.string = 'Lỗi đăng nhập: ' + error.message;
             }

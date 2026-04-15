@@ -35,6 +35,46 @@ export class AuthService {
         );
     }
 
+    public async loginWithUrlToken(token: string): Promise<LoginResponse> {
+        try {
+            const url = `${GameConfig.url_api}/api/user/token`;
+            console.log('[Auth] URL token login to:', url);
+
+            const rawBody = JSON.stringify({ token });
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: rawBody
+            });
+
+            const response_data = await response.json();
+            console.log('[Auth] URL token login response:', response_data);
+
+            if (response_data.success && response_data.data?.sessionToken) {
+                const data = response_data.data;
+                this.token = data.sessionToken;
+                this.userId = data.user?.userId || data.user?.id || 0;
+                console.log('[Auth] URL token login successful, token:', this.token.substring(0, 20) + '...');
+                return {
+                    success: true,
+                    token: data.sessionToken,
+                    user: data.user
+                };
+            }
+
+            console.error('[Auth] URL token login failed:', response_data.message || response_data.error);
+            return {
+                success: false,
+                error: response_data.message || response_data.error || 'Token login failed'
+            };
+        } catch (error) {
+            console.error('[Auth] URL token login error:', error);
+            return { success: false, error: error.message || 'Network error' };
+        }
+    }
+
     private async generateSignature(secretKey: string, payload: string): Promise<string> {
         const encoder = new TextEncoder();
         const keyData = encoder.encode(secretKey);
