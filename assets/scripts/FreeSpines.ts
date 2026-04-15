@@ -1,4 +1,5 @@
 import { _decorator, Component, Input, Label, Node, sp, tween, Tween } from 'cc';
+import { GameManager } from './Manager/GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('FreeSpines')
@@ -16,9 +17,15 @@ export class FreeSpines extends Component {
     @property(Label)
     lbFreeSpin: Label = null
 
+    @property(Node)
+    btnStartFreeSpin: Node = null
+
     protected onLoad(): void {
         FreeSpines.instance = this
     }
+
+    @property(Label)
+    freeSpinLb: Label = null
 
     private currentValue: number = 0;
     private targetValue: number = 0;
@@ -30,21 +37,48 @@ export class FreeSpines extends Component {
 
     private isStopped: boolean = false;
 
-    playAnimation(callback) {
+    playAnimation(numberScratch) {
         this.fx.node.active = true
         this.fx.setAnimation(0, "_FreeWin_Appear", false)
         this.fx.addAnimation(0, "_FreeWin_Idle", true)
         // this.fx.addAnimation(0, "_FreeWin_Action", false)
         // this.fx.addAnimation(0, "_FreeWin_Action_Idle", false)
-
+        this.freeSpinLb.string = numberScratch
         this.fx.setCompleteListener((tracking) => {
-            if (tracking.animation.name != "_FreeWin_Action_Idle") return
+            if (tracking.animation.name != "_FreeWin_Idle") return
             this.fx.setCompleteListener(null)
-            this.scheduleOnce(() => {
-                this.fx.node.active = false
-                callback?.()
-            }, 2)
+            this.startCheckFree()
         });
+
+
+
+    }
+
+    private checkFreeTimer: any = null;
+
+    startCheckFree() {
+        this.checkFreeTimer = setInterval(() => {
+            if (GameManager.instance.dataFreespin != null) {
+                clearInterval(this.checkFreeTimer);
+                this.checkFreeTimer = null;
+                this.fx.addAnimation(0, "_FreeWin_Action", false)
+                this.fx.addAnimation(0, "_FreeWin_Action_Idle", false)
+
+                this.fx.setCompleteListener((tracking) => {
+                    if (tracking.animation.name != "_FreeWin_Action_Idle") return
+                    this.fx.setCompleteListener(null)
+                    this.btnStartFreeSpin.active = true
+                    GameManager.instance.PlayModeFreeSpin()
+                    this.fx.node.active = false
+                });
+            }
+        }, 100); // check mỗi 100ms
+    }
+
+
+    BtnStartSpin() {
+        this.node.active = false
+        this.btnStartFreeSpin.active = false
     }
 
     ShowTotalSpin(callback, target) {
@@ -148,8 +182,28 @@ export class FreeSpines extends Component {
         this.isStopped = false;
     }
 
-    UpdateRound(round) {
-        this.lbFreeSpin.string = round
+
+    @property(Node)
+    text1: Node = null
+
+    @property(Node)
+    text2: Node = null
+    UpdateFreeSpinLb(round) {
+
+        if (round == 0) {
+            this.text2.active = true
+            this.text1.active = false
+            this.lbFreeSpin.node.active = false
+
+        }
+        else {
+            this.lbFreeSpin.node.active = true
+            this.text1.active = true
+            this.lbFreeSpin.string = round
+
+        }
     }
+
+
 }
 

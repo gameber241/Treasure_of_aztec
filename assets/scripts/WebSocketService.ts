@@ -1,6 +1,7 @@
 import { _decorator, Component } from 'cc';
 import { GameConfig } from './GameConfig';
 import { EventBus } from './EventBus';
+import { GameManager } from './Manager/GameManager';
 const { ccclass } = _decorator;
 
 interface SpinResult {
@@ -105,43 +106,48 @@ export class WebSocketService extends Component {
             // console.log('[WS] Message payload:', message.payload);
 
             // Handle getProfileResult specifically
-            if (message.type === 'getProfileResult') {
-                // console.log('[WS] ===== PROFILE RESULT DETECTED =====');
-                // console.log('[WS] Full message:', JSON.stringify(message, null, 2));
-                // console.log('[WS] Payload:', JSON.stringify(message.payload, null, 2));
-
-                const handler = this.messageHandlers.get('profile');
-                if (handler) {
-                    // console.log('[WS] Calling profile handler');
-                    handler(message);
-                } else {
-                    console.warn('[WS] No profile handler registered!');
-                }
-
-                // Emit global event for profile updates
-                const eventData = message.payload || message;
-                console.log('[WS] Emitting profile:updated event with data:', JSON.stringify(eventData, null, 2));
-                EventBus.getInstance().emit('profile:updated', eventData);
+            if (message.type == "freeSpinsBatch") {
+                console.log("freespin", message)
+                GameManager.instance.dataFreespin = message
             }
-            // Handle spin result
-            else if (message.type === 'spinResult' || message.type === 'spin' || message.action === 'spinResult') {
-                // console.log('[WS] ===== SPIN RESULT DETECTED =====');
-                // console.log('[WS] Full message:', JSON.stringify(message, null, 2));
+            else
+                if (message.type === 'getProfileResult') {
+                    // console.log('[WS] ===== PROFILE RESULT DETECTED =====');
+                    // console.log('[WS] Full message:', JSON.stringify(message, null, 2));
+                    // console.log('[WS] Payload:', JSON.stringify(message.payload, null, 2));
 
-                const handler = this.messageHandlers.get('spin');
-                if (handler) {
-                    // console.log('[WS] Calling spin handler');
-                    handler(message);
-                } else {
-                    console.warn('[WS] No spin handler registered!');
+                    const handler = this.messageHandlers.get('profile');
+                    if (handler) {
+                        // console.log('[WS] Calling profile handler');
+                        handler(message);
+                    } else {
+                        console.warn('[WS] No profile handler registered!');
+                    }
+
+                    // Emit global event for profile updates
+                    const eventData = message.payload || message;
+                    console.log('[WS] Emitting profile:updated event with data:', JSON.stringify(eventData, null, 2));
+                    EventBus.getInstance().emit('profile:updated', eventData);
                 }
-            }
-            else {
-                const handler = this.messageHandlers.get(message.action || message.type);
-                if (handler) {
-                    handler(message);
+                // Handle spin result
+                else if (message.type === 'spinResult' || message.type === 'spin' || message.action === 'spinResult') {
+                    // console.log('[WS] ===== SPIN RESULT DETECTED =====');
+                    // console.log('[WS] Full message:', JSON.stringify(message, null, 2));
+
+                    const handler = this.messageHandlers.get('spin');
+                    if (handler) {
+                        // console.log('[WS] Calling spin handler');
+                        handler(message);
+                    } else {
+                        console.warn('[WS] No spin handler registered!');
+                    }
                 }
-            }
+                else {
+                    const handler = this.messageHandlers.get(message.action || message.type);
+                    if (handler) {
+                        handler(message);
+                    }
+                }
 
             // Emit global event
             this.node.emit('ws-message', message);

@@ -54,12 +54,18 @@ export class GameManager extends Component {
 
     @property(Label)
     winLb: Label = null
+
     @property(Label)
     winLbAuto: Label = null
+
     @property(Label)
     betLb: Label = null
+
     @property(Label)
     betLbAuto: Label = null
+
+    @property(Label)
+    numberFreeSpin: Label = null
 
     @property(Node)
     headerNormal: Node = null
@@ -98,6 +104,12 @@ export class GameManager extends Component {
     maskInf: Node = null
 
     turboMode = 0
+
+
+    //data Freespin
+    dataFreespin = null
+
+
     onLoad() {
         GameManager.instance = this
         // Listen to profile updates
@@ -316,6 +328,7 @@ export class GameManager extends Component {
         // Total.instance.SetTextNormal()
         Waymanager.instance.resetWay()
         // this.Disabledbtns()
+        console.log(this.sampleJson, "data")
         const round = this.sampleJson.rounds[this.indexCurrentReel];
         // console.log("round", round)
         this.SetNormal();
@@ -552,7 +565,7 @@ export class GameManager extends Component {
         const r = this.sampleJson.rounds[this.indexCurrentReel];
         const next = () => {
             if (this.CheckScratch4() == true) {
-                FreeSpines.instance.playAnimation(() => { });
+                FreeSpines.instance.playAnimation(this.getFreeSpin(this.GetNumberScratch()));
             }
             else {
                 this.indexCurrentReel = 0;
@@ -674,6 +687,19 @@ export class GameManager extends Component {
         if (indexScratch >= 4) return true;
     }
 
+
+    public GetNumberScratch() {
+        let indexScratch = 0
+        this.reels.forEach(e => {
+            e.symbols.forEach(s => {
+                if (s.face == ESymbolFace.SCRATCH) {
+                    indexScratch++;
+                }
+            })
+        })
+        return indexScratch
+    }
+
     public playAnimReelScratch(index) {
         this.reels.forEach((e, i) => {
             if (i == index) {
@@ -729,10 +755,6 @@ export class GameManager extends Component {
         this.bgFreeGame.active = true
     }
 
-
-    public PlayFreeSpin(round) {
-        FreeSpines.instance.UpdateRound(round)
-    }
 
 
     isShowSetting = false
@@ -882,6 +904,43 @@ export class GameManager extends Component {
         this.betLb.node.getComponent(LabelBet).updateFromPanelBet()
         this.betLbAuto.node.getComponent(LabelBet).updateFromPanelBet()
 
+    }
+    isFreeSpin = false
+    indexCurrentFreeSpin = 0
+    totalFreeSpin = 0
+
+    getFreeSpin(scratch: number): number {
+        if (scratch < 4) return 0;
+        this.totalFreeSpin += 10 + (scratch - 4) * 2;
+        return this.totalFreeSpin
+    }
+    GetDataFreeSpin() {
+        if (this.indexCurrentFreeSpin >= this.dataFreespin.payload.batchSpins.length) {
+            return null
+        }
+        return this.dataFreespin.payload.batchSpins[this.indexCurrentFreeSpin]
+    }
+
+    PlayModeFreeSpin() {
+        let dataFree = this.GetDataFreeSpin()
+        if (dataFree == null) {
+            return;
+        }
+        this.indexCurrentFreeSpin++
+        this.totalFreeSpin--
+        this.isFreeSpin = true
+        this.SetFreeSpines()
+        TextBoxCombo.instant.box.setAnimation(0, "textBox1_idle", true)
+        this.UpdatePriceWin()
+        TextBoxCombo.instant.playRandomText()
+        this.stepOld = 1
+        Spin.instance.isSpin = true
+        Waymanager.instance.resetWay()
+        this.sampleJson = dataFree
+        console.log("free", this.sampleJson)
+        const grid = this.sampleJson.rounds[this.indexCurrentReel].grid;
+        FreeSpines.instance.UpdateFreeSpinLb(this.totalFreeSpin)
+        this.GenerateMap(grid);
     }
 }
 
