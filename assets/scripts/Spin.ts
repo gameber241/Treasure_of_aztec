@@ -57,28 +57,22 @@ export class Spin extends Component {
 
     StartSpin() {
         this.isSpin = true
-
         SoundToggle.instance.PlaySpin()
-
         this.skeletonSpin.setAnimation(0, "action", false)
         this.skeletonSpin.addAnimation(0, "idle", true)
-
         this.btnMinus.interactable = false
         this.btnPlus.interactable = false
         this.auto.interactable = false
         this.btnOPtion.interactable = false
-
         GameManager.instance.PlaySpin()
     }
 
     ActiveSpin() {
         this.isSpin = false
-
         this.btnMinus.interactable = true
         this.btnPlus.interactable = true
         this.auto.interactable = true
         this.btnOPtion.interactable = true
-
         // ⭐ auto spin tiếp tại đây
         if (this.isAuto) {
             this.AutoSpinNext()

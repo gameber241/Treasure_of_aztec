@@ -41,8 +41,6 @@ export class FreeSpines extends Component {
         this.fx.node.active = true
         this.fx.setAnimation(0, "_FreeWin_Appear", false)
         this.fx.addAnimation(0, "_FreeWin_Idle", true)
-        // this.fx.addAnimation(0, "_FreeWin_Action", false)
-        // this.fx.addAnimation(0, "_FreeWin_Action_Idle", false)
         this.freeSpinLb.string = numberScratch
         this.fx.setCompleteListener((tracking) => {
             if (tracking.animation.name != "_FreeWin_Idle") return
@@ -63,14 +61,12 @@ export class FreeSpines extends Component {
                 this.checkFreeTimer = null;
                 this.fx.addAnimation(0, "_FreeWin_Action", false)
                 this.fx.addAnimation(0, "_FreeWin_Action_Idle", false)
+                this.btnStartFreeSpin.active = true
 
                 this.fx.setCompleteListener((tracking) => {
                     if (tracking.animation.name != "_FreeWin_Action_Idle") return
                     this.fx.setCompleteListener(null)
-                    this.btnStartFreeSpin.active = true
-                    GameManager.instance.indexCurrentReel = 0
-                    GameManager.instance.PlayModeFreeSpin()
-                    this.fx.node.active = false
+
                 });
             }
         }, 100); // check mỗi 100ms
@@ -78,8 +74,11 @@ export class FreeSpines extends Component {
 
 
     BtnStartSpin() {
-        this.node.active = false
+        GameManager.instance.SetFreeSpines()
         this.btnStartFreeSpin.active = false
+        GameManager.instance.indexCurrentReel = 0
+        GameManager.instance.PlayModeFreeSpin()
+        this.fx.node.active = false
     }
 
     ShowTotalSpin(callback, target) {
@@ -125,7 +124,7 @@ export class FreeSpines extends Component {
             this.stopAndComplete(label, callback);
         };
 
-        this.node.on(Input.EventType.TOUCH_END, this.touchHandler, this);
+        this.fx.node.on(Input.EventType.TOUCH_END, this.touchHandler, this);
     }
 
     // =============================
@@ -154,7 +153,7 @@ export class FreeSpines extends Component {
 
         // remove event
         if (this.touchHandler) {
-            this.node.off(Input.EventType.TOUCH_END, this.touchHandler, this);
+            this.fx.node.off(Input.EventType.TOUCH_END, this.touchHandler, this);
             this.touchHandler = null;
         }
         // delay hide giống slot

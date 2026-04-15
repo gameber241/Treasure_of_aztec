@@ -254,6 +254,8 @@ export class GameManager extends Component {
                             resolve();
                         } else {
                             console.error("[GameManager] Test data invalid");
+                            if (this.isFreeSpin == true) return
+
                             Spin.instance.ActiveSpin();
                             reject(new Error("Invalid test data"));
                         }
@@ -274,6 +276,8 @@ export class GameManager extends Component {
 
                     if (!wsService) {
                         console.error("[GameManager] WebSocketService not available");
+                        if (this.isFreeSpin == true) return
+
                         Spin.instance.ActiveSpin();
                         return;
                     }
@@ -290,36 +294,25 @@ export class GameManager extends Component {
                         this.updateBalanceDisplay();
                     } else {
                         console.error("[GameManager] Spin failed:", spinResult.error);
+                        if (this.isFreeSpin == true) return
                         Spin.instance.ActiveSpin();
                         return;
                     }
                 } catch (error) {
                     console.error("[GameManager] Spin API error:", error);
+                    if (this.isFreeSpin == true) return
                     Spin.instance.ActiveSpin();
                     return;
                 }
             }
         }
 
-        // console.log(this.sampleJson.rounds[this.indexCurrentReel]);
-        // if (this.sampleJson.rounds[this.indexCurrentReel].isScratch == true) {
-        //     this.SetFreeSpines()
-        //     this.PlayFreeSpin(this.sampleJson.rounds[this.indexCurrentReel].freeSpin)
-        // }
-        // else {
-        //     this.SetNormal()
-        // }
-        // if (this.sampleJson.rounds.length > this.indexCurrentReel) {
-        //     let dataRound = this.sampleJson.rounds[this.indexCurrentReel]
-        //     // Server already sends reel 0 in display order (top-to-bottom)
-        //     this.GenerateMap(dataRound.grid)
-        //     ComboManager.instance.ScrollToCombo(dataRound.multiplier)
-        // }
         this.SpinGame()
     }
 
     stepOld = 1
     SpinGame() {
+        console.log("den day", "startspin")
         this.stepWinCurrent = 0
         this.UpdatePriceWin()
         TextBoxCombo.instant.playRandomText()
@@ -473,7 +466,7 @@ export class GameManager extends Component {
     stepWinCurrent = 0
     async ClearData() {
         const r = this.sampleJson.rounds[this.indexCurrentReel];
-        console.log("Way",this.sampleJson, this.indexCurrentReel)
+        console.log("Way", this.sampleJson, this.indexCurrentReel)
 
         if (r.win.positions.length > 0) {
             Waymanager.instance.animWay(r.win.ways)
@@ -910,10 +903,12 @@ export class GameManager extends Component {
         return this.totalFreeSpin
     }
     GetDataFreeSpin() {
-        console.log("den day", this.indexCurrentFreeSpin, this.dataFreespin)
+        console.log("den day", this.indexCurrentFreeSpin, this.dataFreespin.payload.batchSpins.length, this.totalFreeSpin)
         if (this.indexCurrentFreeSpin >= this.dataFreespin.payload.batchSpins.length) {
             return null
         }
+        console.log("den day", this.dataFreespin.payload.batchSpins[this.indexCurrentFreeSpin])
+
         return this.dataFreespin.payload.batchSpins[this.indexCurrentFreeSpin]
     }
 
@@ -929,22 +924,23 @@ export class GameManager extends Component {
                 Spin.instance.ActiveSpin()
                 this.SetNormal();
                 SoundToggle.instance.playNormal()
-                console.log("den day", Spin.instance.isAuto)
-                if (Spin.instance.isAuto == true) {
-                    Spin.instance.AutoSpinNext()
-                }
-                else {
-                    Spin.instance.isSpin = false;
-                }
+                console.log("den day", "setNormal")
+
+                // if (Spin.instance.isAuto == true) {
+                //     Spin.instance.AutoSpinNext()
+                // }
+                // else {
+                //     Spin.instance.isSpin = false;
+                // }
 
 
             }, this.dataFreespin.payload.batchSummary.totalWin);
             return;
         }
+        this.SetFreeSpines()
         this.indexCurrentFreeSpin++
         this.totalFreeSpin--
         this.isFreeSpin = true
-        this.SetFreeSpines()
         TextBoxCombo.instant.box.setAnimation(0, "textBox1_idle", true)
         this.UpdatePriceWin()
         TextBoxCombo.instant.playRandomText()
@@ -952,7 +948,6 @@ export class GameManager extends Component {
         Spin.instance.isSpin = true
         Waymanager.instance.resetWay()
         this.sampleJson = dataFree
-        console.log("free", this.sampleJson)
         const grid = this.sampleJson.rounds[this.indexCurrentReel].grid;
         FreeSpines.instance.UpdateFreeSpinLb(this.totalFreeSpin)
         this.GenerateMap(grid);
