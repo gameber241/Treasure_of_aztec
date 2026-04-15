@@ -1,6 +1,6 @@
 import { _decorator, Component, EventTouch, Input, Label, Node } from 'cc';
 import { WebSocketService } from './WebSocketService';
-import { GameManager } from './Manager/GameManager';
+import { currencyFormatSimple, GameManager } from './Manager/GameManager';
 import { H_story } from './History';
 const { ccclass, property } = _decorator;
 
@@ -18,15 +18,16 @@ export class ItemHistory extends Component {
     @property(Label)
     profit: Label = null
 
-
-
     data = null
     SetUp(data) {
         this.data = data
+        const betAmount = Number(data?.bet ?? 0)
+        const profitAmount = Number(data?.win ?? 0) - betAmount
+
         this.timeStem.string = this.formatFull(data.timestamp)
-        this.bet.string = data.bet
+        this.bet.string = currencyFormatSimple.format(betAmount)
         this.transaction.string = data.id
-        this.profit.string = (data.balanceBefore - data.balanceAfter).toString()
+        this.profit.string = currencyFormatSimple.format(profitAmount)
 
         this.node.on(Input.EventType.TOUCH_START, this.TouchStart, this)
         this.node.on(Input.EventType.TOUCH_MOVE, this.TouchMove, this)

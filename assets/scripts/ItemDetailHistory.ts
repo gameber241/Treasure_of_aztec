@@ -2,6 +2,7 @@ import { _decorator, Component, instantiate, Label, Node, Prefab } from 'cc';
 import { ItemHistory } from './ItemHistory';
 import { SymbolHis } from './SymbolHis';
 import { ItemWInDetailHistory } from './ItemWInDetailHistory';
+import { currencyFormatSimple } from './Manager/GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('ItemDetailHistory')
@@ -40,12 +41,16 @@ export class ItemDetailHistory extends Component {
     itemWInDetailHistory: Prefab = null
 
     SetUp(data, dataRound, index, maxIndex) {
+        const roundWin = Number(data?.win?.stepWin ?? data?.stepWin ?? 0)
+        const roundBet = index > 0 ? 0 : Number(dataRound?.bet ?? 0)
+        const roundProfit = roundWin - roundBet
+
         this.roundIndex.string = index + "/" + maxIndex
-        this.betSize.string = dataRound.betSize
-        this.bet.string = dataRound.bet
+        this.betSize.string = currencyFormatSimple.format(Number(dataRound?.betSize ?? 0))
+        this.bet.string = currencyFormatSimple.format(roundBet)
         this.transaction.string = dataRound.id
-        this.profit.string = (dataRound.balanceBefore - dataRound.balanceAfter).toString()
-        this.Balance.string = dataRound.balanceAfter
+        this.profit.string = currencyFormatSimple.format(roundProfit)
+        this.Balance.string = currencyFormatSimple.format(Number(dataRound?.balanceAfter ?? 0))
         data.grid.forEach((e, index) => {
             e.forEach((s) => {
                 let item = instantiate(this.symbolHis)
