@@ -1,5 +1,5 @@
 import { _decorator, Component, Input, Label, Node, sp, tween, Tween } from 'cc';
-import { GameManager } from './Manager/GameManager';
+import { currencyFormatSimple, GameManager } from './Manager/GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('FreeSpines')
@@ -68,6 +68,7 @@ export class FreeSpines extends Component {
                     if (tracking.animation.name != "_FreeWin_Action_Idle") return
                     this.fx.setCompleteListener(null)
                     this.btnStartFreeSpin.active = true
+                    GameManager.instance.indexCurrentReel = 0
                     GameManager.instance.PlayModeFreeSpin()
                     this.fx.node.active = false
                 });
@@ -111,7 +112,7 @@ export class FreeSpines extends Component {
                 onUpdate: () => {
                     if (!this.tweenObj) return;
                     this.currentValue = this.tweenObj.value;
-                    label.string = this.currentValue.toFixed(2);
+                    label.string = currencyFormatSimple.format(this.currentValue)
                 }
             })
             .call(() => {
@@ -141,7 +142,7 @@ export class FreeSpines extends Component {
 
         if (this.tweenObj) {
             this.currentValue = this.targetValue;
-            label.string = this.targetValue.toFixed(2);
+            label.string = currencyFormatSimple.format(this.targetValue)
         }
 
         this.complete(label, callback);
@@ -199,6 +200,8 @@ export class FreeSpines extends Component {
         else {
             this.lbFreeSpin.node.active = true
             this.text1.active = true
+            this.text2.active = false
+
             this.lbFreeSpin.string = round
 
         }

@@ -328,9 +328,8 @@ export class GameManager extends Component {
         // Total.instance.SetTextNormal()
         Waymanager.instance.resetWay()
         // this.Disabledbtns()
-        console.log(this.sampleJson, "data")
         const round = this.sampleJson.rounds[this.indexCurrentReel];
-        // console.log("round", round)
+
         this.SetNormal();
         const grid = round.grid;
         this.GenerateMap(grid);
@@ -352,7 +351,7 @@ export class GameManager extends Component {
     async RollDataScratch(grid) {
         const indexReel = this.CheckReelFull3Scratch();
         if (indexReel === this.reels.length - 1) {
-            this.RollDataNormal(this);
+            this.RollDataNormal(grid);
             return;
         }
         for (let i = 0; i < this.reels.length; i++) {
@@ -365,6 +364,8 @@ export class GameManager extends Component {
         let stopped = 0;
         const phase1 = indexReel + 1;
         for (let i = 0; i <= indexReel; i++) {
+            let newRow = [...grid[i]];
+            console.log(newRow)
             this.reels[i].stopRoll(grid[i])
             await GameManager.waitForSeconds(this.GetTimeTurboScratchStart());
 
@@ -394,7 +395,7 @@ export class GameManager extends Component {
             // play idle scratch cho symbol
             reel.symbols.forEach(e => {
                 if (e.face === ESymbolFace.SCRATCH && e.stackIndex === 0) {
-                    e.PlayIdleScratch();
+                    // e.PlayIdleScratch();
                 }
             });
 
@@ -414,21 +415,6 @@ export class GameManager extends Component {
             this.ShowAllReef(true)
             this.scheduleOnce(() => {
                 this.ClearData()
-                // if (this.sampleJson.rounds[this.indexCurrentReel].freeSpin > 0) {
-                //     SoundToggle.instance.playFreewin()
-                //     FreeSpines.instance.playAnimation(() => {
-
-                //         this.SetFreeSpines()
-                //         this.PlayFreeSpin(this.sampleJson.rounds[this.indexCurrentReel].freeSpin)
-                //         this.scheduleOnce(() => {
-                //             this.ClearData()
-                //         }, 2)
-                //     })
-                // }
-                // else {
-                //     this.ClearData()
-
-                // }
             }, 1)
 
         }, 0.4)
@@ -440,6 +426,9 @@ export class GameManager extends Component {
             await GameManager.waitForSeconds(i == 0 ? 0 : this.GetTimeTurboStopSpin());
             this.reels[current].startRoll();
         }
+
+        await GameManager.waitForSeconds(0.16);
+
         for (let i = 0; i < this.reels.length; i++) {
             let current = i;
             this.reels[current].stopRoll(grid[i]);
@@ -484,9 +473,10 @@ export class GameManager extends Component {
     stepWinCurrent = 0
     async ClearData() {
         const r = this.sampleJson.rounds[this.indexCurrentReel];
-        Waymanager.instance.animWay(r.win.ways)
+        console.log("Way",this.sampleJson, this.indexCurrentReel)
 
         if (r.win.positions.length > 0) {
+            Waymanager.instance.animWay(r.win.ways)
             console.log('[ClearData] win.positions BEFORE removeWinDuplicateFlip:', r.win.positions.length);
             TextBoxCombo.instant.PlayStepWin(r.win.stepWin, this.stepOld)
             this.stepWinCurrent += r.win.stepWin
@@ -565,15 +555,18 @@ export class GameManager extends Component {
         const r = this.sampleJson.rounds[this.indexCurrentReel];
         const next = () => {
             if (this.CheckScratch4() == true) {
+                this.indexCurrentReel = 0
+                this.isFreeSpin = true
                 FreeSpines.instance.playAnimation(this.getFreeSpin(this.GetNumberScratch()));
             }
             else {
-                this.indexCurrentReel = 0;
-                if (r.isScratch === true && r.freeSpinCurrent > 1) {
-                    this.SetFreeSpines()
-                    this.PlaySpin();
+                if (this.isFreeSpin == true) {
+                    this.indexCurrentReel = 0
+                    this.PlayModeFreeSpin()
                 }
                 else {
+                    this.indexCurrentReel = 0;
+
                     Spin.instance.ActiveSpin()
                     this.SetNormal();
                     SoundToggle.instance.playNormal()
@@ -583,7 +576,9 @@ export class GameManager extends Component {
                     else {
                         Spin.instance.isSpin = false;
                     }
+
                 }
+
             }
 
 
@@ -616,16 +611,16 @@ export class GameManager extends Component {
         }
 
         // total win
-        if (r.totalPrice > 0 && r.isScratch) {
+        // if (r.totalPrice > 0 && r.isScratch) {
 
 
-            winQueue.push(() => {
-                SoundToggle.instance.playBigWin()
-                FreeSpines.instance.ShowTotalSpin(() => {
-                    runNext();
-                }, 4000);
-            });
-        }
+        //     winQueue.push(() => {
+        //         SoundToggle.instance.playBigWin()
+        //         FreeSpines.instance.ShowTotalSpin(() => {
+        //             runNext();
+        //         }, 4000);
+        //     });
+        // }
 
         // nếu không có animation nào
         if (winQueue.length === 0) {
@@ -915,6 +910,7 @@ export class GameManager extends Component {
         return this.totalFreeSpin
     }
     GetDataFreeSpin() {
+        console.log("den day", this.indexCurrentFreeSpin, this.dataFreespin)
         if (this.indexCurrentFreeSpin >= this.dataFreespin.payload.batchSpins.length) {
             return null
         }
@@ -924,6 +920,25 @@ export class GameManager extends Component {
     PlayModeFreeSpin() {
         let dataFree = this.GetDataFreeSpin()
         if (dataFree == null) {
+            FreeSpines.instance.ShowTotalSpin(() => {
+                this.indexCurrentFreeSpin = 0
+                this.isFreeSpin = false
+
+                this.totalFreeSpin = 0
+                this.dataFreespin = null
+                Spin.instance.ActiveSpin()
+                this.SetNormal();
+                SoundToggle.instance.playNormal()
+                console.log("den day", Spin.instance.isAuto)
+                if (Spin.instance.isAuto == true) {
+                    Spin.instance.AutoSpinNext()
+                }
+                else {
+                    Spin.instance.isSpin = false;
+                }
+
+
+            }, this.dataFreespin.payload.batchSummary.totalWin);
             return;
         }
         this.indexCurrentFreeSpin++

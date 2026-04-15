@@ -1,5 +1,6 @@
 import { _decorator, Component, Input, Label, sp, Tween, tween } from 'cc';
 import { SoundToggle } from './Sound';
+import { currencyFormatSimple } from './Manager/GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('BigWin')
@@ -91,7 +92,7 @@ export class BigWin extends Component {
                 onUpdate: () => {
                     if (!this.tweenObj) return;
                     this.currentValue = this.tweenObj.value;
-                    label.string = this.currentValue.toFixed(2);
+                    label.string = currencyFormatSimple.format(this.currentValue);
                 }
             })
             .call(() => {
@@ -121,7 +122,7 @@ export class BigWin extends Component {
 
         if (this.tweenObj) {
             this.currentValue = this.targetValue;
-            label.string = this.targetValue.toFixed(2);
+            label.string = currencyFormatSimple.format(this.targetValue)
         }
 
         this.complete(label, callback);

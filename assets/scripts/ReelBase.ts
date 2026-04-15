@@ -103,53 +103,124 @@ export abstract class ReelBase extends Component {
             })
             .delay(this._delay)
             .call(() => {
-                this.sortSibling();
+                // this.sortSibling();
             })
             .union()
             .repeatForever()
             .start();
+
     }
 
 
+    // stopRoll(result: any[]) {
+    //     this.isRolling = false;
+    //     this._isStopping = true;
+
+    //     Tween.stopAllByTarget(this.node);
+    //     const total = this.symbols.length;     // 15
+    //     const visible = this.VISIBLE_COUNT;   // 5
+    //     const firstVisible = this.FIRST_VISIBLE;
+    //     if (!result) {
+    //         this.symbols.forEach(s => {
+    //             s.reelIndex += visible;
+    //             s.rollToIndex(this._delay * 5, Symbol.MoveType.STOP);
+
+    //         });
+    //         return;
+
+    //     }
+
+
+    //     // 1️⃣ Set result vào 5 symbol phía trên (không đụng visible hiện tại)
+    //     for (let i = 0; i < visible; i++) {
+    //         const targetIndex = (firstVisible + i) % total;
+    //         const placeIndex = (targetIndex - visible + total) % total;
+    //         const s = this.symbols.find(sym => sym.reelIndex === placeIndex);
+    //         if (!s) continue;
+    //         const dataIndex = this.isHorizontal() ? (visible - 1 - i) : i;
+    //         s.InitSymbol(result[dataIndex]);
+    //         s.col = this.possitionReel
+    //         s.row = dataIndex;
+    //         GameManager.instance.symBolArray[s.col][s.row] = s
+
+    //     }
+    //     // 2️⃣ Cho tất cả symbol scroll xuống như bình thường bằng rollToIndex
+    //     this.symbols.forEach(s => {
+    //         s.reelIndex += visible;
+    //         s.rollToIndex(this._delay * 5, Symbol.MoveType.STOP);
+
+    //     });
+    //     SoundToggle.instance.PlaySymbolDrop()
+    // }
     stopRoll(result: any[]) {
         this.isRolling = false;
         this._isStopping = true;
 
         Tween.stopAllByTarget(this.node);
-        const total = this.symbols.length;     // 15
-        const visible = this.VISIBLE_COUNT;   // 5
+
+        const total = this.symbols.length;
+        const visible = this.VISIBLE_COUNT;
         const firstVisible = this.FIRST_VISIBLE;
-        if (!result) {
-            this.symbols.forEach(s => {
-                s.reelIndex += visible;
-                s.rollToIndex(this._delay * 5, Symbol.MoveType.STOP);
 
-            });
+        // 🛡️ Safety check
+        if (!this.symbols || this.symbols.length === 0) {
+            console.error("❌ No symbols in reel");
             return;
-
         }
 
+        if (!result || result.length < visible) {
+            console.error("❌ Invalid result:", result);
+            return;
+        }
 
-        // 1️⃣ Set result vào 5 symbol phía trên (không đụng visible hiện tại)
+        // 🔥 FIX 1: normalize reelIndex (quan trọng nhất)
+        this.symbols.sort((a, b) => a.reelIndex - b.reelIndex);
+        for (let i = 0; i < this.symbols.length; i++) {
+            this.symbols[i].reelIndex = i;
+        }
+
+        // 🔥 FIX 2: build map index -> symbol
+        const indexMap = new Map<number, Symbol>();
+        for (let sym of this.symbols) {
+            indexMap.set(sym.reelIndex, sym);
+        }
+
+        // 🔥 FIX 3: set result (KHÔNG dùng find nữa)
         for (let i = 0; i < visible; i++) {
             const targetIndex = (firstVisible + i) % total;
             const placeIndex = (targetIndex - visible + total) % total;
-            const s = this.symbols.find(sym => sym.reelIndex === placeIndex);
-            if (!s) continue;
-            const dataIndex = this.isHorizontal() ? (visible - 1 - i) : i;
-            s.InitSymbol(result[dataIndex]);
-            s.col = this.possitionReel
-            s.row = dataIndex;
-            GameManager.instance.symBolArray[s.col][s.row] = s
 
+            let s = indexMap.get(placeIndex);
+
+            // fallback nếu miss (trường hợp hiếm)
+            if (!s) {
+                console.warn("⚠ Missing symbol at index:", placeIndex);
+                s = this.symbols[i % this.symbols.length];
+            }
+
+            const dataIndex = this.isHorizontal() ? (visible - 1 - i) : i;
+
+            if (result[dataIndex] == null) {
+                console.warn("⚠ Missing result data at:", dataIndex);
+                continue;
+            }
+
+            s.InitSymbol(result[dataIndex]);
+            s.col = this.possitionReel;
+            s.row = dataIndex;
+
+            if (GameManager.instance?.symBolArray) {
+                GameManager.instance.symBolArray[s.col][s.row] = s;
+            }
         }
-        // 2️⃣ Cho tất cả symbol scroll xuống như bình thường bằng rollToIndex
+
+        // 🔥 FIX 4: roll xuống như cũ
         this.symbols.forEach(s => {
             s.reelIndex += visible;
             s.rollToIndex(this._delay * 5, Symbol.MoveType.STOP);
-
         });
-        SoundToggle.instance.PlaySymbolDrop()
+
+        SoundToggle.instance?.PlaySymbolDrop();
     }
     changeSpeed(newDelay: number) {
         this._delay = newDelay;
