@@ -41,7 +41,6 @@ export class ItemHistory extends Component {
     }
 
     TouchMove(event: EventTouch) {
-        console.log(event.getDeltaY())
         if (Math.abs(event.getDeltaY()) > 2) {
             event.propagationStopped = true
         }
@@ -72,7 +71,6 @@ export class ItemHistory extends Component {
     async Btn() {
         const wsService = WebSocketService.getInstance();
         const detailResult = await wsService.getLogDetail(this.data.id);
-        console.log('[History] getLogDetailResult:', detailResult);
         GameManager.instance.history.getComponent(H_story).ShowDetail(detailResult.log)
     }
 }

@@ -12,8 +12,6 @@ export class ItemWInDetailHistory extends Component {
     title1: Label = null
 
     SetUp(id, quantity) {
-        console.log(id, "check")
-        console.log(PrefabManager.instance.GetDataSymbol().getDataByType(id))
         this.icon.spriteFrame = PrefabManager.instance.GetDataSymbol().getDataByType(id).icon
         this.title1.string = quantity + " of a Kind"
     }

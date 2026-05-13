@@ -7,139 +7,168 @@ const { ccclass, property } = _decorator;
 export class Spin extends Component {
 
     @property(sp.Skeleton)
-    fxTouch: sp.Skeleton = null
+    fxTouch: sp.Skeleton = null;
 
     @property(sp.Skeleton)
-    skeletonSpin: sp.Skeleton = null
+    skeletonSpin: sp.Skeleton = null;
 
     @property(Button)
-    btnMinus: Button = null
+    btnMinus: Button = null;
 
     @property(Button)
-    btnPlus: Button = null
+    btnPlus: Button = null;
 
     @property(Button)
-    auto: Button = null
+    auto: Button = null;
 
     @property(Button)
-    btnOPtion: Button = null
+    btnOPtion: Button = null;
 
     @property(Label)
-    countAuto: Label = null
+    countAuto: Label = null;
 
     @property(sp.Skeleton)
-    spAuto: sp.Skeleton = null
+    spAuto: sp.Skeleton = null;
 
-    public static instance: Spin
+    public static instance: Spin;
+
+    // ================= STATE =================
+
+    isSpin = false;
+    isAuto = false;
+    autoCount = 0;
+    isMove = false;
 
     protected onLoad(): void {
-        Spin.instance = this
+        Spin.instance = this;
     }
 
     protected start(): void {
-        this.node.on(Node.EventType.MOUSE_ENTER, this.MouseEnter, this)
-        this.node.on(Node.EventType.MOUSE_LEAVE, this.MoveLeave, this)
-        this.node.on(Input.EventType.TOUCH_END, this.TouchEnd, this)
+        this.node.on(Node.EventType.MOUSE_ENTER, this.MouseEnter, this);
+        this.node.on(Node.EventType.MOUSE_LEAVE, this.MoveLeave, this);
+        this.node.on(Input.EventType.TOUCH_END, this.TouchEnd, this);
+
+        this.countAuto.node.active = false;
+        this.spAuto.node.active = false;
+        this.skeletonSpin.setAnimation(0, "idle", true);
     }
 
     // ================= NORMAL SPIN =================
 
-    isSpin = false
-
     TouchEnd() {
-        if (this.isSpin) return
+        if (this.isSpin) return;
 
-        // nếu đang auto mà bấm tay => tắt auto
-        if (this.isAuto) this.StopAuto()
+        // Nếu đang auto mà người chơi bấm tay => tắt auto
+        if (this.isAuto) {
+            this.StopAuto();
+        }
 
-        this.StartSpin()
+        this.StartSpin();
     }
 
     StartSpin() {
-        this.isSpin = true
-        SoundToggle.instance.PlaySpin()
-        this.skeletonSpin.setAnimation(0, "action", false)
-        this.skeletonSpin.addAnimation(0, "idle", true)
-        this.btnMinus.interactable = false
-        this.btnPlus.interactable = false
-        this.auto.interactable = false
-        this.btnOPtion.interactable = false
-        GameManager.instance.PlaySpin()
+        if (this.isSpin) return; // tránh gọi trùng
+
+        this.isSpin = true;
+
+        SoundToggle.instance.PlaySpin();
+
+        if (this.spAuto.node.active) {
+            this.spAuto.setAnimation(0, "auto_free", true);
+        } else {
+            this.skeletonSpin.setAnimation(0, "action", false);
+            this.skeletonSpin.addAnimation(0, "idle", true);
+        }
+
+        this.btnMinus.interactable = false;
+        this.btnPlus.interactable = false;
+        this.auto.interactable = false;
+        this.btnOPtion.interactable = false;
+
+        GameManager.instance.PlaySpin();
     }
 
+    /**
+     * Gọi sau khi vòng quay kết thúc.
+     */
     ActiveSpin() {
-        this.isSpin = false
-        this.btnMinus.interactable = true
-        this.btnPlus.interactable = true
-        this.auto.interactable = true
-        this.btnOPtion.interactable = true
-        // ⭐ auto spin tiếp tại đây
+        this.isSpin = false;
+        this.btnMinus.interactable = true;
+        this.btnPlus.interactable = true;
+        this.auto.interactable = true;
+        this.btnOPtion.interactable = true;
+
+        // Nếu đang auto thì spin tiếp
         if (this.isAuto) {
-            this.AutoSpinNext()
+            this.AutoSpinNext();
         }
     }
 
     // ================= AUTO SPIN =================
 
-    isAuto = false
-    autoCount = 0
-
     PlayAuto(number: number) {
-
+        // Nếu đang auto mà bấm lại => tắt auto
         if (this.isAuto) {
-            this.StopAuto()
-            return
+            this.StopAuto();
+            return;
         }
 
-        this.isAuto = true
-        this.autoCount = number
+        this.isAuto = true;
+        this.autoCount = number;
 
-        this.countAuto.node.active = true
-        this.countAuto.string = this.autoCount.toString()
+        this.countAuto.node.active = true;
+        this.countAuto.string = this.autoCount.toString();
 
-        this.spAuto.node.active = true
-        this.skeletonSpin.node.active = false
-        this.spAuto.setAnimation(0, "auto_free", true)
+        this.spAuto.node.active = true;
+        this.skeletonSpin.node.active = false;
+        this.spAuto.setAnimation(0, "auto_free", true);
 
-        this.StartSpin()
+        // Spin đầu tiên KHÔNG trừ count
+        this.StartSpin();
     }
 
+    /**
+     * Chỉ được gọi sau khi 1 lượt spin hoàn tất.
+     * Mỗi lần gọi chỉ trừ 1.
+     */
     AutoSpinNext() {
+        // Giảm số lượt còn lại
+        this.autoCount--;
 
-        if (this.autoCount <= 0) {
-            this.StopAuto()
-            return
+        // Cập nhật UI
+        if (this.autoCount > 0) {
+            this.countAuto.string = this.autoCount.toString();
+            this.StartSpin();
+        } else {
+            // Hết lượt
+            this.countAuto.string = "0";
+            this.StopAuto();
         }
-
-        this.autoCount--
-        this.countAuto.string = this.autoCount.toString()
-
-        this.StartSpin()
     }
 
     StopAuto() {
-        this.isAuto = false
+        this.isAuto = false;
+        this.autoCount = 0;
 
-        this.countAuto.node.active = false
-        this.spAuto.node.active = false
-        this.skeletonSpin.node.active = true
-        this.skeletonSpin.setAnimation(0, "idle", true)
+        this.countAuto.node.active = false;
+        this.spAuto.node.active = false;
+        this.skeletonSpin.node.active = true;
+
+        this.skeletonSpin.setAnimation(0, "idle", true);
     }
 
     // ================= FX =================
 
-    isMove = false
-
     MouseEnter() {
-        if (this.isMove) return
-        this.isMove = true
-        this.fxTouch.node.active = true
-        this.fxTouch.setAnimation(0, "idle_touch", true)
+        if (this.isMove) return;
+
+        this.isMove = true;
+        this.fxTouch.node.active = true;
+        this.fxTouch.setAnimation(0, "idle_touch", true);
     }
 
     MoveLeave() {
-        this.fxTouch.node.active = false
-        this.isMove = false
+        this.fxTouch.node.active = false;
+        this.isMove = false;
     }
-
 }

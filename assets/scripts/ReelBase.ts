@@ -49,7 +49,6 @@ export abstract class ReelBase extends Component {
 
     protected collectSymbols() {
         this.symbols = [];
-        console.log(this.node.children.length, "checkkkkkkk")
         for (let n of this.node.children) {
             const s = n.getComponent(Symbol);
             if (s) {
@@ -231,8 +230,6 @@ export abstract class ReelBase extends Component {
     }
     public cascadeDrop(dataAbove: any[]) {
         const aboveData = this.isHorizontal() ? dataAbove : [...dataAbove].reverse();
-        console.log(`[cascadeDrop] col=${this.possitionReel}, space will be calculated, aboveData:`, aboveData.map(d => `i:${d.i}`));
-
         this.symbols = this.symbols.filter(
             s => s.node && s.node.isValid
         );
@@ -259,7 +256,6 @@ export abstract class ReelBase extends Component {
             });
 
             const createCount = Math.min(this.VISIBLE_COUNT - visibleSymbols.length, aboveData.length);
-            console.log(`[cascadeDrop] col=${this.possitionReel}, calculated space=${this.VISIBLE_COUNT - visibleSymbols.length}, will create ${createCount} new symbols`);
             for (let i = 0; i < createCount; i++) {
                 let Symbol = this.createNewSymbol()
                 this.symbols.push(Symbol)
@@ -306,7 +302,6 @@ export abstract class ReelBase extends Component {
             }
         }
         const createCount = Math.min(space, aboveData.length)
-        console.log(`[cascadeDrop] col=${this.possitionReel}, calculated space=${space}, will create ${createCount} new symbols`);
         for (let i = createCount - 1; i >= 0; i--) {
             let Symbol = this.createNewSymbol()
             this.symbols.push(Symbol)

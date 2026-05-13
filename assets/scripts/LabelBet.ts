@@ -71,7 +71,6 @@ export class LabelBet extends Component {
         this.betAmount = PanelBet.instance.betAmount;
         this.stepBet = PanelBet.instance.betSize;
         this.node.getComponent(Label).string = currencyFormatSimple.format(this.betAmount);
-        console.log(this.betAmount, this.stepBet)
     }
 
     updateLabel() {

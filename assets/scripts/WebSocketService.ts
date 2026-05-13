@@ -47,13 +47,11 @@ export class WebSocketService extends Component {
     public connect(serverUrl: string, token: string): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-                console.log('[WS] Already connected');
                 resolve();
                 return;
             }
 
             if (this.isConnecting) {
-                console.log('[WS] Connection already in progress');
                 reject(new Error('Connection already in progress'));
                 return;
             }
@@ -62,13 +60,11 @@ export class WebSocketService extends Component {
             this.token = token;
 
             const wsUrl = `${serverUrl}?gameID=${this.gameId}&token=${encodeURIComponent(token)}`;
-            console.log('[WS] Connecting to:', wsUrl);
 
             try {
                 this.ws = new WebSocket(wsUrl);
 
                 this.ws.onopen = () => {
-                    console.log('[WS] Connected successfully');
                     this.isConnecting = false;
                     this.reconnectAttempts = 0;
                     resolve();
@@ -85,7 +81,6 @@ export class WebSocketService extends Component {
                 };
 
                 this.ws.onclose = () => {
-                    console.log('[WS] Connection closed');
                     this.isConnecting = false;
                     this.handleReconnect();
                 };
@@ -107,7 +102,6 @@ export class WebSocketService extends Component {
 
             // Handle getProfileResult specifically
             if (message.type == "freeSpinsBatch") {
-                console.log("freespin", message)
                 GameManager.instance.dataFreespin = message
             }
             else
@@ -126,7 +120,6 @@ export class WebSocketService extends Component {
 
                     // Emit global event for profile updates
                     const eventData = message.payload || message;
-                    console.log('[WS] Emitting profile:updated event with data:', JSON.stringify(eventData, null, 2));
                     EventBus.getInstance().emit('profile:updated', eventData);
                 }
                 // Handle spin result
@@ -201,9 +194,7 @@ export class WebSocketService extends Component {
             payload: data || {}
         };
         const messageStr = JSON.stringify(message);
-        console.log('[WS] Sending message:', messageStr);
         this.ws.send(messageStr);
-        console.log('[WS] Message sent successfully');
     }
 
     public spin(bet: number): Promise<SpinResult> {
@@ -242,7 +233,6 @@ export class WebSocketService extends Component {
 
                 const result = message.payload || message;
                 // console.log('[WS] spin result:', JSON.stringify(result, null, 2));
-                console.log(result);
                 if (result.success) {
                     resolve(result as SpinResult);
                 } else {
@@ -250,15 +240,12 @@ export class WebSocketService extends Component {
                 }
             });
 
-            console.log('[WS] Sending spin request with bet:', bet);
             this.send('spin', { bet });
         });
     }
 
     public getProfile(): Promise<any> {
         return new Promise((resolve, reject) => {
-            console.log('[WS] getProfile() called');
-
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
                 console.error('[WS] getProfile failed: WebSocket not connected');
                 reject(new Error('WebSocket not connected'));
@@ -284,15 +271,12 @@ export class WebSocketService extends Component {
                 resolve(result);
             });
 
-            console.log('[WS] Sending getProfile request with gameID:', this.gameId);
             this.send('getProfile', { gameID: this.gameId });
         });
     }
 
     public getLogs(options?: any): Promise<any> {
         return new Promise((resolve, reject) => {
-            console.log('[WS] getLogs() called with options:', options);
-
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
                 console.error('[WS] getLogs failed: WebSocket not connected');
                 reject(new Error('WebSocket not connected'));
@@ -330,7 +314,6 @@ export class WebSocketService extends Component {
 
     public getLogDetail(id: number | string): Promise<any> {
         return new Promise((resolve, reject) => {
-            console.log('[WS] getLogDetail() called with id:', id);
 
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
                 console.error('[WS] getLogDetail failed: WebSocket not connected');

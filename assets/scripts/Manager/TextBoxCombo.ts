@@ -72,7 +72,6 @@ export class TextBoxCombo extends Component {
     PlayStepWin(step, multi) {
         Tween.stopAllByTarget(this.textRandom.node)
         this.unscheduleAllCallbacks()
-        console.log(step, "414313123123")
         this.totalWin.active = true
         this.textRandom.node.active = false
         this.textWin.active = false

@@ -34,9 +34,6 @@ winPositions.forEach(pos => {
   reelWinCounts[pos.c]++;
 });
 
-console.log("Win counts per reel:", reelWinCounts);
-console.log("Above data lengths:", serverData.rounds[0].above.map(a => a.length));
-
 // Check if they match
 reelWinCounts.forEach((count, i) => {
   const aboveLen = serverData.rounds[0].above[i].length;

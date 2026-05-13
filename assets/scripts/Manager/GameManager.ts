@@ -125,21 +125,16 @@ export class GameManager extends Component {
         this.scheduleOnce(() => {
             const wsService = WebSocketService.getInstance();
             if (wsService) {
-                console.log('[GameManager] Requesting profile update after listener registration');
                 wsService.getProfile();
             }
         }, 0.1);
     }
 
     onProfileUpdated(payload: any): void {
-        console.log('[GameManager] ===== PROFILE UPDATED EVENT =====');
-        console.log('[GameManager] Received payload:', JSON.stringify(payload, null, 2));
 
         const balance = this.extractBalanceFromPayload(payload);
-        console.log('[GameManager] Extracted balance:', balance);
 
         if (balance !== null) {
-            console.log('[GameManager] Updating UserInfo balance to:', balance);
             UserInfo.getInstance().updateBalance(balance);
             this.updateBalanceDisplay();
         } else {
@@ -148,22 +143,17 @@ export class GameManager extends Component {
     }
 
     extractBalanceFromPayload(payload: any): number | null {
-        // console.log('[GameManager] extractBalanceFromPayload - payload:', JSON.stringify(payload, null, 2));
 
         if (!payload) {
-            console.log('[GameManager] Payload is null/undefined');
             return null;
         }
 
         const data = payload.data ? payload.data : payload;
-        // console.log('[GameManager] Extracted data:', JSON.stringify(data, null, 2));
 
         // Check wallets array first
         const wallets = Array.isArray(data.wallets) ? data.wallets : [];
-        // console.log('[GameManager] Wallets array:', wallets);
 
         if (wallets.length > 0 && wallets[0] && wallets[0].balance !== undefined) {
-            // console.log('[GameManager] Found balance in wallets[0]:', wallets[0].balance);
             return Number(wallets[0].balance);
         }
 
@@ -175,7 +165,6 @@ export class GameManager extends Component {
 
         // Check direct balance
         if (data.balance !== undefined) {
-            console.log('[GameManager] Found direct balance:', data.balance);
             return Number(data.balance);
         }
 
@@ -185,14 +174,12 @@ export class GameManager extends Component {
 
     updateBalanceDisplay(): void {
         const balance = UserInfo.getInstance().balance;
-        console.log('[GameManager] updateBalanceDisplay - balance from UserInfo:', balance);
 
         if (this.walet) {
             const formatted = balance.toLocaleString('en-US', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             });
-            console.log('[GameManager] Setting walet.string to:', formatted);
             this.walet.string = formatted;
             this.ballanTitle.string = formatted;
             this.walletAuto.string = formatted;
@@ -242,11 +229,9 @@ export class GameManager extends Component {
                             return;
                         }
                         const spinResult = jsonAsset.json;
-                        console.log("[GameManager] Using TEST data:", spinResult);
 
                         if (spinResult.success) {
                             this.sampleJson = spinResult;
-                            console.log("[GameManager] Updated sampleJson with TEST data");
 
                             // Update balance
                             UserInfo.getInstance().updateBalance(UserInfo.getInstance().balance - this.betCurrent + spinResult.totalWin);
@@ -270,7 +255,6 @@ export class GameManager extends Component {
                         const wsNode = director.getScene().getChildByName('WebSocketService');
                         if (wsNode) {
                             wsService = wsNode.getComponent(WebSocketService);
-                            console.log("[GameManager] Found WebSocketService from persisted node");
                         }
                     }
 
@@ -283,11 +267,9 @@ export class GameManager extends Component {
                     }
 
                     const spinResult = await wsService.spin(this.betCurrent);
-                    console.log("[GameManager] Spin result received:", spinResult);
 
                     if (spinResult.success) {
                         this.sampleJson = spinResult;
-                        console.log("[GameManager] Updated sampleJson with server data");
 
                         // Update balance
                         UserInfo.getInstance().updateBalance(UserInfo.getInstance().balance - this.betCurrent + spinResult.totalWin);
@@ -312,7 +294,6 @@ export class GameManager extends Component {
 
     stepOld = 1
     SpinGame() {
-        console.log("den day", "startspin")
         this.stepWinCurrent = 0
         this.UpdatePriceWin()
         TextBoxCombo.instant.playRandomText()
@@ -358,7 +339,6 @@ export class GameManager extends Component {
         const phase1 = indexReel + 1;
         for (let i = 0; i <= indexReel; i++) {
             let newRow = [...grid[i]];
-            console.log(newRow)
             this.reels[i].stopRoll(grid[i])
             await GameManager.waitForSeconds(this.GetTimeTurboScratchStart());
 
@@ -466,39 +446,31 @@ export class GameManager extends Component {
     stepWinCurrent = 0
     async ClearData() {
         const r = this.sampleJson.rounds[this.indexCurrentReel];
-        console.log("Way", this.sampleJson, this.indexCurrentReel)
 
         if (r.win.positions.length > 0) {
             Waymanager.instance.animWay(r.win.ways)
-            console.log('[ClearData] win.positions BEFORE removeWinDuplicateFlip:', r.win.positions.length);
             TextBoxCombo.instant.PlayStepWin(r.win.stepWin, this.stepOld)
             this.stepWinCurrent += r.win.stepWin
             this.UpdatePriceWin()
             this.removeWinDuplicateFlip(r)
-            console.log('[ClearData] win.positions AFTER removeWinDuplicateFlip:', r.win.positions.length);
             const flipPos = new Set(
                 r.flips.map(f => `${f.from.c}_${f.from.r}`)
             );
-            console.log('[ClearData] Flip positions:', Array.from(flipPos));
 
             // dispose all win symbols except flip positions
             let disposeCount = 0;
             for (const e of r.win.positions) {
                 const key = `${e.c}_${e.r}`;
                 if (flipPos.has(key)) {
-                    console.log(`[ClearData] Skip dispose for flip position: ${key}`);
                     continue;
                 }
                 const symbol = this.resolveSymbolByPosition(e.c, e.r, e.i);
                 if (!symbol) {
-                    console.log(`[ClearData] Symbol not found at ${key}`);
                     continue;
                 }
-                console.log(`[ClearData] Disposing symbol at ${key}`);
                 symbol.Dispose();
                 disposeCount++;
             }
-            console.log(`[ClearData] Total disposed: ${disposeCount} out of ${r.win.positions.length}`);
 
             SoundToggle.instance.PlaySymbolWin()
             this.stepOld = this.sampleJson.rounds[this.indexCurrentReel].multiplier
@@ -559,17 +531,9 @@ export class GameManager extends Component {
                 }
                 else {
                     this.indexCurrentReel = 0;
-
                     Spin.instance.ActiveSpin()
                     this.SetNormal();
                     SoundToggle.instance.playNormal()
-                    if (Spin.instance.isAuto == true) {
-                        Spin.instance.AutoSpinNext()
-                    }
-                    else {
-                        Spin.instance.isSpin = false;
-                    }
-
                 }
 
             }
@@ -876,8 +840,6 @@ export class GameManager extends Component {
 
     BtnCuoc() {
         this.DatCuocNode.active = true
-        console.log("den day")
-
     }
 
     onClickMap() {
@@ -903,12 +865,9 @@ export class GameManager extends Component {
         return this.totalFreeSpin
     }
     GetDataFreeSpin() {
-        console.log("den day", this.indexCurrentFreeSpin, this.dataFreespin.payload.batchSpins.length, this.totalFreeSpin)
         if (this.indexCurrentFreeSpin >= this.dataFreespin.payload.batchSpins.length) {
             return null
         }
-        console.log("den day", this.dataFreespin.payload.batchSpins[this.indexCurrentFreeSpin])
-
         return this.dataFreespin.payload.batchSpins[this.indexCurrentFreeSpin]
     }
 
@@ -924,8 +883,6 @@ export class GameManager extends Component {
                 Spin.instance.ActiveSpin()
                 this.SetNormal();
                 SoundToggle.instance.playNormal()
-                console.log("den day", "setNormal")
-
                 // if (Spin.instance.isAuto == true) {
                 //     Spin.instance.AutoSpinNext()
                 // }

@@ -169,7 +169,6 @@ export class PanelBet extends Component {
     }
 
     BtnXacNhan() {
-        console.log(this.betAmount)
         this.labelBet2.string = currencyFormatSimple.format(this.betAmount)
         GameManager.instance.UpdateBetCurrent(this.betAmount)
     }

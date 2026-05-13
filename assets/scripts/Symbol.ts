@@ -249,10 +249,10 @@ export class Symbol extends Component {
     rollToIndex(time: number = 0.2, type: string = Symbol.MoveType.MOVING) {
 
         const newPosition = this.reel.getSymbolPosition(this.reelIndex);
+        Tween.stopAllByTarget(this.node);
 
         // ❗ CHỈ stop tween khi STOP, không stop khi MOVING
         if (type === Symbol.MoveType.STOP) {
-            Tween.stopAllByTarget(this.node);
         }
         if (type === Symbol.MoveType.MOVING) {
             this.SetUiMove()

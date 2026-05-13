@@ -34,10 +34,8 @@ export class LoadingController extends Component {
             const wsNode = new Node('WebSocketService');
             wsNode.addComponent(WebSocketService);
             director.addPersistRootNode(wsNode); // Persist across scenes
-            console.log('[Loading] WebSocketService component created and persisted');
         }
 
-        console.log('[Loading] Starting auto login process');
         this.performAutoLogin();
     }
 

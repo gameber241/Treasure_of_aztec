@@ -32,7 +32,6 @@ export class H_story extends Component {
     }
 
     async show() {
-        console.log('[History] show() called');
         this.node.active = true;
         await this.UpdateLogDay();
     }
@@ -120,12 +119,7 @@ export class H_story extends Component {
                         detailResults.push(logItem);
                         continue;
                     }
-
-                    console.log('[History] Requesting getLogDetail for id:', logItem.id);
                     const detailResult = await wsService.getLogDetail(logItem.id);
-
-                    console.log('[History] getLogDetailResult:', logItem.id, detailResult);
-
                     const detailLog = detailResult?.log || detailResult?.data || detailResult;
                     const mergedEntry = {
                         ...logItem,
@@ -142,19 +136,13 @@ export class H_story extends Component {
 
                 }
             }
-
-            console.log('[History] Rendering history entries:', detailResults.length, detailResults);
-
             detailResults.forEach((entry, index) => {
                 try {
                     const item = instantiate(this.itemHis);
                     this.scrollHis.content.addChild(item);
                     const itemHistory = item.getComponent(ItemHistory);
                     itemHistory.SetUp(entry);
-                    console.log('[History] Rendered entry:', index, entry?.id, {
-                        hasDetail: Boolean(entry?.detail),
-                        replayRounds: entry?.replayRounds?.length ?? 0,
-                    });
+
 
                     this.uiHis.active = false
 

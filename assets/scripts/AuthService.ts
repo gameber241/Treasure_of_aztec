@@ -24,7 +24,6 @@ export class AuthService {
     }
 
     public async autoLogin(): Promise<LoginResponse> {
-        console.log('[Auth] Auto login starting...');
         return this.login(
             GameConfig.autoLogin.username,
             GameConfig.autoLogin.password
@@ -34,8 +33,6 @@ export class AuthService {
     public async loginWithUrlToken(token: string): Promise<LoginResponse> {
         try {
             const url = `${GameConfig.url_api}/api/user/token`;
-            console.log('[Auth] URL token login to:', url);
-
             const rawBody = JSON.stringify({ token });
             const response = await fetch(url, {
                 method: 'POST',
@@ -46,13 +43,10 @@ export class AuthService {
             });
 
             const response_data = await response.json();
-            console.log('[Auth] URL token login response:', response_data);
-
             if (response_data.success && response_data.data?.sessionToken) {
                 const data = response_data.data;
                 this.token = data.sessionToken;
                 this.userId = data.user?.userId || data.user?.id || 0;
-                console.log('[Auth] URL token login successful, token:', this.token.substring(0, 20) + '...');
                 return {
                     success: true,
                     token: data.sessionToken,
@@ -93,19 +87,12 @@ export class AuthService {
         try {
             const path = '/api/user/login';
             const url = `${GameConfig.url_api}${path}`;
-            console.log('[Auth] Logging in to:', url);
 
             const rawBody = JSON.stringify({ username, password });
             const timestamp = Date.now().toString();
             const signatureBody = '{}';
             const payload = `POST|${path}|${timestamp}|${signatureBody}`;
             const signature = await this.generateSignature(GameConfig.autoLogin.secretKey, payload);
-
-            console.log('[Auth] Debug info:');
-            console.log('  API Key:', GameConfig.autoLogin.apiKey);
-            console.log('  Timestamp:', timestamp);
-            console.log('  Payload:', payload);
-            console.log('  Signature:', signature);
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -119,15 +106,12 @@ export class AuthService {
             });
 
             const responseData = await response.json();
-            console.log('[Auth] Login response:', responseData);
-
             const token = responseData?.data?.token || responseData?.token;
             const user = responseData?.data?.user || responseData?.user;
 
             if (response.ok && responseData?.success && token) {
                 this.token = token;
                 this.userId = user?.userId || user?.id || 0;
-                console.log('[Auth] Login successful, token:', this.token.substring(0, 20) + '...');
                 return {
                     success: true,
                     token,

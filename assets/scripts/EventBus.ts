@@ -15,7 +15,6 @@ export class EventBus {
         }
         const boundCallback = context ? callback.bind(context) : callback;
         this.events.get(event).push(boundCallback);
-        console.log(`[EventBus] Registered listener for '${event}'. Total listeners: ${this.events.get(event).length}`);
     }
 
     public off(event: string, callback: Function): void {
@@ -29,17 +28,14 @@ export class EventBus {
     }
 
     public emit(event: string, data?: any): void {
-        console.log(`[EventBus] Emitting '${event}'. Has listeners: ${this.events.has(event)}`);
         if (!this.events.has(event)) {
             console.warn(`[EventBus] No listeners registered for '${event}'`);
             return;
         }
 
         const callbacks = this.events.get(event);
-        console.log(`[EventBus] Calling ${callbacks.length} listener(s) for '${event}'`);
         callbacks.forEach((callback, index) => {
             try {
-                console.log(`[EventBus] Calling listener ${index + 1}/${callbacks.length}`);
                 callback(data);
             } catch (error) {
                 console.error(`[EventBus] Error in event '${event}':`, error);
