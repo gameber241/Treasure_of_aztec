@@ -3,8 +3,8 @@ export const GameConfig = {
     // url_api: "http://localhost:3000",
     // url_ws: "ws://localhost:3204", 
     
-    url_api: "https://server.kjcgame.com",
-    url_ws: "wss://game-treasuresofaztec.kjcgame.com",
+    url_api: "https://server.a3gaming.tech",
+    url_ws: "wss://game-treasuresofaztec.a3gaming.tech",
 
     gameName: "Treasures of Aztec",
     gameId: "1004",

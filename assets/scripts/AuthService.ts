@@ -24,10 +24,6 @@ export class AuthService {
     }
 
     public async autoLogin(): Promise<LoginResponse> {
-        if (!GameConfig.autoLogin.enabled) {
-            return { success: false, error: 'Auto login is disabled' };
-        }
-
         console.log('[Auth] Auto login starting...');
         return this.login(
             GameConfig.autoLogin.username,
@@ -95,16 +91,14 @@ export class AuthService {
 
     public async login(username: string, password: string): Promise<LoginResponse> {
         try {
-            const url = `${GameConfig.url_api}/api/user/login`;
+            const path = '/api/user/login';
+            const url = `${GameConfig.url_api}${path}`;
             console.log('[Auth] Logging in to:', url);
 
-            const body = { username, password };
-            const rawBody = JSON.stringify(body);
+            const rawBody = JSON.stringify({ username, password });
             const timestamp = Date.now().toString();
-            const method = 'POST';
-            const pathname = '/api/user/login';
-            const payload = `${method}|${pathname}|${timestamp}|${rawBody}`;
-
+            const signatureBody = '{}';
+            const payload = `POST|${path}|${timestamp}|${signatureBody}`;
             const signature = await this.generateSignature(GameConfig.autoLogin.secretKey, payload);
 
             console.log('[Auth] Debug info:');
@@ -124,25 +118,26 @@ export class AuthService {
                 body: rawBody
             });
 
-            const response_data = await response.json();
-            console.log('[Auth] Login response:', response_data);
+            const responseData = await response.json();
+            console.log('[Auth] Login response:', responseData);
 
-            // Server trả về format: {success: true, data: {message, token, user}}
-            if (response_data.success && response_data.data) {
-                const data = response_data.data;
-                this.token = data.token;
-                this.userId = data.user?.userId || data.user?.id || 0;
+            const token = responseData?.data?.token || responseData?.token;
+            const user = responseData?.data?.user || responseData?.user;
+
+            if (response.ok && responseData?.success && token) {
+                this.token = token;
+                this.userId = user?.userId || user?.id || 0;
                 console.log('[Auth] Login successful, token:', this.token.substring(0, 20) + '...');
                 return {
                     success: true,
-                    token: data.token,
-                    user: data.user
+                    token,
+                    user
                 };
-            } else {
-                console.error('[Auth] Login failed:', response_data.data?.error || response_data.error);
-                return { success: false, error: response_data.data?.error || response_data.error || 'Login failed' };
             }
 
+            const errorMessage = responseData?.message || responseData?.data?.error || responseData?.error || 'Login failed';
+            console.error('[Auth] Login failed:', errorMessage);
+            return { success: false, error: errorMessage };
         } catch (error) {
             console.error('[Auth] Login error:', error);
             return { success: false, error: error.message || 'Network error' };
