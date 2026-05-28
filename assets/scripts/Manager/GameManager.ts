@@ -17,6 +17,7 @@ import { Waymanager } from '../Waymanager';
 import { TextBoxCombo } from './TextBoxCombo';
 import { GameConfig } from '../GameConfig';
 import { LabelBet } from '../LabelBet';
+import { SoundManager } from '../SoundManager';
 
 
 
@@ -543,27 +544,36 @@ export class GameManager extends Component {
         // danh sách animation cần chạy
         const winQueue: Array<() => void> = [];
 
-        if (r.BigWin) {
-
+        if (this.stepWinCurrent > 10 * this.betCurrent) {
+            let step = 0
+            if (this.stepWinCurrent < 15 * this.betCurrent) {
+                step = this.stepWinCurrent
+            }
+            else {
+                step = 10 * this.betCurrent
+            }
             winQueue.push(() => {
                 SoundToggle.instance.playBigWin()
-                BigWin.instance.showBigWin(runNext, r.BigWin);
+                BigWin.instance.showBigWin(runNext, step);
             });
         }
-
-        if (r.SuperWin) {
-
+        if (this.stepWinCurrent > 15 * this.betCurrent) {
+            let step = 0
+            if (this.stepWinCurrent < 25 * this.betCurrent) {
+                step = this.stepWinCurrent
+            }
+            else {
+                step = 10 * this.betCurrent
+            }
             winQueue.push(() => {
                 SoundToggle.instance.playBigWin()
-                BigWin.instance.showSuperWin(runNext, r.SuperWin);
+                BigWin.instance.showSuperWin(runNext, step);
             });
         }
-
-        if (r.MegaWin) {
-
+        if (this.stepWinCurrent > 25 * this.betCurrent) {
             winQueue.push(() => {
                 SoundToggle.instance.playBigWin()
-                BigWin.instance.showMegaWin(runNext, r.MegaWin);
+                BigWin.instance.showMegaWin(runNext, this.stepWinCurrent);
             });
         }
 
