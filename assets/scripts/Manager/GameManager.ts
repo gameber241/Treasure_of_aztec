@@ -127,12 +127,6 @@ export class GameManager extends Component {
         if (this.ballanTitle) this.ballanTitle.string = "--";
         if (this.walletAuto) this.walletAuto.string = "--";
 
-        this.scheduleOnce(() => {
-            const wsService = WebSocketService.getInstance();
-            if (wsService) {
-                wsService.getProfile();
-            }
-        }, 0.1);
     }
 
     onProfileUpdated(payload: any): void {
