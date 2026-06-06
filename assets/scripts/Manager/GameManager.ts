@@ -117,11 +117,15 @@ export class GameManager extends Component {
         EventBus.getInstance().on('profile:updated', this.onProfileUpdated, this);
     }
     protected start(): void {
-        this.UpdatePrice()
-        this.UpdatePriceWin
-        this.SetNormal()
-        this.initGrid()
-        this.updateBalanceDisplay();
+        this.UpdatePrice();
+        this.UpdatePriceWin();
+        this.SetNormal();
+        this.initGrid();
+
+        // Không show balance = 0 khi chưa có profile
+        if (this.walet) this.walet.string = "--";
+        if (this.ballanTitle) this.ballanTitle.string = "--";
+        if (this.walletAuto) this.walletAuto.string = "--";
 
         this.scheduleOnce(() => {
             const wsService = WebSocketService.getInstance();
@@ -132,10 +136,11 @@ export class GameManager extends Component {
     }
 
     onProfileUpdated(payload: any): void {
-
         const balance = this.extractBalanceFromPayload(payload);
 
-        if (balance !== null) {
+        if (balance !== null && !Number.isNaN(balance)) {
+            this.isProfileLoaded = true;
+
             UserInfo.getInstance().updateBalance(balance);
             this.updateBalanceDisplay();
         } else {
@@ -209,18 +214,102 @@ export class GameManager extends Component {
             )
         }
     }
-
     sampleJson = null;
 
-    indexCurrentReel = 0
-    public async PlaySpin() {
-        TextBoxCombo.instant.box.setAnimation(0, "textBox1_idle", true)
+    private isProfileLoaded: boolean = false;
 
-        // If this is the first round, fetch spin result from server
+    private pendingTotalWin: number = 0;
+    private pendingWinAdded: boolean = false;
+    private getSpinTotalWin(spinResult: any): number {
+        const totalWin = Number(
+            spinResult?.totalWin ??
+            spinResult?.payload?.totalWin ??
+            spinResult?.data?.totalWin ??
+            spinResult?.payload?.batchSummary?.totalWin ??
+            0
+        );
+
+        return Number.isFinite(totalWin) ? totalWin : 0;
+    }
+
+    private getCurrentBalance(): number {
+        const balance = Number(UserInfo.getInstance().balance);
+        return Number.isFinite(balance) ? balance : 0;
+    }
+
+    private subtractBetWhenSpin(): void {
+        if (this.isFreeSpin) {
+            return;
+        }
+
+        const currentBalance = this.getCurrentBalance();
+        const bet = Number(this.betCurrent) || 0;
+        const newBalance = currentBalance - bet;
+
+        UserInfo.getInstance().updateBalance(newBalance);
+        this.updateBalanceDisplay();
+
+        console.log("[GameManager] Subtract bet:", {
+            currentBalance,
+            bet,
+            newBalance,
+        });
+    }
+
+    private addWinWhenSpinEnd(): void {
+        if (this.pendingWinAdded) {
+            return;
+        }
+
+        this.pendingWinAdded = true;
+
+        const totalWin = Number(this.pendingTotalWin) || 0;
+
+        if (totalWin <= 0) {
+            console.log("[GameManager] No win to add");
+            return;
+        }
+
+        const currentBalance = this.getCurrentBalance();
+        const newBalance = currentBalance + totalWin;
+
+        UserInfo.getInstance().updateBalance(newBalance);
+        this.updateBalanceDisplay();
+
+        console.log("[GameManager] Add win:", {
+            currentBalance,
+            totalWin,
+            newBalance,
+        });
+    }
+
+    private preparePendingWin(spinResult: any): void {
+        this.pendingTotalWin = this.getSpinTotalWin(spinResult);
+        this.pendingWinAdded = false;
+
+        console.log("[GameManager] Pending total win:", this.pendingTotalWin);
+    }
+    indexCurrentReel = 0;
+    public async PlaySpin() {
+        if (!this.isProfileLoaded && !this.isFreeSpin) {
+            console.warn("[GameManager] Profile not loaded yet, cannot spin");
+            Spin.instance.ActiveSpin();
+            return;
+        }
+
+        if (UserInfo.getInstance().balance < this.betCurrent && !this.isFreeSpin) {
+            console.warn("[GameManager] Not enough balance");
+            Spin.instance.ActiveSpin();
+            return;
+        }
+
+        TextBoxCombo.instant.box.setAnimation(0, "textBox1_idle", true);
+
+        // Nếu là round đầu tiên thì gọi server lấy kết quả spin
         if (this.indexCurrentReel === 0) {
-            const useServerSpin = GameConfig.useServerSpin; // Read from config
+            const useServerSpin = GameConfig.useServerSpin;
+
             if (useServerSpin === false) {
-                // Convert callback to Promise and await it
                 await new Promise<void>((resolve, reject) => {
                     resources.load('test-spin-data', JsonAsset, (err, jsonAsset) => {
                         if (err) {
@@ -229,18 +318,23 @@ export class GameManager extends Component {
                             reject(err);
                             return;
                         }
+
                         const spinResult = jsonAsset.json;
 
                         if (spinResult.success) {
                             this.sampleJson = spinResult;
 
-                            // Update balance
-                            UserInfo.getInstance().updateBalance(UserInfo.getInstance().balance - this.betCurrent + spinResult.totalWin);
-                            this.updateBalanceDisplay();
+                            // Lưu tiền win để lát nữa quay xong mới cộng
+                            this.preparePendingWin(spinResult);
+
+                            // Trừ tiền cược ngay khi bắt đầu spin
+                            this.subtractBetWhenSpin();
+
                             resolve();
                         } else {
                             console.error("[GameManager] Test data invalid");
-                            if (this.isFreeSpin == true) return
+
+                            if (this.isFreeSpin == true) return;
 
                             Spin.instance.ActiveSpin();
                             reject(new Error("Invalid test data"));
@@ -249,11 +343,13 @@ export class GameManager extends Component {
                 });
             } else {
                 try {
-                    // Get WebSocketService instance, try to find it if null
                     let wsService = WebSocketService.getInstance();
+
                     if (!wsService) {
                         console.warn("[GameManager] WebSocketService instance is null, trying to find persisted node");
+
                         const wsNode = director.getScene().getChildByName('WebSocketService');
+
                         if (wsNode) {
                             wsService = wsNode.getComponent(WebSocketService);
                         }
@@ -261,7 +357,8 @@ export class GameManager extends Component {
 
                     if (!wsService) {
                         console.error("[GameManager] WebSocketService not available");
-                        if (this.isFreeSpin == true) return
+
+                        if (this.isFreeSpin == true) return;
 
                         Spin.instance.ActiveSpin();
                         return;
@@ -272,25 +369,31 @@ export class GameManager extends Component {
                     if (spinResult.success) {
                         this.sampleJson = spinResult;
 
-                        // Update balance
-                        UserInfo.getInstance().updateBalance(UserInfo.getInstance().balance - this.betCurrent + spinResult.totalWin);
-                        this.updateBalanceDisplay();
+                        // Lưu totalWin, chưa cộng ngay
+                        this.preparePendingWin(spinResult);
+
+                        // Server không tự trừ tiền nên client tự trừ khi spin
+                        this.subtractBetWhenSpin();
                     } else {
                         console.error("[GameManager] Spin failed:", spinResult.error);
-                        if (this.isFreeSpin == true) return
+
+                        if (this.isFreeSpin == true) return;
+
                         Spin.instance.ActiveSpin();
                         return;
                     }
                 } catch (error) {
                     console.error("[GameManager] Spin API error:", error);
-                    if (this.isFreeSpin == true) return
+
+                    if (this.isFreeSpin == true) return;
+
                     Spin.instance.ActiveSpin();
                     return;
                 }
             }
         }
 
-        this.SpinGame()
+        this.SpinGame();
     }
 
     stepOld = 1
@@ -520,26 +623,24 @@ export class GameManager extends Component {
     ShowBigWin() {
         const r = this.sampleJson.rounds[this.indexCurrentReel];
         const next = () => {
+            // Quay/cascade/bigwin xong thì mới cộng tiền win
+            this.addWinWhenSpinEnd();
+
             if (this.CheckScratch4() == true) {
-                this.indexCurrentReel = 0
-                this.isFreeSpin = true
+                this.indexCurrentReel = 0;
+                this.isFreeSpin = true;
                 FreeSpines.instance.playAnimation(this.getFreeSpin(this.GetNumberScratch()));
-            }
-            else {
+            } else {
                 if (this.isFreeSpin == true) {
-                    this.indexCurrentReel = 0
-                    this.PlayModeFreeSpin()
-                }
-                else {
                     this.indexCurrentReel = 0;
-                    Spin.instance.ActiveSpin()
+                    this.PlayModeFreeSpin();
+                } else {
+                    this.indexCurrentReel = 0;
+                    Spin.instance.ActiveSpin();
                     this.SetNormal();
-                    SoundToggle.instance.playNormal()
+                    SoundToggle.instance.playNormal();
                 }
-
             }
-
-
         };
         // danh sách animation cần chạy
         const winQueue: Array<() => void> = [];
@@ -916,6 +1017,7 @@ export class GameManager extends Component {
         Waymanager.instance.resetWay()
         this.sampleJson = dataFree
         const grid = this.sampleJson.rounds[this.indexCurrentReel].grid;
+        this.preparePendingWin(dataFree);
         FreeSpines.instance.UpdateFreeSpinLb(this.totalFreeSpin)
         this.GenerateMap(grid);
     }

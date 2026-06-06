@@ -116,16 +116,13 @@ export class LoadingController extends Component {
                         console.warn('[Loading] Failed to load profile:', error);
                     }
                 }
-
                 this.isLoggedIn = true;
+
                 if (this.statusLabel) {
-                    this.statusLabel.string = 'Sẵn sàng!';
+                    this.statusLabel.string = 'Đang tải game...';
                 }
 
-                // Set progress to 100% immediately
-                this.targetProgress = 1;
-                this.currentProgress = 1;
-                this.isLoaded = true;
+                this.loadGameplay();
             } else {
                 console.error('[Loading] Login failed:', loginResult.error);
                 if (this.statusLabel) {
