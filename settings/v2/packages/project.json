@@ -4,7 +4,7 @@
     "designResolution": {
       "width": 758,
       "height": 1440,
-      "fitHeight": false
+      "fitHeight": true
     }
   },
   "layer": [

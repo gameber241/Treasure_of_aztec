@@ -678,18 +678,6 @@ export class GameManager extends Component {
             });
         }
 
-        // total win
-        // if (r.totalPrice > 0 && r.isScratch) {
-
-
-        //     winQueue.push(() => {
-        //         SoundToggle.instance.playBigWin()
-        //         FreeSpines.instance.ShowTotalSpin(() => {
-        //             runNext();
-        //         }, 4000);
-        //     });
-        // }
-
         // nếu không có animation nào
         if (winQueue.length === 0) {
             next();
@@ -994,14 +982,6 @@ export class GameManager extends Component {
                 Spin.instance.ActiveSpin()
                 this.SetNormal();
                 SoundToggle.instance.playNormal()
-                // if (Spin.instance.isAuto == true) {
-                //     Spin.instance.AutoSpinNext()
-                // }
-                // else {
-                //     Spin.instance.isSpin = false;
-                // }
-
-
             }, this.dataFreespin.payload.batchSummary.totalWin);
             return;
         }
