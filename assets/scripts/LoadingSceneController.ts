@@ -36,6 +36,7 @@ export class LoadingController extends Component {
             director.addPersistRootNode(wsNode); // Persist across scenes
         }
 
+        this.loadGameplay();
         this.performAutoLogin();
     }
 
@@ -49,6 +50,9 @@ export class LoadingController extends Component {
             // preload xong
             this.targetProgress = 1;
             this.isLoaded = true;
+            if (this.isLoggedIn && this.statusLabel) {
+                this.statusLabel.string = 'Sẵn sàng';
+            }
 
         });
     }
@@ -64,10 +68,9 @@ export class LoadingController extends Component {
 
         this.progressBar.progress = this.currentProgress;
 
-        if (this.isLoaded && this.currentProgress >= 1) {
-            this.progressBar.node.active = false;
-            this.startButton.active = true;
-        }
+        const isReady = this.isLoggedIn && this.isLoaded && this.currentProgress >= 1;
+        this.progressBar.node.active = !isReady;
+        this.startButton.active = isReady;
     }
 
     private getQueryParam(key: string): string | null {
@@ -117,12 +120,9 @@ export class LoadingController extends Component {
                     }
                 }
                 this.isLoggedIn = true;
-
                 if (this.statusLabel) {
-                    this.statusLabel.string = 'Đang tải game...';
+                    this.statusLabel.string = this.isLoaded ? 'Sẵn sàng' : 'Đang tải dữ liệu game...';
                 }
-
-                this.loadGameplay();
             } else {
                 console.error('[Loading] Login failed:', loginResult.error);
                 if (this.statusLabel) {
