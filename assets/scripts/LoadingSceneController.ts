@@ -115,6 +115,7 @@ export class LoadingController extends Component {
                     try {
                         const profile = await this.wsService.getProfile();
                         UserInfo.getInstance().updateProfile(profile);
+                        console.log(profile, "ffwefwewef")
                     } catch (error) {
                         console.warn('[Loading] Failed to load profile:', error);
                     }

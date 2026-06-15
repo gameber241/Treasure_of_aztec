@@ -27,19 +27,18 @@ export class UserInfo {
         // console.log('[UserInfo] profileData.freeSpins:', profileData.freeSpins);
         // console.log('[UserInfo] profileData.partnerId:', profileData.partnerId);
 
-        if (profileData.userId) this.userId = Number(profileData.userId);
-        if (profileData.username) this.username = profileData.username;
-        if (profileData.balance !== undefined) this.balance = Number(profileData.balance);
-        if (profileData.freeSpins !== undefined) this.freeSpins = Number(profileData.freeSpins);
-        if (profileData.partnerId) this.partnerId = Number(profileData.partnerId);
-
-        // console.log('[UserInfo] Profile updated - Final state:', {
-        //     userId: this.userId,
-        //     username: this.username,
-        //     balance: this.balance,
-        //     freeSpins: this.freeSpins,
-        //     partnerId: this.partnerId
-        // });
+        this.userId = Number(profileData.user.id);
+        this.username = profileData.user.username;
+        this.balance = Number(profileData.wallets[0].balance);
+        this.freeSpins = Number(profileData.wallets[0].free_spins);
+        this.partnerId = Number(profileData.user.partner_id);
+        console.log('[UserInfo] Profile updated - Final state:', {
+            userId: this.userId,
+            username: this.username,
+            balance: this.balance,
+            freeSpins: this.freeSpins,
+            partnerId: this.partnerId
+        });
     }
 
     public updateBalance(newBalance: number): void {

@@ -126,7 +126,7 @@ export class GameManager extends Component {
         if (this.walet) this.walet.string = "--";
         if (this.ballanTitle) this.ballanTitle.string = "--";
         if (this.walletAuto) this.walletAuto.string = "--";
-
+        this.updateBalanceDisplay();
     }
 
     onProfileUpdated(payload: any): void {
