@@ -285,11 +285,11 @@ export class GameManager extends Component {
     }
     indexCurrentReel = 0;
     public async PlaySpin() {
-        if (!this.isProfileLoaded && !this.isFreeSpin) {
-            console.warn("[GameManager] Profile not loaded yet, cannot spin");
-            Spin.instance.ActiveSpin();
-            return;
-        }
+        // if (!this.isProfileLoaded && !this.isFreeSpin) {
+        //     console.warn("[GameManager] Profile not loaded yet, cannot spin");
+        //     Spin.instance.ActiveSpin();
+        //     return;
+        // }
 
         if (UserInfo.getInstance().balance < this.betCurrent && !this.isFreeSpin) {
             console.warn("[GameManager] Not enough balance");
